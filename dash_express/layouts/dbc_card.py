@@ -20,6 +20,15 @@ class CardLayoutDbc(ComponentLayout):
 
     @property
     def layout(self):
+        mode = self.config.get("mode", "card")
+        if mode == "card":
+            return self._card_layout()
+        elif mode == "row":
+            return self._row_layout()
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+
+    def _card_layout(self):
         import dash_bootstrap_components as dbc
 
         # No callbacks here. Must be constant or idempotent
@@ -47,6 +56,22 @@ class CardLayoutDbc(ComponentLayout):
             style=card_style,
             children=card_children
         )
+
+    def _row_layout(self):
+        output_card_children = []
+        if self.config.get("title", None):
+            output_card_children.append(dbc.CardHeader(self.config["title"]))
+
+        output_card_children.extend(self._components['output'])
+
+        return dbc.Row([
+            dbc.Col(
+                dbc.Card(children=self._components['input'], body=True)
+            ),
+            dbc.Col(
+                dbc.Card(children=output_card_children)
+            ),
+        ])
 
     # Methods designed to be overridden by subclasses
     def add_dropdown(self, options, id=None, kind="input", **kwargs):

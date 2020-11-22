@@ -17,12 +17,13 @@ class ComponentLayout:
     def lookup_component_layout(name):
         return _registered_layouts[name]
 
-    def __init__(self, app, fn=None, width=None, title=None, **kwargs):
+    def __init__(self, app, fn=None, width=None, title=None, mode="card", **kwargs):
         self._components = dict(input=[], output=[])
         self.app = app
         self.config = dict(**kwargs)
         self.config["title"] = title
         self.config["width"] = width
+        self.config["mode"] = mode
 
         # Check whether ComponentLayout is acting as a decorator
         self.fn = fn

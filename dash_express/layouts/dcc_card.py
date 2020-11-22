@@ -6,6 +6,13 @@ class CardLayoutDcc(ComponentLayout):
 
     @property
     def layout(self):
+        mode = self.config.get("mode", "card")
+        if mode == "card":
+            return self._card_layout()
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+
+    def _card_layout(self):
         # No callbacks here. Must be constant or idempotent
         children = []
         if self.config.get("title", None):
