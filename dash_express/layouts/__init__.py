@@ -1,1 +1,1 @@
-from . import dbc_card, dcc_card, ddk_card
+from . import dbc, dcc, ddk

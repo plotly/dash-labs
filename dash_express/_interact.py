@@ -4,21 +4,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 from .layouts.util import build_id
 
-def interact(
-        app, labels=None, template=None, title=None, width=None, height=None,
-        theme=None,
-):
+
+def interact(component_layout, labels=None):
     if labels is None:
         labels = {}
 
     def decorator(f):
-        from .component_layout import ComponentLayout
-
-        component_layout_class = ComponentLayout.lookup_component_layout(template)
-        component_layout = component_layout_class(
-            app, f, width=width, height=height, title=title,
-        )
-
+        component_layout.fn = f
         param_defaults = {}
         signature = inspect.signature(f)
         for param_name, param in signature.parameters.items():
@@ -66,7 +58,7 @@ def interact(
         output = Output("output", "children")
 
         # Register callback
-        app.callback(output, inputs)(f)
+        component_layout.app.callback(output, inputs)(f)
 
         return component_layout
 

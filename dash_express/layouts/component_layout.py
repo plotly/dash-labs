@@ -5,31 +5,24 @@ import dash_core_components as dcc
 from dash_express.layouts.util import build_id, filter_kwargs
 
 
-_registered_layouts = {}
-
-
 class ComponentLayout:
-    @staticmethod
-    def register_component_layout(name, layout_class):
-        _registered_layouts[name] = layout_class
-
-    @staticmethod
-    def lookup_component_layout(name):
-        return _registered_layouts[name]
-
-    def __init__(self, app, fn=None, width=None, title=None, mode="card", **kwargs):
+    def __init__(self, app, fn=None, title=None, **kwargs):
         self._components = dict(input=[], output=[])
         self.app = app
-        self.config = dict(**kwargs)
-        self.config["title"] = title
-        self.config["width"] = width
-        self.config["mode"] = mode
+        self.title = title
 
-        # Check whether ComponentLayout is acting as a decorator
+        # Assign function if instance is acting as a function wrapper
         self.fn = fn
-        if fn is not None:
-            # Update class instance to look like wrapped function
-            update_wrapper(self, fn)
+
+    @property
+    def fn(self):
+        return self._fn
+
+    @fn.setter
+    def fn(self, val):
+        self._fn = val
+        if val is not None:
+            update_wrapper(self, val)
 
     def __call__(self, *args, **kwargs):
         if self.fn:
