@@ -160,10 +160,10 @@ class DbcSidebarLayout(BaseDbcLayout):
 
         if self.title:
             children.extend([
-                html.H1(
+                html.H3(
                     className="bg-primary text-white",
                     children=self.title,
-                    style={"padding": "1rem"}
+                    style={"padding": "0.5rem"}
                 ),
             ])
 
