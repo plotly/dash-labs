@@ -5,8 +5,27 @@ from dash_express.layouts.util import filter_kwargs
 
 
 class BaseDDKLayout(ComponentLayout):
-    @property
-    def layout(self):
+    def __init__(
+            self,
+            app=None,
+            theme=None,
+            show_editor=None,
+            theme_dev_tools=None,
+            embedded=None,
+            show_undo_redo=None,
+            use_mobile_viewport=None,
+            **kwargs,
+    ):
+        super(BaseDDKLayout, self).__init__(app=app, **kwargs)
+        self.theme = theme
+        self.show_editor = show_editor
+        self.theme_dev_tools = theme_dev_tools
+        self.embedded = embedded
+        self.show_undo_redo = show_undo_redo
+        self.use_mobile_viewport = use_mobile_viewport
+
+
+    def _perform_layout(self):
         import dash_design_kit as ddk
 
         # No callbacks here. Must be constant or idempotent
@@ -40,14 +59,14 @@ class BaseDDKLayout(ComponentLayout):
         return layout_component, "label"
 
 
-class DdkCardLayout(ComponentLayout):
-    def __init__(self, app, width=None, height=None, **kwargs):
-        super().__init__(app, **kwargs)
+class DdkCardLayout(BaseDDKLayout):
+    def __init__(self, app=None, title=None, width=None, height=None, **kwargs):
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.width = width
         self.height = height
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
         import dash_design_kit as ddk
 
         # No callbacks here. Must be constant or idempotent
@@ -72,19 +91,20 @@ class DdkCardLayout(ComponentLayout):
         return layout
 
 
-class DdkRowLayout(ComponentLayout):
-    def __init__(self, app, input_width=None, **kwargs):
-        super().__init__(app, **kwargs)
+class DdkRowLayout(BaseDDKLayout):
+    def __init__(self, app=None, title=None, input_width=30, **kwargs):
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.input_width = input_width
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
         import dash_design_kit as ddk
 
         # Input card
         input_card = ddk.ControlCard(
             children=self._components['input'],
-            **filter_kwargs(width=self.input_width),
+            width=self.input_width,
+            # **filter_kwargs(width=self.input_width),
         )
 
         output_card_children = []
@@ -92,22 +112,27 @@ class DdkRowLayout(ComponentLayout):
             output_card_children.append(ddk.CardHeader(title=self.title))
         output_card_children.extend(self._components['output'])
 
-        output_card = ddk.Card(children=output_card_children)
+        output_card = ddk.Card(
+            children=output_card_children,
+            width=100 - self.input_width,
+            # width=80
+        )
 
-        layout = ddk.Row([
+        row_children = [
             input_card, output_card
-        ])
+        ]
+        layout = ddk.Row(row_children)
 
         return layout
 
 
-class DdkSidebarLayout(ComponentLayout):
-    def __init__(self, app, sidebar_width="300px", **kwargs):
-        super().__init__(app, **kwargs)
+class DdkSidebarLayout(BaseDDKLayout):
+    def __init__(self, app=None, title=None, sidebar_width="300px", **kwargs):
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.sidebar_width = sidebar_width
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
         import dash_design_kit as ddk
 
         children = []
@@ -129,8 +154,6 @@ class DdkSidebarLayout(ComponentLayout):
         children.append(sidebar)
 
         output_card_children = []
-        if self.title is not None:
-            output_card_children.append(ddk.CardHeader(title=self.title))
         output_card_children.extend(self._components['output'])
 
         output_card = ddk.Card(children=output_card_children)
@@ -139,3 +162,17 @@ class DdkSidebarLayout(ComponentLayout):
         children.append(sidebar_companion)
 
         return children
+
+    def _app_wrapper(self, layout):
+        import dash_design_kit as ddk
+        return ddk.App(
+            children=layout,
+            **filter_kwargs(
+                theme=self.theme,
+                show_editor=self.show_editor,
+                theme_dev_tools=self.theme_dev_tools,
+                embedded=self.embedded,
+                show_undo_redo=self.show_undo_redo,
+                use_mobile_viewport=self.use_mobile_viewport,
+            )
+        )

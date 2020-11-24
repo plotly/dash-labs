@@ -3,16 +3,21 @@ from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 from dash_express.layouts.util import build_id, filter_kwargs
+import dash
 
 
 class ComponentLayout:
-    def __init__(self, app, fn=None, title=None, **kwargs):
+    def __init__(self, app=None, name=None, fn=None, set_layout=True, **kwargs):
         self._components = dict(input=[], output=[])
-        self.app = app
-        self.title = title
+
+        if app is None:
+            self.app = dash.Dash(name=name)
+        else:
+            self.app = app
 
         # Assign function if instance is acting as a function wrapper
         self.fn = fn
+        self.set_layout = set_layout
 
     @property
     def fn(self):
@@ -23,6 +28,9 @@ class ComponentLayout:
         self._fn = val
         if val is not None:
             update_wrapper(self, val)
+
+    def run_server(self, *args, **kwargs):
+        self.app.run_server(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         if self.fn:
@@ -42,7 +50,7 @@ class ComponentLayout:
         if label:
             if "{value" in label:
                 # Callback to update label
-                initial_value = label.format(value=component.value)
+                initial_value = label.format(value=getattr(component, "value", ""))
                 dynamic_label = True
             else:
                 initial_value = label
@@ -62,6 +70,9 @@ class ComponentLayout:
             layout_component = component
 
         self._components[kind].append(layout_component)
+
+        if self.set_layout:
+            self.app.layout = self.layout()
 
     # Methods designed to be overridden by subclasses
     def add_dropdown(self, options, id=None, kind="input", **kwargs):
@@ -106,9 +117,18 @@ class ComponentLayout:
     #         figure=figure
     #     )
 
-    @property
-    def layout(self):
+    def layout(self, full=True, assign=True):
+        layout = self._perform_layout()
+        if full:
+            layout = self._app_wrapper(layout)
+
+        return layout
+
+    def _perform_layout(self):
         raise NotImplementedError
+
+    def _app_wrapper(self, layout):
+        return layout
 
     def build_labeled_input(self, component, label_id, initial_value):
         # Subclass could use bootstrap or ddk

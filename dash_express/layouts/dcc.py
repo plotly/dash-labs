@@ -4,12 +4,11 @@ import dash_html_components as html
 
 class DccCardLayout(ComponentLayout):
 
-    def __init__(self, app, width=None, **kwargs):
-        super().__init__(app, **kwargs)
+    def __init__(self, app=None, width=None, **kwargs):
+        super().__init__(app=app, **kwargs)
         self.width = width
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
         # No callbacks here. Must be constant or idempotent
         children = []
         if self.title:

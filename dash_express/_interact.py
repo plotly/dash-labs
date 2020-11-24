@@ -1,11 +1,16 @@
 import inspect
 from dash.dependencies import Input, Output
-import dash_core_components as dcc
 import dash_html_components as html
+
+from layouts.dbc import DbcSidebarLayout
 from .layouts.util import build_id
+from dash.development.base_component import Component
 
 
-def interact(component_layout, labels=None):
+def interact(component_layout=None, labels=None):
+    if component_layout is None:
+        component_layout = DbcSidebarLayout(title="Dash Express App")
+
     if labels is None:
         labels = {}
 
@@ -26,6 +31,12 @@ def interact(component_layout, labels=None):
             prop_name = "value"
             label = labels.get(arg, arg)
             component_id = build_id(prefix=arg)
+
+            # Expand tuple of (component, prop_name)
+            if (isinstance(pattern, tuple) and
+                    len(pattern) == 2 and
+                    isinstance(pattern[0], Component)):
+                pattern, prop_name = pattern
 
             if isinstance(pattern, list):
                 options = pattern
@@ -48,6 +59,12 @@ def interact(component_layout, labels=None):
                 component_layout.add_input(
                     initial_value=pattern, id=component_id, label=label
                 )
+            elif isinstance(pattern, Component):
+                if not getattr(pattern, "id", None):
+                    pattern.id = component_id
+                else:
+                    component_id = pattern.id
+                component_layout.add_component(pattern, kind="input", label=label)
             else:
                 raise Exception("unknown pattern for " + arg)
 

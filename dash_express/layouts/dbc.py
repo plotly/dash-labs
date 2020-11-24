@@ -1,22 +1,23 @@
 from dash_express.layouts.component_layout import ComponentLayout
 import dash_html_components as html
 from .util import build_id, filter_kwargs
-import dash_bootstrap_components as dbc
+
 
 
 class BaseDbcLayout(ComponentLayout):
 
-    def __init__(self, app, *args, **kwargs):
-        super().__init__(app, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        import dash_bootstrap_components as dbc
+        super().__init__(*args, **kwargs)
 
         # Check if there are any bootstrap css themes already added
         add_theme = True
-        for url in app.config.external_stylesheets:
+        for url in self.app.config.external_stylesheets:
             if "bootstrapcdn" in url:
                 add_theme = False
                 break
         if add_theme:
-            app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
+            self.app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
 
     # Methods designed to be overridden by subclasses
     def add_dropdown(self, options, id=None, kind="input", **kwargs):
@@ -48,7 +49,12 @@ class BaseDbcLayout(ComponentLayout):
 
     def build_labeled_input(self, component, label_id, initial_value):
         import dash_bootstrap_components as dbc
-        # Subclass could use bootstrap or ddk
+
+        # Make sure component has block display so label is displayed above input
+        # component
+        style = getattr(component, "style", {})
+        style["display"] = "block"
+        component.style = style
         layout_component = dbc.FormGroup(
             children=[
                 dbc.Label(id=label_id, children=initial_value),
@@ -59,14 +65,14 @@ class BaseDbcLayout(ComponentLayout):
 
 
 class DbcCardLayout(BaseDbcLayout):
-    def __init__(self, app, columns=12, min_width=400, height=None, **kwargs):
-        super().__init__(app, **kwargs)
+    def __init__(self, app=None, title=None, columns=12, min_width=400, height=None, **kwargs):
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.columns = columns
         self.height = height
         self.min_width = min_width
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
         import dash_bootstrap_components as dbc
 
         # No callbacks here. Must be constant or idempotent
@@ -105,15 +111,16 @@ class DbcCardLayout(BaseDbcLayout):
 
 class DbcRowLayout(BaseDbcLayout):
     def __init__(
-            self, app, row_height=None, input_cols=4, min_input_width="300px", **kwargs
+            self, app=None, title=None, row_height=None, input_cols=4, min_input_width="300px", **kwargs
     ):
-        super().__init__(app, **kwargs)
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.row_height = row_height
         self.input_cols = input_cols
         self.min_input_width = min_input_width
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
+        import dash_bootstrap_components as dbc
         output_card_children = []
         if self.title:
             output_card_children.append(dbc.CardHeader(self.title))
@@ -149,13 +156,14 @@ class DbcRowLayout(BaseDbcLayout):
 
 class DbcSidebarLayout(BaseDbcLayout):
     def __init__(
-            self, app, sidebar_columns=4, **kwargs
+            self, app=None, title=None, sidebar_columns=4, **kwargs
     ):
-        super().__init__(app, **kwargs)
+        super().__init__(app=app, **kwargs)
+        self.title = title
         self.sidebar_columns = sidebar_columns
 
-    @property
-    def layout(self):
+    def _perform_layout(self):
+        import dash_bootstrap_components as dbc
         children = []
 
         if self.title:
@@ -169,26 +177,28 @@ class DbcSidebarLayout(BaseDbcLayout):
 
         sidebar_card_style = {"border-radius": 0}
 
-        children.append(
-            dbc.Row(
-                align="center",
-                children=[
-                    dbc.Col(
-                        children=dbc.Card(
-                            children=self._components['input'],
-                            body=True,
-                        ),
-                        style=sidebar_card_style,
-                        **filter_kwargs(md=self.sidebar_columns),
+        row = dbc.Row(
+            align="center",
+            children=[
+                dbc.Col(
+                    children=dbc.Card(
+                        children=self._components['input'],
+                        body=True,
                     ),
-                    dbc.Col(
-                        children=self._components['output'],
-                        style={
-                            # "margin-top": 20,
-                            "padding": "1.25rem"
-                        },
-                    )
-                ]
-            )
+                    style=sidebar_card_style,
+                    **filter_kwargs(md=self.sidebar_columns),
+                ),
+                dbc.Col(
+                    children=self._components['output'],
+                    style={
+                        "padding": "1.25rem"
+                    },
+                )
+            ]
         )
-        return dbc.Container(children, fluid=True)
+        children.append(row)
+        return children
+
+    def _app_wrapper(self, layout):
+        import dash_bootstrap_components as dbc
+        return dbc.Container(layout, fluid=True)
