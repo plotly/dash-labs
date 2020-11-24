@@ -2,8 +2,8 @@ import inspect
 from dash.dependencies import Input, Output
 import dash_html_components as html
 
-from layouts.dbc import DbcSidebarLayout
-from .layouts.util import build_id
+from dash_express.layouts.dbc import DbcSidebarLayout
+from dash_express.layouts.util import build_id
 from dash.development.base_component import Component
 
 
