@@ -42,7 +42,7 @@ class ComponentLayout:
         # Validate / infer input_like and output_like
         if kind is None:
             # Default kind to output for graphs, and input for everythig else
-            if component.__class__.name == "Graph":
+            if component.__class__.__name__ == "Graph":
                 kind = "output"
             else:
                 kind = "input"
@@ -75,7 +75,7 @@ class ComponentLayout:
             self.app.layout = self.layout()
 
     # Methods designed to be overridden by subclasses
-    def add_dropdown(self, options, id=None, kind="input", **kwargs):
+    def add_dropdown(self, options, value=None, id=None, kind="input", **kwargs):
         # Bootstrap dbc.Select
         if not options:
             raise ValueError("Options may not be empty")
@@ -83,30 +83,40 @@ class ComponentLayout:
         if isinstance(options[0], str):
             options = [{"label": opt, "value": opt} for opt in options]
 
+        print("dropdown value", value)
         component = dcc.Dropdown(
             id=build_id(id, "dropdown"),
             options=options,
             clearable=False,
-            value=options[0]["value"]
+            value=value if value is not None else options[0]["value"]
         )
         self.add_component(component, kind=kind, **kwargs)
         return component
 
-    def add_slider(self, min, max, step=None, id=None, kind="input", **kwargs):
+    def add_slider(self, min, max, step=None, value=None, id=None, kind="input", **kwargs):
         component = dcc.Slider(
             id=build_id(id, "slider"),
             min=min,
             max=max,
-            value=min,
+            value=value if value is not None else min,
             **filter_kwargs(step=step)
         )
         self.add_component(component, kind=kind, **kwargs)
         return component
 
-    def add_input(self, initial_value=None, id=None, kind="input", **kwargs):
+    def add_input(self, value=None, id=None, kind="input", **kwargs):
         component = dcc.Input(
             id=build_id(id, "input"),
-            value=initial_value,
+            value=value,
+        )
+        self.add_component(component, kind=kind, **kwargs)
+        return component
+
+    def add_checklist(self, options, value=None, id=None, kind="input", **kwargs):
+        component = dcc.Checklist(
+            id=id,
+            options=options,
+            value=value if value is not None else options[0]["value"]
         )
         self.add_component(component, kind=kind, **kwargs)
         return component
