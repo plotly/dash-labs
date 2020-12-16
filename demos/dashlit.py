@@ -32,9 +32,6 @@ class ST:
 
         self.component_values = component_values
 
-    def write(self, content):
-        self.output.append(dcc.Markdown(content))
-
     def _get_next_index_and_value(self, typ, default):
         component_ind = self.indexes.get(typ, 0)
         if component_ind < len(self.component_values.get(typ, [])):
@@ -46,6 +43,9 @@ class ST:
         self.indexes[typ] = component_ind + 1
 
         return component_ind, component_value
+
+    def write(self, content):
+        self.output.append(dcc.Markdown(content))
 
     def checkbox(self, label):
         component_ind, component_value = self._get_next_index_and_value("checkbox", [])
@@ -84,5 +84,24 @@ def st_callback(app):
             inputs_list = dash.callback_context.inputs_list
             st = ST(inputs_list)
             fn(st)
+            return st.layout
+    return decorator
+
+
+# Could this layout approach be used for interact?
+#
+def interact(app, ST):
+    app.layout = html.Div(id="output-div")
+    def decorator(fn):
+        @app.callback(
+            ST.callback_outputs(),
+            ST.callback_inputs(),
+        )
+        def dash_callback(_):
+            inputs_list = dash.callback_context.inputs_list
+            st = ST(inputs_list)
+            val = st.checkbox()
+            st.add_component()
+            st.add_dropdown()
             return st.layout
     return decorator

@@ -12,7 +12,7 @@ import plotly.express as px
         "figure_title": "Figure Title",
         "phase": "Phase: {value}",
         "amplitude": "Amplitude: {value}"
-    }
+    },
 )
 def greet(
         fun=["sin", "cos", "exp"],
