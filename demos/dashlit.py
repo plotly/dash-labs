@@ -11,17 +11,18 @@ class ST:
 
     @classmethod
     def callback_inputs(cls):
-        return [Input({"type": ALL, "index": ALL}, "value")]
+        return [Input({"kind": ALL, "index": ALL}, "value")]
 
-    def __init__(self, inputs_list):
+    def __init__(self, inputs_list, template_instance):
         self.output = []
         self.inputs_list = inputs_list
+        self.template_instance = template_instance
         self.indexes = {}
         self.init_component_values()
 
     def init_component_values(self):
         indexes = [e["id"]["index"] for e in self.inputs_list[0]]
-        types = [e["id"]["type"] for e in self.inputs_list[0]]
+        types = [e["id"]["kind"] for e in self.inputs_list[0]]
         values = [e["value"] for e in self.inputs_list[0]]
         sorted_tuples = sorted(zip(indexes, types, values), key=lambda e: e[0])
 
@@ -33,7 +34,8 @@ class ST:
         self.component_values = component_values
 
     def write(self, content):
-        self.output.append(dcc.Markdown(content))
+        self.template_instance.add_component(dcc.Markdown(content))
+        # self.output.append(dcc.Markdown(content))
 
     def _get_next_index_and_value(self, typ, default):
         component_ind = self.indexes.get(typ, 0)
@@ -49,11 +51,13 @@ class ST:
 
     def checkbox(self, label):
         component_ind, component_value = self._get_next_index_and_value("checkbox", [])
-        self.output.append(dcc.Checklist(
-            id={"type": "checkbox", "index": component_ind},
+        checkbox = dcc.Checklist(
+            id={"kind": "checkbox", "index": component_ind},
             options=[{"label": label, "value": label}],
             value=component_value
-        ))
+        )
+        self.template_instance.add_component(checkbox)
+        # self.output.append(checkbox)
         return bool(component_value)
 
     def dropdown(self, options):
@@ -61,28 +65,41 @@ class ST:
             options = [{"label": opt, "value": opt} for opt in options]
 
         component_ind, component_value = self._get_next_index_and_value("dropdown", options[0]["value"])
-        self.output.append(dcc.Dropdown(
-            id={"type": "dropdown", "index": component_ind},
+        dropdown = dcc.Dropdown(
+            id={"kind": "dropdown", "index": component_ind},
             options=options,
             value=component_value,
-        ))
+        )
+
+        self.template_instance.add_component(dropdown)
+        # self.output.append(dropdown)
         return component_value
 
     @property
     def layout(self):
-        return [self.output]
+        return [self.template_instance.layout]
+        # return [self.output]
 
 
-def st_callback(app):
-    app.layout = html.Div(id="output-div")
-    def decorator(fn):
-        @app.callback(
-            ST.callback_outputs(),
-            ST.callback_inputs(),
-        )
-        def dash_callback(_):
-            inputs_list = dash.callback_context.inputs_list
-            st = ST(inputs_list)
-            fn(st)
-            return st.layout
-    return decorator
+def st_callback(app, fn, template=None):
+    # Let template class configure app
+    template.configure_app(app)
+
+    # Build template instance
+    template_instance = template.instance()
+
+    output = html.Div(id="output-div")
+    template_instance.add_component(output, role="output")
+
+    @app.callback(
+        ST.callback_outputs(),
+        ST.callback_inputs(),
+    )
+    def dash_callback(_):
+        inputs_list = dash.callback_context.inputs_list
+        template_instance = template.instance()
+        st = ST(inputs_list, template_instance)
+        fn(st)
+        return st.layout
+
+    return template_instance.layout

@@ -16,22 +16,30 @@ feature_options = [
     {"label": label, "value": col} for col, label in zip(feature_cols, feature_labels)
 ]
 
-# Build app
+# Build app and template
 app = dash.Dash(__name__)
+template = dx.templates.DbcSidebar(title="Iris Features")
+
 
 # Use interact to create components
-@dx.interact(
-    dx.layouts.dbc.DbcSidebarLayout(app, title="Iris Features")
-)
-def iris(
-        x=dbc.Select(id="x-variable", options=feature_options, value="sepal_length"),
-        y=dbc.Select(id="y-variable", options=feature_options, value="sepal_width")
-):
-    return dcc.Graph(
+def iris(x, y):
+    return template.build_graph(
         figure=px.scatter(df, x=x, y=y, color="species"),
     )
 
-app.layout = iris.layout()
+
+layout = dx.parameterize(
+    app,
+    iris,
+    params=dict(
+        x=dbc.Select(options=feature_options, value="sepal_length"),
+        y=dbc.Select(options=feature_options, value="sepal_width")
+    ),
+    template=template,
+)
+
+
+app.layout = layout
 
 
 # make sure that x and y values can't be the same variable
@@ -42,14 +50,15 @@ def filter_options(v):
         for col, label in zip(feature_cols, feature_labels)
     ]
 
-# functionality is the same for both dropdowns, so we reuse filter_options
-app.callback(Output("x-variable", "options"), [Input("y-variable", "value")])(
-    filter_options
-)
-
-app.callback(Output("y-variable", "options"), [Input("x-variable", "value")])(
-    filter_options
-)
+# TODO: dx.select to get sliders
+# # functionality is the same for both dropdowns, so we reuse filter_options
+# app.callback(Output("x-variable", "options"), [Input("y-variable", "value")])(
+#     filter_options
+# )
+#
+# app.callback(Output("y-variable", "options"), [Input("x-variable", "value")])(
+#     filter_options
+# )
 
 
 if __name__ == "__main__":

@@ -1,2 +1,2 @@
-from ._interact import interact
-import dash_express.layouts
+from ._parameterize import parameterize
+import dash_express.templates

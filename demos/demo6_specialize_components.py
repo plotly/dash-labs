@@ -6,16 +6,21 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 
 
-@dx.interact(
-    dx.layouts.dbc.DbcSidebarLayout(title="Dash Express App"),
-    labels={
-        "fun": "Function",
-        "figure_title": "Figure Title",
-        "phase": "Phase: {value}",
-        "amplitude": "Amplitude: {value}"
-    }
-)
-def greet(
+app = dash.Dash(__name__)
+template = dx.templates.DbcSidebar(title="Dash Express App")
+
+# Function to parameterize
+def greet(fun, figure_title, phase, amplitude):
+    xs = np.linspace(-10, 10, 100)
+    return template.build_graph(figure=px.line(
+        x=xs, y=getattr(np, fun)(xs + phase) * float(amplitude)
+    ).update_layout(title_text=figure_title))
+
+
+layout = dx.parameterize(
+    app,
+    greet,
+    params=dict(
         fun=["sin", "cos", "exp"],
 
         # Style input using bootstrap classes
@@ -29,12 +34,17 @@ def greet(
             options=[{"label": i, "value": i} for i in range(1, 10)],
             value=4,
         ),
-):
-    print(amplitude, type(amplitude))
-    xs = np.linspace(-10, 10, 100)
-    return dcc.Graph(figure=px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * float(amplitude)
-    ).update_layout(title_text=figure_title))
+    ),
+    template=template,
+    labels={
+        "fun": "Function",
+        "figure_title": "Figure Title",
+        "phase": "Phase: {value}",
+        "amplitude": "Amplitude: {value}"
+    }
+)
+
+app.layout = layout
 
 if __name__ == "__main__":
-    greet.run_server(debug=True, port=9006)
+    app.run_server(debug=True, port=9006)

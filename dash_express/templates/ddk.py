@@ -1,13 +1,12 @@
-from dash_express.layouts.component_layout import ComponentLayout
+from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
 import dash_html_components as html
 
-from dash_express.layouts.util import filter_kwargs
+from dash_express.templates.util import filter_kwargs
 
 
-class BaseDDKLayout(ComponentLayout):
+class BaseDDKTemplate(BaseTemplate):
     def __init__(
             self,
-            app=None,
             theme=None,
             show_editor=None,
             theme_dev_tools=None,
@@ -16,7 +15,7 @@ class BaseDDKLayout(ComponentLayout):
             use_mobile_viewport=None,
             **kwargs,
     ):
-        super(BaseDDKLayout, self).__init__(app=app, **kwargs)
+        super(BaseDDKTemplate, self).__init__(**kwargs)
         self.theme = theme
         self.show_editor = show_editor
         self.theme_dev_tools = theme_dev_tools
@@ -24,32 +23,8 @@ class BaseDDKLayout(ComponentLayout):
         self.show_undo_redo = show_undo_redo
         self.use_mobile_viewport = use_mobile_viewport
 
-
-    def _perform_layout(self):
-        import dash_design_kit as ddk
-
-        # No callbacks here. Must be constant or idempotent
-        card_children = []
-        if self.title:
-            card_children.append(ddk.CardHeader(title=self.title))
-
-        card_children.append(html.Div(
-            style={"padding": 20},
-            children=html.Div(self._components['output'])
-        ))
-        card_children.append(html.Hr(
-            style={"width": "100%", "margin": "auto"}
-        ))
-        card_children.extend(self._components['input'])
-
-        layout = ddk.ControlCard(
-            width=self.width,
-            children=card_children
-        )
-
-        return layout
-
-    def build_labeled_input(self, component, label_id, initial_value):
+    @classmethod
+    def build_labeled_component(cls, component, label_id, initial_value):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
@@ -58,8 +33,13 @@ class BaseDDKLayout(ComponentLayout):
         )
         return layout_component, "label"
 
+    @classmethod
+    def build_graph(cls, figure, **kwargs):
+        import dash_design_kit as ddk
+        return ddk.Graph(figure=figure, **filter_kwargs(**kwargs))
 
-class DdkCardLayout(BaseDDKLayout):
+
+class DdkCardTemplate(BaseDDKTemplate):
     def __init__(self, app=None, title=None, width=None, height=None, **kwargs):
         super().__init__(app=app, **kwargs)
         self.title = title
@@ -91,7 +71,7 @@ class DdkCardLayout(BaseDDKLayout):
         return layout
 
 
-class DdkRowLayout(BaseDDKLayout):
+class DdkRowTemplate(BaseDDKTemplate):
     def __init__(self, app=None, title=None, input_width=30, **kwargs):
         super().__init__(app=app, **kwargs)
         self.title = title
@@ -126,9 +106,9 @@ class DdkRowLayout(BaseDDKLayout):
         return layout
 
 
-class DdkSidebarLayout(BaseDDKLayout):
-    def __init__(self, app=None, title=None, sidebar_width="300px", **kwargs):
-        super().__init__(app=app, **kwargs)
+class DdkSidebarTemplate(BaseDDKTemplate):
+    def __init__(self, title=None, sidebar_width="300px", **kwargs):
+        super().__init__(**kwargs)
         self.title = title
         self.sidebar_width = sidebar_width
 
@@ -175,4 +155,51 @@ class DdkSidebarLayout(BaseDDKLayout):
                 show_undo_redo=self.show_undo_redo,
                 use_mobile_viewport=self.use_mobile_viewport,
             )
+        )
+
+
+class BaseDdkTemplateBuilder(BaseTemplateBuilder):
+    _label_value_prop = "label"
+
+
+class DdkCard(BaseDdkTemplateBuilder):
+    _template_cls = DdkCardTemplate
+
+    def __init__(self, title=None, width=None, height=None, **kwargs):
+        """
+        TODO: User docstring here
+        """
+        super().__init__(
+            title=title, width=width, height=height, **kwargs
+        )
+
+
+class DdkRow(BaseDdkTemplateBuilder):
+    _template_cls = DdkRowTemplate
+
+    def __init__(self, title=None, input_width=30, **kwargs):
+        """
+        TODO: User docstring here
+        Also the common DDK options:
+            theme=None,
+            show_editor=None,
+            theme_dev_tools=None,
+            embedded=None,
+            show_undo_redo=None,
+            use_mobile_viewport=None,
+        """
+        super().__init__(
+            title=title, input_width=input_width, **kwargs
+        )
+
+
+class DdkSidebar(BaseDdkTemplateBuilder):
+    _template_cls = DdkSidebarTemplate
+
+    def __init__(self, title=None, sidebar_width="300px", **kwargs):
+        """
+        TODO: User docstring here
+        """
+        super().__init__(
+            title=title, sidebar_width=sidebar_width, **kwargs
         )

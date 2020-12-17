@@ -1,11 +1,12 @@
-from dash_express.layouts.component_layout import ComponentLayout
+from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
 import dash_html_components as html
 
 
-class DccCardLayout(ComponentLayout):
+class DccCardTemplate(BaseTemplate):
 
-    def __init__(self, app=None, width=None, **kwargs):
-        super().__init__(app=app, **kwargs)
+    def __init__(self, title=None, width=None, **kwargs):
+        super().__init__(**kwargs)
+        self.title = title
         self.width = width
 
     def _perform_layout(self):
@@ -25,3 +26,12 @@ class DccCardLayout(ComponentLayout):
             children=html.Div(children=children)
         )
         return layout
+
+
+class DccCard(BaseTemplateBuilder):
+    _template_cls = DccCardTemplate
+
+    def __init__(self, title=None, width=None, **kwargs):
+        super().__init__(
+            title=title, width=width, **kwargs
+        )
