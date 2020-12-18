@@ -3,6 +3,8 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, ALL
 
+from templates.div import FlatDiv
+
 
 class ST:
     def __init__(self, inputs_list, template_instance):
@@ -62,6 +64,9 @@ class ST:
 
 
 def st_callback(app, fn, template=None):
+    if template is None:
+        template = FlatDiv()
+
     # Let template class configure app
     template.configure_app(app)
 

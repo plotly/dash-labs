@@ -2,14 +2,14 @@ import inspect
 from dash.dependencies import Input, Output
 import dash_html_components as html
 
-from dash_express.templates.dbc import DbcSidebar
+from dash_express.templates.div import FlatDiv
 from dash_express.templates.util import build_id, build_component_id
 from dash.development.base_component import Component
 
 
 def parameterize(app, fn, params, template=None, labels=None):
     if template is None:
-        template = DbcSidebar(title="Dash Express App")
+        template = FlatDiv()
 
     if labels is None:
         labels = {}

@@ -1,7 +1,6 @@
 import dash
 import dash_express as dx
 import numpy as np
-import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__)

@@ -5,7 +5,6 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__)
-template = dx.templates.DbcSidebar(title="My Dash Express App")
 
 
 def greet(fun, figure_title, phase, amplitude):
@@ -18,8 +17,10 @@ def greet(fun, figure_title, phase, amplitude):
 layout = dx.parameterize(
     app,
     greet,
-    params=dict(fun=["sin", "cos", "exp"], figure_title="", phase=(1, 10), amplitude=(1, 10)),
-    template=template,
+    params=dict(
+        fun=["sin", "cos", "exp"], figure_title="Initial Title",
+        phase=(1, 10), amplitude=(1, 10)
+    ),
 )
 
 app.layout = layout

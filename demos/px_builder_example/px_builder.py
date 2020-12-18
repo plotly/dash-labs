@@ -6,6 +6,7 @@ from dash.dependencies import Input, Output, ALL
 import dash_html_components as html
 import plotly.express as px
 
+from templates.div import FlatDiv
 
 plot_encodings = dict(
     scatter=["x", "y", "color", "symbol", "size"],
@@ -18,8 +19,9 @@ plot_encodings = dict(
 )
 
 
-def px_builder(app, df, template: BaseTemplate):
-    # Let template class configure app
+def px_builder(app, df, template=None):
+    if template is None:
+        template = FlatDiv()
 
     # Configure app
     template.configure_app(app)
@@ -61,7 +63,8 @@ def px_builder(app, df, template: BaseTemplate):
             val = prior_values.get(key, default) or None
             plot_kwargs[key] = val
             template_instance.add_dropdown(
-                options=columns, value=val, label=key, name=key, role="input", clearable=clearable,
+                options=columns, value=val, label=key,
+                name=key, role="input", clearable=clearable,
             )
 
         # Build output graph
