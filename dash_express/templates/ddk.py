@@ -1,7 +1,7 @@
 from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
 import dash_html_components as html
 
-from dash_express.templates.util import filter_kwargs
+from dash_express.templates.util import filter_kwargs, build_component_id
 
 
 class BaseDDKTemplate(BaseTemplate):
@@ -34,14 +34,32 @@ class BaseDDKTemplate(BaseTemplate):
         return layout_component, "label"
 
     @classmethod
-    def build_graph(cls, figure, **kwargs):
+    def build_graph(cls, figure, index=None, **kwargs):
         import dash_design_kit as ddk
-        return ddk.Graph(figure=figure, **filter_kwargs(**kwargs))
+        return ddk.Graph(
+            id=build_component_id(kind="graph", index=index),
+            figure=figure,
+            **filter_kwargs(**kwargs)
+        )
+
+    def _app_wrapper(self, layout):
+        import dash_design_kit as ddk
+        return ddk.App(
+            children=layout,
+            **filter_kwargs(
+                theme=self.theme,
+                show_editor=self.show_editor,
+                theme_dev_tools=self.theme_dev_tools,
+                embedded=self.embedded,
+                show_undo_redo=self.show_undo_redo,
+                use_mobile_viewport=self.use_mobile_viewport,
+            )
+        )
 
 
 class DdkCardTemplate(BaseDDKTemplate):
-    def __init__(self, app=None, title=None, width=None, height=None, **kwargs):
-        super().__init__(app=app, **kwargs)
+    def __init__(self, title=None, width=None, height=None, **kwargs):
+        super().__init__(**kwargs)
         self.title = title
         self.width = width
         self.height = height
@@ -72,8 +90,8 @@ class DdkCardTemplate(BaseDDKTemplate):
 
 
 class DdkRowTemplate(BaseDDKTemplate):
-    def __init__(self, app=None, title=None, input_width=30, **kwargs):
-        super().__init__(app=app, **kwargs)
+    def __init__(self, title=None, input_width=30, **kwargs):
+        super().__init__(**kwargs)
         self.title = title
         self.input_width = input_width
 
@@ -142,20 +160,6 @@ class DdkSidebarTemplate(BaseDDKTemplate):
         children.append(sidebar_companion)
 
         return children
-
-    def _app_wrapper(self, layout):
-        import dash_design_kit as ddk
-        return ddk.App(
-            children=layout,
-            **filter_kwargs(
-                theme=self.theme,
-                show_editor=self.show_editor,
-                theme_dev_tools=self.theme_dev_tools,
-                embedded=self.embedded,
-                show_undo_redo=self.show_undo_redo,
-                use_mobile_viewport=self.use_mobile_viewport,
-            )
-        )
 
 
 class BaseDdkTemplateBuilder(BaseTemplateBuilder):

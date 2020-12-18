@@ -3,7 +3,7 @@ from dash.dependencies import Input, Output
 import dash_html_components as html
 
 from dash_express.templates.dbc import DbcSidebar
-from dash_express.templates.util import build_id
+from dash_express.templates.util import build_id, build_component_id
 from dash.development.base_component import Component
 
 
@@ -58,7 +58,7 @@ def parameterize(app, fn, params, template=None, labels=None):
             ).id
         elif isinstance(pattern, Component):
             # Overwrite id
-            component_id = build_id(kind="component")
+            component_id = build_component_id(kind="component")
             pattern.id = component_id
             template_instance.add_component(pattern, role="input", label=label)
         else:

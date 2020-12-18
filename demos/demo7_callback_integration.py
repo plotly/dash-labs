@@ -18,7 +18,8 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__)
-template = dx.templates.DbcSidebar(title="Iris Features")
+# template = dx.templates.DbcSidebar(title="Iris Features")
+template = dx.templates.DdkSidebar(title="Iris Features")
 
 
 # Use interact to create components

@@ -1,6 +1,6 @@
 from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
 import dash_html_components as html
-from .util import build_id, filter_kwargs
+from .util import build_id, filter_kwargs, build_component_id
 
 
 class BaseDbcTemplate(BaseTemplate):
@@ -9,7 +9,7 @@ class BaseDbcTemplate(BaseTemplate):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, **kwargs):
+    def build_dropdown(cls, options, value=None, index=None, **kwargs):
         import dash_bootstrap_components as dbc
 
         if not options:
@@ -19,18 +19,31 @@ class BaseDbcTemplate(BaseTemplate):
             options = [{"label": opt, "value": opt} for opt in options]
 
         return dbc.Select(
-            id=build_id(kind="dropdown"),
+            id=build_component_id(kind="dropdown", index=index),
             options=options,
-            value=options[0]["value"]
+            value=value if value is not None else options[0]["value"],
         )
 
     @classmethod
-    def build_input(cls, value=None, **kwargs):
+    def build_input(cls, value=None, index=None, **kwargs):
         import dash_bootstrap_components as dbc
         return dbc.Input(
-            id=build_id(kind="input"),
+            id=build_component_id(kind="input", index=index),
             value=value,
             **kwargs
+        )
+
+    @classmethod
+    def build_checkbox(cls, option, value=None, index=None, **kwargs):
+        import dash_bootstrap_components as dbc
+        if isinstance(option, str):
+            option = {"label": option, "value": option}
+
+        return dbc.Checklist(
+            id=build_component_id(kind="checkbox", index=index),
+            options=[option],
+            value=value if value is not None else option["value"],
+            **filter_kwargs(**kwargs)
         )
 
     @classmethod

@@ -11,7 +11,10 @@ class ST:
 
     @classmethod
     def callback_inputs(cls):
-        return [Input({"kind": ALL, "index": ALL}, "value")]
+        return [Input(
+            {"id": ALL, "kind": ALL, "index": ALL, "link": ALL, "link_source_prop": ALL},
+            "value"
+        )]
 
     def __init__(self, inputs_list, template_instance):
         self.output = []
@@ -33,8 +36,8 @@ class ST:
 
         self.component_values = component_values
 
-    def write(self, content):
-        self.template_instance.add_component(dcc.Markdown(content))
+    def write(self, content, role=None):
+        self.template_instance.add_component(dcc.Markdown(content), role=role)
         # self.output.append(dcc.Markdown(content))
 
     def _get_next_index_and_value(self, typ, default):
@@ -49,47 +52,51 @@ class ST:
 
         return component_ind, component_value
 
-    def checkbox(self, label):
-        component_ind, component_value = self._get_next_index_and_value("checkbox", [])
-        checkbox = dcc.Checklist(
-            id={"kind": "checkbox", "index": component_ind},
-            options=[{"label": label, "value": label}],
-            value=component_value
-        )
-        self.template_instance.add_component(checkbox)
-        # self.output.append(checkbox)
+    def _get_value_for_index(self, kind, index, default):
+        if index < len(self.component_values.get(kind, [])):
+            component_value = self.component_values[kind][index]
+        else:
+            component_value = default
+
+        return component_value
+
+    def checkbox(self, label, role=None):
+        index = self.template_instance.get_next_index_for_kind("checkbox")
+        component_value = self._get_value_for_index("checkbox", index, [])
+        self.template_instance.add_checkbox(option=label, value=component_value, role=role)
         return bool(component_value)
 
-    def dropdown(self, options):
-        if isinstance(options, list) and options and isinstance(options[0], str):
-            options = [{"label": opt, "value": opt} for opt in options]
+    def dropdown(self, options, role=None):
+        if isinstance(options[0], dict):
+            default = options[0]["value"]
+        else:
+            default = options[0]
 
-        component_ind, component_value = self._get_next_index_and_value("dropdown", options[0]["value"])
-        dropdown = dcc.Dropdown(
-            id={"kind": "dropdown", "index": component_ind},
-            options=options,
-            value=component_value,
-        )
-
-        self.template_instance.add_component(dropdown)
-        # self.output.append(dropdown)
+        index = self.template_instance.get_next_index_for_kind("dropdown")
+        component_value = self._get_value_for_index("dropdown", index, default)
+        self.template_instance.add_dropdown(options=options, value=component_value, role=role)
         return component_value
 
     @property
     def layout(self):
         return [self.template_instance.layout]
-        # return [self.output]
 
 
 def st_callback(app, fn, template=None):
     # Let template class configure app
     template.configure_app(app)
 
+    # Handle wrapping output Div in app wrapper
+    if template.kwargs.get("full", True):
+        full = True
+        template.kwargs["full"] = False
+    else:
+        full = False
+
     # Build template instance
     template_instance = template.instance()
 
     output = html.Div(id="output-div")
-    template_instance.add_component(output, role="output")
 
     @app.callback(
         ST.callback_outputs(),
@@ -102,4 +109,7 @@ def st_callback(app, fn, template=None):
         fn(st)
         return st.layout
 
-    return template_instance.layout
+    if full:
+        output = template_instance._app_wrapper(output)
+
+    return output
