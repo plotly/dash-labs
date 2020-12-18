@@ -38,7 +38,7 @@ def parameterize(app, fn, params, template=None, labels=None):
         if isinstance(pattern, list):
             options = pattern
             component_id = template_instance.add_dropdown(
-                options=options, label=label, name=arg
+                options=options, label=label, name=arg,
             ).id
         elif isinstance(pattern, tuple):
             if len(pattern) == 2:

@@ -5,17 +5,6 @@ from dash.dependencies import Input, Output, ALL
 
 
 class ST:
-    @classmethod
-    def callback_outputs(cls):
-        return Output("output-div", "children"),
-
-    @classmethod
-    def callback_inputs(cls):
-        return [Input(
-            {"id": ALL, "kind": ALL, "name": ALL, "link": ALL, "link_source_prop": ALL},
-            "value"
-        )]
-
     def __init__(self, inputs_list, template_instance):
         self.output = []
         self.inputs_list = inputs_list
@@ -85,8 +74,8 @@ def st_callback(app, fn, template=None):
     output = html.Div(id="output-div")
 
     @app.callback(
-        ST.callback_outputs(),
-        ST.callback_inputs(),
+        Output("output-div", "children"),
+        [template.all_component_ids()],
     )
     def dash_callback(_):
         inputs_list = dash.callback_context.inputs_list
@@ -96,6 +85,6 @@ def st_callback(app, fn, template=None):
         return st.layout
 
     if full:
-        output = template_instance._app_wrapper(output)
+        output = template_instance.maybe_wrap_layout(output)
 
     return output

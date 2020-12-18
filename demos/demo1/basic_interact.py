@@ -14,6 +14,7 @@ def greet(fun, figure_title, phase, amplitude):
         x=xs, y=getattr(np, fun)(xs + phase) * amplitude
     ).update_layout(title_text=figure_title))
 
+
 layout = dx.parameterize(
     app,
     greet,

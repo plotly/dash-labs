@@ -6,7 +6,7 @@ from dash_express.templates.util import build_id, filter_kwargs, build_component
 import dash
 
 
-class BaseTemplate:
+class BaseTemplateInstance:
     def __init__(self, full=True):
         # Maybe this is a TemplateBuilder class with options and a .template()
         # method that build template that has the
@@ -49,23 +49,26 @@ class BaseTemplate:
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, value=None, name=None, **kwargs):
+    def build_dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
         if not options:
             raise ValueError("Options may not be empty")
 
         if isinstance(options[0], str):
             options = [{"label": opt, "value": opt} for opt in options]
 
+        if value is None and clearable is False:
+            value = options[0]["value"]
+
         return dcc.Dropdown(
             id=build_component_id(kind="dropdown", name=name),
             options=options,
-            clearable=False,
-            value=value if value is not None else options[0]["value"],
+            clearable=clearable,
+            value=value,
             **filter_kwargs(**kwargs)
         )
 
-    def add_dropdown(self, options, value=None, role="input", label=None, name=None, **kwargs):
-        component = self.build_dropdown(options, value=value, name=name, **kwargs)
+    def add_dropdown(self, options, value=None, clearable=False, role="input", label=None, name=None, **kwargs):
+        component = self.build_dropdown(options, value=value, clearable=clearable, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
@@ -130,15 +133,13 @@ class BaseTemplate:
     @property
     def layout(self):
         layout = self._perform_layout()
-        if self.full:
-            layout = self._app_wrapper(layout)
-
+        layout = self.maybe_wrap_layout(layout)
         return layout
 
     def _perform_layout(self):
         raise NotImplementedError
 
-    def _app_wrapper(self, layout):
+    def maybe_wrap_layout(self, layout):
         return layout
 
     @classmethod
@@ -157,17 +158,20 @@ class BaseTemplate:
         return layout_component, "children"
 
 
-class BaseTemplateBuilder:
-    _template_cls = BaseTemplate
+class BaseTemplate:
+    _template_instance_cls = BaseTemplateInstance
     _label_value_prop = "children"
 
     @classmethod
     def _configure_label_formatting_callbacks(cls, app):
         # Pattern matching callback for labels with {value} formatting
+        # {'id', 'link', 'kind', 'link_source_prop', 'name'}
+        # {'id', 'kind', 'name', 'link', 'format_string', 'link_source_prop'}
+
         for value_prop in ["value", "children", "date", "data"]:
             @app.callback(
                 Output(
-                    {"id": ALL, "link": MATCH, 'kind': "formatted_label",
+                    {"id": ALL, "link": MATCH, 'kind': "formatted_label", "name": ALL,
                      "format_string": ALL, "link_source_prop": value_prop},
                     cls._label_value_prop
                 ),
@@ -188,32 +192,39 @@ class BaseTemplateBuilder:
         # TODO: use locking to ensure that we only do this once per app.
         cls._configure_label_formatting_callbacks(app)
 
+    @classmethod
+    def all_component_ids(cls):
+        return Input(
+            {"id": ALL, "kind": ALL, "name": ALL, "link": ALL, "link_source_prop": ALL},
+            "value"
+        )
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
     def instance(self, **kwargs):
         combined_kwargs = dict(self.kwargs, **kwargs)
-        return self._template_cls(**combined_kwargs)
+        return self._template_instance_cls(**combined_kwargs)
 
     # Methods designed to be overridden by subclasses
     @classmethod
     def build_dropdown(cls, options, value=None, **kwargs):
-        return cls._template_cls.build_dropdown(options, value=value, **kwargs)
+        return cls._template_instance_cls.build_dropdown(options, value=value, **kwargs)
 
     @classmethod
     def build_slider(cls, min, max, step=None, value=None, **kwargs):
-        return cls._template_cls.build_slider(
+        return cls._template_instance_cls.build_slider(
             min, max, step=step, value=value, **kwargs
         )
 
     @classmethod
     def build_input(cls, value=None, **kwargs):
-        return cls._template_cls.build_input(value=value, **kwargs)
+        return cls._template_instance_cls.build_input(value=value, **kwargs)
 
     @classmethod
     def build_checkbox(cls, options, value=None, **kwargs):
-        return cls._template_cls.build_checkbox(options, value=value, **kwargs)
+        return cls._template_instance_cls.build_checkbox(options, value=value, **kwargs)
 
     @classmethod
     def build_graph(cls, figure, **kwargs):
-        return cls._template_cls.build_graph(figure, **kwargs)
+        return cls._template_instance_cls.build_graph(figure, **kwargs)

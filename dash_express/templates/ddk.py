@@ -1,10 +1,10 @@
-from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
+from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
 import dash_html_components as html
 
 from dash_express.templates.util import filter_kwargs, build_component_id
 
 
-class BaseDDKTemplate(BaseTemplate):
+class BaseDDKTemplateInstance(BaseTemplateInstance):
     def __init__(
             self,
             theme=None,
@@ -15,7 +15,7 @@ class BaseDDKTemplate(BaseTemplate):
             use_mobile_viewport=None,
             **kwargs,
     ):
-        super(BaseDDKTemplate, self).__init__(**kwargs)
+        super(BaseDDKTemplateInstance, self).__init__(**kwargs)
         self.theme = theme
         self.show_editor = show_editor
         self.theme_dev_tools = theme_dev_tools
@@ -42,22 +42,25 @@ class BaseDDKTemplate(BaseTemplate):
             **filter_kwargs(**kwargs)
         )
 
-    def _app_wrapper(self, layout):
+    def maybe_wrap_layout(self, layout):
         import dash_design_kit as ddk
-        return ddk.App(
-            children=layout,
-            **filter_kwargs(
-                theme=self.theme,
-                show_editor=self.show_editor,
-                theme_dev_tools=self.theme_dev_tools,
-                embedded=self.embedded,
-                show_undo_redo=self.show_undo_redo,
-                use_mobile_viewport=self.use_mobile_viewport,
+        if self.full:
+            return ddk.App(
+                children=layout,
+                **filter_kwargs(
+                    theme=self.theme,
+                    show_editor=self.show_editor,
+                    theme_dev_tools=self.theme_dev_tools,
+                    embedded=self.embedded,
+                    show_undo_redo=self.show_undo_redo,
+                    use_mobile_viewport=self.use_mobile_viewport,
+                )
             )
-        )
+        else:
+            return layout
 
 
-class DdkCardTemplate(BaseDDKTemplate):
+class DdkCardTemplateInstance(BaseDDKTemplateInstance):
     def __init__(self, title=None, width=None, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -89,7 +92,7 @@ class DdkCardTemplate(BaseDDKTemplate):
         return layout
 
 
-class DdkRowTemplate(BaseDDKTemplate):
+class DdkRowTemplateInstance(BaseDDKTemplateInstance):
     def __init__(self, title=None, input_width=30, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -124,7 +127,7 @@ class DdkRowTemplate(BaseDDKTemplate):
         return layout
 
 
-class DdkSidebarTemplate(BaseDDKTemplate):
+class DdkSidebarTemplateInstance(BaseDDKTemplateInstance):
     def __init__(self, title=None, sidebar_width="300px", **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -162,12 +165,12 @@ class DdkSidebarTemplate(BaseDDKTemplate):
         return children
 
 
-class BaseDdkTemplateBuilder(BaseTemplateBuilder):
+class BaseDdkTemplate(BaseTemplate):
     _label_value_prop = "label"
 
 
-class DdkCard(BaseDdkTemplateBuilder):
-    _template_cls = DdkCardTemplate
+class DdkCard(BaseDdkTemplate):
+    _template_instance_cls = DdkCardTemplateInstance
 
     def __init__(self, title=None, width=None, height=None, **kwargs):
         """
@@ -178,8 +181,8 @@ class DdkCard(BaseDdkTemplateBuilder):
         )
 
 
-class DdkRow(BaseDdkTemplateBuilder):
-    _template_cls = DdkRowTemplate
+class DdkRow(BaseDdkTemplate):
+    _template_instance_cls = DdkRowTemplateInstance
 
     def __init__(self, title=None, input_width=30, **kwargs):
         """
@@ -197,8 +200,8 @@ class DdkRow(BaseDdkTemplateBuilder):
         )
 
 
-class DdkSidebar(BaseDdkTemplateBuilder):
-    _template_cls = DdkSidebarTemplate
+class DdkSidebar(BaseDdkTemplate):
+    _template_instance_cls = DdkSidebarTemplateInstance
 
     def __init__(self, title=None, sidebar_width="300px", **kwargs):
         """

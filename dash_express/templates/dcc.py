@@ -1,8 +1,8 @@
-from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
+from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
 import dash_html_components as html
 
 
-class DccCardTemplate(BaseTemplate):
+class DccCardTemplateInstance(BaseTemplateInstance):
 
     def __init__(self, title=None, width=None, **kwargs):
         super().__init__(**kwargs)
@@ -28,8 +28,8 @@ class DccCardTemplate(BaseTemplate):
         return layout
 
 
-class DccCard(BaseTemplateBuilder):
-    _template_cls = DccCardTemplate
+class DccCard(BaseTemplate):
+    _template_instance_cls = DccCardTemplateInstance
 
     def __init__(self, title=None, width=None, **kwargs):
         super().__init__(

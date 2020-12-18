@@ -1,15 +1,15 @@
-from dash_express.templates.base import BaseTemplate, BaseTemplateBuilder
+from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
 import dash_html_components as html
 from .util import build_id, filter_kwargs, build_component_id
 
 
-class BaseDbcTemplate(BaseTemplate):
+class BaseDbcTemplateInstance(BaseTemplateInstance):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, value=None, name=None, **kwargs):
+    def build_dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
         import dash_bootstrap_components as dbc
 
         if not options:
@@ -17,11 +17,19 @@ class BaseDbcTemplate(BaseTemplate):
 
         if isinstance(options[0], str):
             options = [{"label": opt, "value": opt} for opt in options]
+        else:
+            options = list(options)
+
+        if clearable:
+            options.insert(0, {"label": "", "value": ""})
+
+        if value is None and clearable is False:
+            value = options[0]["value"]
 
         return dbc.Select(
             id=build_component_id(kind="dropdown", name=name),
             options=options,
-            value=value if value is not None else options[0]["value"],
+            value=value,
         )
 
     @classmethod
@@ -64,7 +72,7 @@ class BaseDbcTemplate(BaseTemplate):
         return layout_component, "children"
 
 
-class DbcCardTemplate(BaseDbcTemplate):
+class DbcCardTemplateInstance(BaseDbcTemplateInstance):
     def __init__(self, title=None, full=True, columns=12, min_width=400, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -110,7 +118,7 @@ class DbcCardTemplate(BaseDbcTemplate):
         )
 
 
-class DbcRowTemplate(BaseDbcTemplate):
+class DbcRowTemplateInstance(BaseDbcTemplateInstance):
     def __init__(
             self, title=None, row_height=None, input_cols=4, min_input_width="300px", **kwargs
     ):
@@ -155,7 +163,7 @@ class DbcRowTemplate(BaseDbcTemplate):
         ])
 
 
-class DbcSidebarTemplate(BaseDbcTemplate):
+class DbcSidebarTemplateInstance(BaseDbcTemplateInstance):
     def __init__(
             self, title=None, sidebar_columns=4, **kwargs
     ):
@@ -200,12 +208,15 @@ class DbcSidebarTemplate(BaseDbcTemplate):
         children.append(row)
         return children
 
-    def _app_wrapper(self, layout):
+    def maybe_wrap_layout(self, layout):
         import dash_bootstrap_components as dbc
-        return dbc.Container(layout, fluid=True)
+        if self.full:
+            return dbc.Container(layout, fluid=True)
+        else:
+            return layout
 
 
-class BaseDbcTemplateBuilder(BaseTemplateBuilder):
+class BaseDbcTemplate(BaseTemplate):
     @classmethod
     def configure_app(cls, app):
         super().configure_app(app)
@@ -220,8 +231,8 @@ class BaseDbcTemplateBuilder(BaseTemplateBuilder):
             app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
 
 
-class DbcCard(BaseDbcTemplateBuilder):
-    _template_cls = DbcCardTemplate
+class DbcCard(BaseDbcTemplate):
+    _template_instance_cls = DbcCardTemplateInstance
 
     def __init__(self, title=None, columns=12, min_width=400, height=None, **kwargs):
         super().__init__(
@@ -229,8 +240,8 @@ class DbcCard(BaseDbcTemplateBuilder):
         )
 
 
-class DbcSidebar(BaseDbcTemplateBuilder):
-    _template_cls = DbcSidebarTemplate
+class DbcSidebar(BaseDbcTemplate):
+    _template_instance_cls = DbcSidebarTemplateInstance
 
     def __init__(self, title=None, sidebar_columns=4, **kwargs):
         super().__init__(
@@ -238,8 +249,8 @@ class DbcSidebar(BaseDbcTemplateBuilder):
         )
 
 
-class DbcRow(BaseDbcTemplateBuilder):
-    _template_cls = DbcRowTemplate
+class DbcRow(BaseDbcTemplate):
+    _template_instance_cls = DbcRowTemplateInstance
 
     def __init__(
             self, title=None, row_height=None, input_cols=4,
