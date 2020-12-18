@@ -12,7 +12,7 @@ class ST:
     @classmethod
     def callback_inputs(cls):
         return [Input(
-            {"id": ALL, "kind": ALL, "index": ALL, "link": ALL, "link_source_prop": ALL},
+            {"id": ALL, "kind": ALL, "name": ALL, "link": ALL, "link_source_prop": ALL},
             "value"
         )]
 
@@ -24,9 +24,10 @@ class ST:
         self.init_component_values()
 
     def init_component_values(self):
-        indexes = [e["id"]["index"] for e in self.inputs_list[0]]
+        indexes = [e["id"]["name"] for e in self.inputs_list[0]]
         types = [e["id"]["kind"] for e in self.inputs_list[0]]
         values = [e["value"] for e in self.inputs_list[0]]
+
         sorted_tuples = sorted(zip(indexes, types, values), key=lambda e: e[0])
 
         component_values = {}
@@ -38,33 +39,23 @@ class ST:
 
     def write(self, content, role=None):
         self.template_instance.add_component(dcc.Markdown(content), role=role)
-        # self.output.append(dcc.Markdown(content))
 
-    def _get_next_index_and_value(self, typ, default):
-        component_ind = self.indexes.get(typ, 0)
-        if component_ind < len(self.component_values.get(typ, [])):
-            component_value = self.component_values[typ][component_ind]
+    def _get_next_index_and_value(self, kind, default):
+        index = self.indexes.get(kind, 0)
+        if index < len(self.component_values.get(kind, [])):
+            value = self.component_values[kind][index]
         else:
-            component_value = default
+            value = default
 
         # Increment index for component type
-        self.indexes[typ] = component_ind + 1
+        self.indexes[kind] = index + 1
 
-        return component_ind, component_value
-
-    def _get_value_for_index(self, kind, index, default):
-        if index < len(self.component_values.get(kind, [])):
-            component_value = self.component_values[kind][index]
-        else:
-            component_value = default
-
-        return component_value
+        return index, value
 
     def checkbox(self, label, role=None):
-        index = self.template_instance.get_next_index_for_kind("checkbox")
-        component_value = self._get_value_for_index("checkbox", index, [])
-        self.template_instance.add_checkbox(option=label, value=component_value, role=role)
-        return bool(component_value)
+        index, value = self._get_next_index_and_value("checkbox", [])
+        self.template_instance.add_checkbox(option=label, value=value, role=role, name=index)
+        return bool(value)
 
     def dropdown(self, options, role=None):
         if isinstance(options[0], dict):
@@ -72,10 +63,9 @@ class ST:
         else:
             default = options[0]
 
-        index = self.template_instance.get_next_index_for_kind("dropdown")
-        component_value = self._get_value_for_index("dropdown", index, default)
-        self.template_instance.add_dropdown(options=options, value=component_value, role=role)
-        return component_value
+        index, value = self._get_next_index_and_value("dropdown", default)
+        self.template_instance.add_dropdown(options=options, value=value, role=role, name=index)
+        return value
 
     @property
     def layout(self):

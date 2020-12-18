@@ -12,10 +12,6 @@ class BaseTemplate:
         # method that build template that has the
         self.full = full
         self._components = dict(input=[], output=[])
-        self.indexes = {}
-
-    def get_next_index_for_kind(self, kind):
-        return self.indexes.get(kind, -1) + 1
 
     def add_component(self, component, role=None, label=None):
         """
@@ -39,7 +35,6 @@ class BaseTemplate:
                 )
                 component.id["link"] = component.id["id"]
                 component.id["link_source_prop"] = "value"
-                component.id["index"] = -1
             else:
                 initial_value = label
                 label_id = build_id(kind="label")
@@ -49,16 +44,11 @@ class BaseTemplate:
         else:
             layout_component = component
 
-        # Update indexes
-        if isinstance(getattr(component, "id", None), dict) and "kind" in component.id:
-            kind = component.id["kind"]
-            self.indexes[kind] = self.get_next_index_for_kind(kind)
-
         self._components[role].append(layout_component)
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, value=None, index=None, **kwargs):
+    def build_dropdown(cls, options, value=None, name=None, **kwargs):
         if not options:
             raise ValueError("Options may not be empty")
 
@@ -66,78 +56,73 @@ class BaseTemplate:
             options = [{"label": opt, "value": opt} for opt in options]
 
         return dcc.Dropdown(
-            id=build_component_id(kind="dropdown", index=index),
+            id=build_component_id(kind="dropdown", name=name),
             options=options,
             clearable=False,
             value=value if value is not None else options[0]["value"],
             **filter_kwargs(**kwargs)
         )
 
-    def add_dropdown(self, options, value=None, role="input", label=None, **kwargs):
-        index = self.get_next_index_for_kind("dropdown")
-        component = self.build_dropdown(options, value=value, index=index, **kwargs)
+    def add_dropdown(self, options, value=None, role="input", label=None, name=None, **kwargs):
+        component = self.build_dropdown(options, value=value, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
     @classmethod
-    def build_slider(cls, min, max, step=None, value=None, index=None, **kwargs):
+    def build_slider(cls, min, max, step=None, value=None, name=None, **kwargs):
         return dcc.Slider(
-            id=build_component_id(kind="slider", index=index),
+            id=build_component_id(kind="slider", name=name),
             min=min,
             max=max,
             value=value if value is not None else min,
             **filter_kwargs(step=step, **kwargs)
         )
 
-    def add_slider(self, min, max, step=None, value=None, role="input", label=None, **kwargs):
-        index = self.get_next_index_for_kind("slider")
-        component = self.build_slider(min, max, step=step, value=value, index=index, **kwargs)
+    def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, **kwargs):
+        component = self.build_slider(min, max, step=step, value=value, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
     @classmethod
-    def build_input(cls, value=None, index=None, **kwargs):
+    def build_input(cls, value=None, name=None, **kwargs):
         return dcc.Input(
-            id=build_component_id(kind="input", index=index),
+            id=build_component_id(kind="input", name=name),
             value=value,
             **filter_kwargs(**kwargs)
         )
 
-    def add_input(self, value=None, role="input", label=None, **kwargs):
-        index = self.get_next_index_for_kind("input")
-        component = self.build_input(value=value, index=index, **kwargs)
+    def add_input(self, value=None, role="input", label=None, name=None, **kwargs):
+        component = self.build_input(value=value, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
     @classmethod
-    def build_checkbox(cls, option, value=None, index=None, **kwargs):
+    def build_checkbox(cls, option, value=None, name=None, **kwargs):
         if isinstance(option, str):
             option = {"label": option, "value": option}
 
         return dcc.Checklist(
-            id=build_component_id(kind="checkbox", index=index),
+            id=build_component_id(kind="checkbox", name=name),
             options=[option],
             value=value if value is not None else option["value"],
             **filter_kwargs(**kwargs)
         )
 
-    def add_checkbox(self, option, value=None, role="input", label=None, **kwargs):
-        index = self.get_next_index_for_kind("checkbox")
-        component = self.build_checkbox(option, value=value, index=index, **kwargs)
+    def add_checkbox(self, option, value=None, role="input", label=None, name=None, **kwargs):
+        component = self.build_checkbox(option, value=value, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
     @classmethod
-    def build_graph(cls, figure, index=None, **kwargs):
+    def build_graph(cls, figure, name=None, **kwargs):
         return dcc.Graph(
-            id=build_component_id(kind="graph", index=index),
+            id=build_component_id(kind="graph", name=name),
             figure=figure,
             **filter_kwargs(**kwargs)
         )
 
-    def add_graph(self, figure, role="output", label=None, **kwargs):
-        index = self.get_next_index_for_kind("graph")
-        component = self.build_graph(figure, index=index, **kwargs)
+    def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
+        component = self.build_graph(figure, name=name, **kwargs)
         self.add_component(component, role=role, label=label)
         return component
 
@@ -186,7 +171,7 @@ class BaseTemplateBuilder:
                     cls._label_value_prop
                 ),
                 [Input(
-                    {"id": ALL, "link": MATCH, "kind": ALL, "link_source_prop": value_prop, "index": ALL},
+                    {"id": ALL, "link": MATCH, "kind": ALL, "link_source_prop": value_prop, "name": ALL},
                     value_prop
                 )]
             )

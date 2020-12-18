@@ -13,15 +13,15 @@ def build_id(id=None, **kwargs):
         return dict({"id": id}, **kwargs)
 
 
-def build_component_id(kind, link=None, link_source_prop=None, index=None):
-    index = -1 if index is None else index
+def build_component_id(kind, link=None, link_source_prop=None, name=None):
     link = link or ""
     link_source_prop = link_source_prop or ""
+    name = "" if name is None else name
     return build_id(
         kind=kind,
         link=link,
         link_source_prop=link_source_prop,
-        index=index
+        name=name
     )
 
 
