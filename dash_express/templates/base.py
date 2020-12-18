@@ -26,10 +26,11 @@ class BaseTemplate:
                 role = "input"
 
         if label:
+            label_name = component.id["name"] + "-label"
             if "{value" in label:
                 # Callback to update label
                 initial_value = label.format(value=getattr(component, "value", ""))
-                label_id = build_id(kind="formatted_label")
+                label_id = build_id(kind="formatted_label", name=label_name)
                 label_id.update(
                     {"link": component.id["id"], "format_string": label, "link_source_prop": "value"}
                 )
@@ -37,7 +38,7 @@ class BaseTemplate:
                 component.id["link_source_prop"] = "value"
             else:
                 initial_value = label
-                label_id = build_id(kind="label")
+                label_id = build_id(kind="label", name=label_name)
 
             layout_component, label_value_prop = \
                 self.build_labeled_component(component, label_id, initial_value=initial_value)

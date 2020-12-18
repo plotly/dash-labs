@@ -38,7 +38,7 @@ def parameterize(app, fn, params, template=None, labels=None):
         if isinstance(pattern, list):
             options = pattern
             component_id = template_instance.add_dropdown(
-                options=options, label=label
+                options=options, label=label, name=arg
             ).id
         elif isinstance(pattern, tuple):
             if len(pattern) == 2:
@@ -50,15 +50,15 @@ def parameterize(app, fn, params, template=None, labels=None):
                 raise ValueError("Tuple default must have length 2 or 3")
 
             component_id = template_instance.add_slider(
-                min=minimum, max=maximum, step=step, label=label
+                min=minimum, max=maximum, step=step, label=label, name=arg
             ).id
         elif isinstance(pattern, str):
             component_id = template_instance.add_input(
-                value=pattern, label=label
+                value=pattern, label=label, name=arg
             ).id
         elif isinstance(pattern, Component):
             # Overwrite id
-            component_id = build_component_id(kind="component")
+            component_id = build_component_id(kind="component", name=arg)
             pattern.id = component_id
             template_instance.add_component(pattern, role="input", label=label)
         else:

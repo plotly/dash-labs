@@ -39,7 +39,6 @@ layout = dx.parameterize(
     template=template,
 )
 
-
 app.layout = layout
 
 
@@ -51,16 +50,22 @@ def filter_options(v):
         for col, label in zip(feature_cols, feature_labels)
     ]
 
-# TODO: dx.select to get sliders
-# # functionality is the same for both dropdowns, so we reuse filter_options
-# app.callback(Output("x-variable", "options"), [Input("y-variable", "value")])(
-#     filter_options
-# )
-#
-# app.callback(Output("y-variable", "options"), [Input("x-variable", "value")])(
-#     filter_options
-# )
 
+# Get the dropdown components that were created by parameterize
+x_component = dx.select_one(layout, name="x")
+y_component = dx.select_one(layout, name="y")
+
+# functionality is the same for both dropdowns, so we reuse filter_options
+app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")])(
+    filter_options
+)
+
+app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")])(
+    filter_options
+)
+
+
+print(dx.select_one(layout, name="x-label"))
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9007)
