@@ -191,8 +191,9 @@ class BaseTemplateBuilder:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def instance(self):
-        return self._template_cls(**self.kwargs)
+    def instance(self, **kwargs):
+        combined_kwargs = dict(self.kwargs, **kwargs)
+        return self._template_cls(**combined_kwargs)
 
     # Methods designed to be overridden by subclasses
     @classmethod

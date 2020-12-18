@@ -77,11 +77,7 @@ def st_callback(app, fn, template=None):
     template.configure_app(app)
 
     # Handle wrapping output Div in app wrapper
-    if template.kwargs.get("full", True):
-        full = True
-        template.kwargs["full"] = False
-    else:
-        full = False
+    full = template.kwargs.get("full", True)
 
     # Build template instance
     template_instance = template.instance()
@@ -94,7 +90,7 @@ def st_callback(app, fn, template=None):
     )
     def dash_callback(_):
         inputs_list = dash.callback_context.inputs_list
-        template_instance = template.instance()
+        template_instance = template.instance(full=False)
         st = ST(inputs_list, template_instance)
         fn(st)
         return st.layout
