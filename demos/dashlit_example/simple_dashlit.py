@@ -3,9 +3,9 @@ import dash_express as dx
 import dash
 
 app = dash.Dash(__name__)
-# template = dx.templates.DbcSidebar("Dashlit Example")
+template = dx.templates.DbcSidebar("Dashlit Example")
 # template = dx.templates.DdkRow("Dashlit Example")
-template = dx.templates.DccCard("Dashlit Example")
+# template = dx.templates.DccCard("Dashlit Example")
 
 
 def build_app(st):
@@ -17,7 +17,7 @@ def build_app(st):
     else:
         st.write("**Unchecked Separator**", role="input")
         st.write("Unchecked", role="output")
-        dropdown_val = st.dropdown(options=["First", "Second", "Third"], role="input")
+        dropdown_val = st.dropdown(options=["First", "Second", "Third"], optional=True, role="input")
         st.write(f"You selected {dropdown_val}", role="output")
 
     st.write("""

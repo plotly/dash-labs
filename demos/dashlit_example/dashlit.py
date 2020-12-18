@@ -4,6 +4,7 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output, ALL
 
 from templates.div import FlatDiv
+from templates.util import build_component_pattern
 
 
 class ST:
@@ -48,19 +49,19 @@ class ST:
         self.template_instance.add_checkbox(option=label, value=value, role=role, name=index)
         return bool(value)
 
-    def dropdown(self, options, role=None):
+    def dropdown(self, options, optional=False, role=None):
         if isinstance(options[0], dict):
             default = options[0]["value"]
         else:
             default = options[0]
 
         index, value = self._get_next_index_and_value("dropdown", default)
-        self.template_instance.add_dropdown(options=options, value=value, role=role, name=index)
+        self.template_instance.add_dropdown(options=options, value=value, optional=optional, role=role, name=index)
         return value
 
     @property
     def layout(self):
-        return [self.template_instance.layout]
+        return self.template_instance.layout
 
 
 def st_callback(app, fn, template=None):
@@ -80,7 +81,7 @@ def st_callback(app, fn, template=None):
 
     @app.callback(
         Output("output-div", "children"),
-        [template.all_component_ids()],
+        [Input(build_component_pattern(), "value")]
     )
     def dash_callback(_):
         inputs_list = dash.callback_context.inputs_list

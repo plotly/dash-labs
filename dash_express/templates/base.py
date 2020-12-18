@@ -2,15 +2,37 @@ from functools import wraps, update_wrapper
 from dash.dependencies import Input, Output, MATCH, ALL
 import dash_html_components as html
 import dash_core_components as dcc
-from dash_express.templates.util import build_id, filter_kwargs, build_component_id
+from dash.exceptions import PreventUpdate
+
+from dash_express.templates.util import build_id, filter_kwargs, build_component_id, \
+    build_component_pattern
 import dash
+
+dx_index = """<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
 
 
 class BaseTemplateInstance:
-    def __init__(self, full=True):
+    def __init__(self, label_prop, full=True):
         # Maybe this is a TemplateBuilder class with options and a .template()
         # method that build template that has the
         self.full = full
+        self.label_prop = label_prop
         self._components = dict(input=[], output=[])
 
     def add_component(self, component, role=None, label=None):
@@ -26,16 +48,22 @@ class BaseTemplateInstance:
                 role = "input"
 
         if label:
-            label_name = component.id["name"] + "-label"
+            label_name = str(component.id["name"]) + "-label"
             if "{value" in label:
                 # Callback to update label
                 initial_value = label.format(value=getattr(component, "value", ""))
-                label_id = build_id(kind="formatted_label", name=label_name)
-                label_id.update(
-                    {"link": component.id["id"], "format_string": label, "link_source_prop": "value"}
+
+                # Build id for label
+                label_id = build_id(
+                    kind="formatted_label", name=label_name,
+                    label_link=component.id["id"],
+                    label_link_prop="value",
+                    format_string=label,
                 )
-                component.id["link"] = component.id["id"]
-                component.id["link_source_prop"] = "value"
+
+                # Update component id's label link
+                component.id["label_link"] = component.id["id"]
+                component.id["label_link_prop"] = "value"
             else:
                 initial_value = label
                 label_id = build_id(kind="label", name=label_name)
@@ -67,8 +95,10 @@ class BaseTemplateInstance:
             **filter_kwargs(**kwargs)
         )
 
-    def add_dropdown(self, options, value=None, clearable=False, role="input", label=None, name=None, **kwargs):
-        component = self.build_dropdown(options, value=value, clearable=clearable, name=name, **kwargs)
+    def add_dropdown(self, options, value=None, optional=False, role="input", label=None, name=None, **kwargs):
+        component = self.build_dropdown(options, value=value, name=name, **kwargs)
+        if optional:
+            component = self.build_optional_component(component)
         self.add_component(component, role=role, label=label)
         return component
 
@@ -79,11 +109,14 @@ class BaseTemplateInstance:
             min=min,
             max=max,
             value=value if value is not None else min,
+            className="dcc-slider",
             **filter_kwargs(step=step, **kwargs)
         )
 
-    def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, **kwargs):
+    def add_slider(self, min, max, step=None, value=None, optional=False, role="input", label=None, name=None, **kwargs):
         component = self.build_slider(min, max, step=step, value=value, name=name, **kwargs)
+        if optional:
+            component = self.build_optional_component(component)
         self.add_component(component, role=role, label=label)
         return component
 
@@ -143,6 +176,10 @@ class BaseTemplateInstance:
         return layout
 
     @classmethod
+    def build_optional_component(self, component, enabled=True):
+        return component
+
+    @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):
         # Subclass could use bootstrap or ddk
         layout_component = html.Div(
@@ -161,36 +198,71 @@ class BaseTemplateInstance:
 class BaseTemplate:
     _template_instance_cls = BaseTemplateInstance
     _label_value_prop = "children"
+    _inline_css = """
+        <style>
+        .dcc-slider {
+            padding: 12px 20px 12px 20px !important;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+         }
+        </style>"""
 
     @classmethod
     def _configure_label_formatting_callbacks(cls, app):
         # Pattern matching callback for labels with {value} formatting
-        # {'id', 'link', 'kind', 'link_source_prop', 'name'}
-        # {'id', 'kind', 'name', 'link', 'format_string', 'link_source_prop'}
-
         for value_prop in ["value", "children", "date", "data"]:
             @app.callback(
                 Output(
-                    {"id": ALL, "link": MATCH, 'kind': "formatted_label", "name": ALL,
-                     "format_string": ALL, "link_source_prop": value_prop},
+                    {"id": ALL, "label_link": MATCH, 'kind': "formatted_label", "name": ALL,
+                     "format_string": ALL, "label_link_prop": value_prop},
                     cls._label_value_prop
                 ),
-                [Input(
-                    {"id": ALL, "link": MATCH, "kind": ALL, "link_source_prop": value_prop, "name": ALL},
-                    value_prop
-                )]
+                [Input(build_component_pattern(label_link=MATCH, label_link_prop=value_prop), value_prop)],
             )
             def update_label(v):
                 # Unwrap single element v due to pattern matching callback
-                v = v[0]
                 ctx = dash.callback_context
                 format_string = ctx.outputs_list[0]["id"]["format_string"]
-                return [format_string.format(value=v)]
+                v = v[0]
+                # v = None
+                if v is None:
+                    return ["Disabled"]
+                else:
+                    return [format_string.format(value=v)]
+
+    @classmethod
+    def _configure_index_str(cls, app):
+        app.index_string = app.index_string.replace("{%css%}", "{%css%}" + cls._inline_css)
+
+    @classmethod
+    def _configure_disabel_checkboxes(cls, app):
+        @app.callback(
+            Output(
+                build_component_pattern(disable_link=MATCH, disable_link_prop="checked"),
+                "disabled",
+            ),
+            [Input(
+                build_component_pattern(disable_link=MATCH, disable_link_prop="disabled", kind="disable-checkbox"),
+                # {"id": ALL, "disable_link": MATCH, "kind": "disable-checkbox", "name": ALL, "disable_link_prop": "checked"},
+                "checked"
+            )]
+        )
+        def update_disable_checkboxes(checked):
+            ctx = dash.callback_context
+            print(ctx.inputs_list)
+            print(ctx.outputs_list)
+            print(checked)
+            print("")
+            if checked is None:
+                return PreventUpdate
+            return [not bool(checked[0])]
 
     @classmethod
     def configure_app(cls, app):
         # TODO: use locking to ensure that we only do this once per app.
         cls._configure_label_formatting_callbacks(app)
+        cls._configure_index_str(app)
+        cls._configure_disabel_checkboxes(app)
 
     @classmethod
     def all_component_ids(cls):
@@ -204,7 +276,7 @@ class BaseTemplate:
 
     def instance(self, **kwargs):
         combined_kwargs = dict(self.kwargs, **kwargs)
-        return self._template_instance_cls(**combined_kwargs)
+        return self._template_instance_cls(label_prop=self._label_value_prop, **combined_kwargs)
 
     # Methods designed to be overridden by subclasses
     @classmethod

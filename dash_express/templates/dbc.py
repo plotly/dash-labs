@@ -55,20 +55,36 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         )
 
     @classmethod
-    def build_labeled_component(cls, component, label_id, initial_value):
+    def build_optional_component(self, component, enabled=True):
+        """ Should come before labeling """
         import dash_bootstrap_components as dbc
+        component.id["disable_link"] = component.id["id"]
+        component.id["disable_link_prop"] = "checked"
+        checkbox_id = build_component_id(
+            disable_link=component.id["id"], disable_link_prop="disabled",
+            kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
+        )
 
-        # Make sure component has block display so label is displayed above input
-        # component
-        style = getattr(component, "style", {})
-        style["display"] = "block"
-        component.style = style
-        layout_component = dbc.FormGroup(
-            children=[
-                dbc.Label(id=label_id, children=initial_value),
-                component
+        input_group = dbc.InputGroup(
+            [
+                dbc.InputGroupAddon(dbc.Checkbox(
+                    id=checkbox_id, checked=enabled
+                ), addon_type="prepend"),
+                html.Div(style=dict(flex="auto"), children=component)
             ]
         )
+        return input_group
+
+    @classmethod
+    def build_labeled_component(cls, component, label_id, initial_value):
+        import dash_bootstrap_components as dbc
+        layout_component = dbc.FormGroup(
+            children=[
+                dbc.Label(id=label_id, children=[initial_value]),
+                component,
+            ]
+        )
+
         return layout_component, "children"
 
 
@@ -187,7 +203,7 @@ class DbcSidebarTemplateInstance(BaseDbcTemplateInstance):
         sidebar_card_style = {"border-radius": 0}
 
         row = dbc.Row(
-            align="center",
+            align="top",
             children=[
                 dbc.Col(
                     children=dbc.Card(
