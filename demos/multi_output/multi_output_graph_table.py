@@ -52,6 +52,7 @@ layout = dx.parameterize(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],
+        # selectedData=(graph, "selectedData"),
         selectedData=Input(graph_id, "selectedData"),
     ),
     template=template,
@@ -63,6 +64,7 @@ layout = dx.parameterize(
     optional=["max_total_bill", "max_tip", "sex", "tip_range"],
     output=[
         (graph, "figure"),
+        # Output(graph_id, "figure"),
         (html.Div(id=table_div_id), "children"),
         Output(num_selected_input_id, "value")
     ]
