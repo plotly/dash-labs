@@ -43,11 +43,10 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         return layout_component, "label"
 
     @classmethod
-    def Graph(cls, figure, id=None, **kwargs):
+    def Graph(cls, figure=None, id=None, **kwargs):
         import dash_design_kit as ddk
         return ddk.Graph(
-            figure=figure,
-            **filter_kwargs(id=id, **kwargs)
+            **filter_kwargs(figure=figure, id=id, **kwargs)
         )
 
     @classmethod

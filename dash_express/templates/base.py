@@ -194,10 +194,9 @@ class BaseTemplateInstance:
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._checklist_value_prop)
 
     @classmethod
-    def Graph(cls, figure, id=None, **kwargs):
+    def Graph(cls, figure=None, id=None, **kwargs):
         return dcc.Graph(
-            figure=figure,
-            **filter_kwargs(id=id, **kwargs)
+            **filter_kwargs(id=id, figure=figure, **kwargs)
         )
 
     def add_graph(self, figure, role="output", label=None, name=None, **kwargs):

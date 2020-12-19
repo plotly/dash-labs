@@ -10,7 +10,7 @@ from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
 
-def parameterize(app, fn, params, template=None, labels=None, optional=(), manual=False):
+def parameterize(app, fn, params, output=None, template=None, labels=None, optional=(), manual=False):
     """
     Parameterize a function using a
     """
@@ -20,6 +20,9 @@ def parameterize(app, fn, params, template=None, labels=None, optional=(), manua
     if labels is None:
         labels = {}
 
+    if output is None:
+        output = (html.Div(id=build_component_id("div", "output")), "children")
+
     param_defaults = {}
     for param_name, param in params.items():
         param_defaults[param_name] = param
@@ -27,7 +30,9 @@ def parameterize(app, fn, params, template=None, labels=None, optional=(), manua
     all_inputs = []
     all_state = []
     param_index_mapping = {}
+    output_components = []
 
+    # inputs
     for arg, pattern in param_defaults.items():
         label = labels.get(arg, arg)
         arg_optional = arg in optional
@@ -37,21 +42,6 @@ def parameterize(app, fn, params, template=None, labels=None, optional=(), manua
             options = pattern
             pattern_inputs, pattern_fn = template.add_dropdown(
                 options=options, label=label, name=arg, optional=arg_optional
-            )
-        elif isinstance(pattern, tuple):
-            if len(pattern) == 2:
-                minimum, maximum = pattern
-                step = None
-            elif len(pattern) == 3:
-                minimum, maximum, step = pattern
-            else:
-                raise ValueError("Tuple default must have length 2 or 3")
-            pattern_inputs, pattern_fn = template.add_slider(
-                min=minimum, max=maximum, step=step, label=label, name=arg, optional=arg_optional
-            )
-        elif isinstance(pattern, str):
-            pattern_inputs, pattern_fn = template.add_input(
-                value=pattern, label=label, name=arg, optional=arg_optional
             )
         elif isinstance(pattern, Component) or (
                 isinstance(pattern, tuple) and
@@ -71,6 +61,23 @@ def parameterize(app, fn, params, template=None, labels=None, optional=(), manua
             pattern_inputs, pattern_fn = template.add_component(
                 component, role="input", label=label, value_prop=prop_name, optional=arg_optional
             )
+        elif isinstance(pattern, tuple):
+            if len(pattern) == 2:
+                minimum, maximum = pattern
+                step = None
+            elif len(pattern) == 3:
+                minimum, maximum, step = pattern
+            else:
+                raise ValueError("Tuple default must have length 2 or 3")
+            pattern_inputs, pattern_fn = template.add_slider(
+                min=minimum, max=maximum, step=step, label=label, name=arg, optional=arg_optional
+            )
+        elif isinstance(pattern, str):
+            pattern_inputs, pattern_fn = template.add_input(
+                value=pattern, label=label, name=arg, optional=arg_optional
+            )
+        elif isinstance(pattern, Input):
+            pattern_inputs, pattern_fn = [pattern], None
         else:
             raise Exception(f"unknown pattern for {arg} with type {type(pattern)}")
 
@@ -105,20 +112,41 @@ def parameterize(app, fn, params, template=None, labels=None, optional=(), manua
         all_inputs = [Input(button.id, "n_clicks")]
 
     # For now, all output placed as children of Div
-    template.add_component(html.Div(id="output"), role="output", value_prop="children")
-    output = Output("output", "children")
+    if isinstance(output, list):
+        output_dependencies = []
+        for output_el in output:
+            if isinstance(output_el, Output):
+                output_dependencies.append(output_el)
+            else:
+                output_component, output_property = output_el
+                template.add_component(output_component, role="output", value_prop=output_property)
+                output_dependencies.append(
+                    Output(output_component.id, output_property)
+                )
+    else:
+        if isinstance(output, Output):
+            output_dependencies = output
+        else:
+            template.add_component(
+                output[0], role="output", value_prop=output[1]
+            )
+            output_dependencies = Output(output[0].id, output[1])
 
     # Register callback with output component inference
     fn = map_input_parameters(fn, param_index_mapping)
-    fn = infer_output_component(fn, template)
-    app.callback(output, all_inputs, all_state)(fn)
+    fn = infer_output_component(fn, template, output_dependencies)
+    app.callback(output_dependencies, all_inputs, all_state)(fn)
 
-    return template.build_layout(app)
+    # build layout
+    layout = template.build_layout(app)
+
+    return layout
 
 
 def map_input_parameters(fn, param_index_mapping):
     @wraps(fn)
     def wrapper(*args):
+        print(args)
         kwargs = {}
         for param, mapping in param_index_mapping.items():
             if isinstance(mapping, int):
@@ -136,11 +164,24 @@ def map_input_parameters(fn, param_index_mapping):
     return wrapper
 
 
-def infer_output_component(fn, template):
+def infer_output_component(fn, template, output_dependencies):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        res = fn(*args, **kwargs)
-        return infer_component(res, template)
+        if isinstance(output_dependencies, list):
+            res = fn(*args, **kwargs)
+            if not isinstance(res, list) or len(res) != len(output_dependencies):
+                raise ValueError(
+                    f"Expected callback output to be length {len(output_dependencies)} list of components"
+                )
+            for i in range(len(res)):
+                # Only infer output components that are being assigned to children
+                if output_dependencies[i].component_property == "children":
+                    res[i] = infer_component(res[i], template)
+        else:
+            res = fn(*args, **kwargs)
+            if output_dependencies.component_id == "children":
+                res = infer_component(res, template)
+        return res
     return wrapper
 
 
