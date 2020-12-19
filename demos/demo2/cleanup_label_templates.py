@@ -7,7 +7,7 @@ app = dash.Dash(__name__)
 # template = dx.templates.DbcSidebar(title="Dash Express App")
 template = dx.templates.DdkSidebar(title="Dash Express App")
 # template = dx.templates.DccCard(title="Dash Express App")
-# template = dx.templates.FlatDivTemplateInstance()
+# template = dx.templates.FlatDiv()
 
 
 def greet(fun, figure_title, phase, amplitude):
@@ -23,9 +23,11 @@ def greet(fun, figure_title, phase, amplitude):
         phase = 0
 
     # Let parameterize infer output component
-    return px.line(
-        x=xs, y=np_fn(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title)
+    x = xs
+    y = np_fn(xs + phase) * amplitude
+    return template.Graph(
+        figure=px.line(x=x, y=y).update_layout(title_text=figure_title)
+    )
 
 
 layout = dx.parameterize(

@@ -14,25 +14,17 @@ def build_id(id=None, **kwargs):
         return dict({"id": id}, **kwargs)
 
 
-def build_component_id(
-        kind,
-        label_link=None, label_link_prop=None,
-        disable_link=None, disable_link_prop=None,
-        name=None
-):
-    label_link = label_link or ""
-    label_link_prop = label_link_prop or ""
-    disable_link = disable_link or ""
-    disable_link_prop = disable_link_prop or ""
-    name = "" if name is None else name
+def build_component_id(kind, name=None):
+    if name is None:
+        name = kind
     return build_id(
         kind=kind,
-        label_link=label_link,
-        label_link_prop=label_link_prop,
-        disable_link=disable_link,
-        disable_link_prop=disable_link_prop,
         name=name
     )
+
+
+def is_component_id(id):
+    return isinstance(id, dict) and "name" in id and "kind" in id
 
 
 def build_component_pattern(

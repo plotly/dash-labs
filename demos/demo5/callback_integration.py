@@ -18,8 +18,8 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__)
-# template = dx.templates.DbcSidebar(title="Iris Features")
-template = dx.templates.DdkSidebar(title="Iris Features")
+template = dx.templates.DbcSidebar(title="Iris Features")
+# template = dx.templates.DdkSidebar(title="Iris Features")
 
 
 # Use interact to create components
@@ -33,8 +33,8 @@ layout = dx.parameterize(
     app,
     iris,
     params=dict(
-        x=dbc.Select(options=feature_options, value="sepal_length"),
-        y=dbc.Select(options=feature_options, value="sepal_width")
+        x=template.Dropdown(options=feature_options, value="sepal_length"),
+        y=template.Dropdown(options=feature_options, value="sepal_width"),
     ),
     template=template,
 )
@@ -63,9 +63,6 @@ app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")]
 app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")])(
     filter_options
 )
-
-
-print(dx.select_one(layout, name="x-label"))
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9007)

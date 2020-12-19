@@ -1,12 +1,10 @@
-from functools import wraps, update_wrapper
-from dash.dependencies import Input, Output, MATCH, ALL
+from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
 import re
+import dash_table  # noqa: Needs table initialization
 
-from dash_express.templates.util import build_id, filter_kwargs, build_component_id, \
-    build_component_pattern
-import dash
+from dash_express.templates.util import filter_kwargs, build_component_id
 
 dx_index = """<!DOCTYPE html>
 <html>
@@ -90,7 +88,7 @@ class BaseTemplateInstance:
                     initial_value = label(value)
 
                 # Build id for label
-                label_id = build_id(
+                label_id = build_component_id(
                     kind="formatted_label", name=label_name,
                 )
 
@@ -107,7 +105,7 @@ class BaseTemplateInstance:
                 ])
             else:
                 initial_value = label
-                label_id = build_id(kind="label", name=label_name)
+                label_id = build_component_id(kind="label", name=label_name)
 
             layout_component, label_value_prop = \
                 self.build_labeled_component(layout_component, label_id, initial_value=initial_value)
@@ -125,7 +123,7 @@ class BaseTemplateInstance:
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def Dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
+    def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
         if not options:
             raise ValueError("Options may not be empty")
 
@@ -136,77 +134,82 @@ class BaseTemplateInstance:
             value = options[0]["value"]
 
         return dcc.Dropdown(
-            id=build_id(kind="dropdown", name=name),
             options=options,
             clearable=clearable,
             value=value,
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     def add_dropdown(self, options, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.Dropdown(options, value=value, name=name, **kwargs)
+        id = build_component_id(kind="dropdown", name=name)
+        component = self.Dropdown(options, id=id, value=value, **kwargs)
         # if optional:
         #     component = self.build_optional_component(component)
         return self.add_component(component, role=role, label=label, value_prop=self._dropdown_value_prop, optional=optional)
 
     @classmethod
-    def Slider(cls, min, max, step=None, value=None, name=None, **kwargs):
+    def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
         return dcc.Slider(
-            id=build_id(kind="slider", name=name),
             min=min,
             max=max,
             value=value if value is not None else min,
-            **filter_kwargs(step=step, **kwargs)
+            **filter_kwargs(id=id, step=step, **kwargs)
         )
 
     def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.Slider(min, max, step=step, value=value, name=name, **kwargs)
+        id = build_component_id(kind="slider", name=name)
+        component = self.Slider(min, max, id=id, step=step, value=value, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._slider_value_prop)
 
     @classmethod
-    def Input(cls, value=None, name=None, **kwargs):
+    def Input(cls, value=None, id=None, **kwargs):
         return dcc.Input(
-            id=build_id(kind="input", name=name),
             value=value,
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     def add_input(self, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.Input(value=value, name=name, **kwargs)
+        id = build_component_id(kind="input", name=name)
+        component = self.Input(value=value, id=id, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._input_value_prop)
 
     @classmethod
-    def Checkbox(cls, option, value=None, name=None, **kwargs):
+    def Checkbox(cls, option, id=id, value=None, **kwargs):
         if isinstance(option, str):
             option = {"label": option, "value": option}
 
         return dcc.Checklist(
-            id=build_id(kind="checkbox", name=name),
             options=[option],
             value=value if value is not None else option["value"],
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.Checkbox(option, value=value, name=name, **kwargs)
+        id = build_component_id(kind="checkbox", name=name)
+        component = self.Checkbox(option, value=value, id=id, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._checklist_value_prop)
 
     @classmethod
-    def Graph(cls, figure, name=None, **kwargs):
+    def Graph(cls, figure, id=None, **kwargs):
         return dcc.Graph(
-            id=build_id(kind="graph", **filter_kwargs(name=name)),
             figure=figure,
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
-        component = self.Graph(figure, name=name, **kwargs)
+        id = build_component_id(kind="graph", name=name)
+        component = self.Graph(figure, id=id, **kwargs)
         return self.add_component(component, role=role, label=label, value_prop="figure")
 
     @classmethod
     def DataTable(cls, *args, **kwargs):
         from dash_table import DataTable
         return DataTable(*args, **kwargs)
+
+    def add_datatable(self, *args, name=None, role=None, label=None, **kwargs):
+        id = build_component_id(kind="graph", name=name)
+        component = self.DataTable(*args, id=id, **kwargs)
+        return self.add_component(component, role=role, label=label, value_prop="data")
 
     @classmethod
     def _configure_app(cls, app):
@@ -257,7 +260,21 @@ class BaseTemplateInstance:
 
     @classmethod
     def build_optional_component(self, component, enabled=True):
-        raise NotImplementedError
+        checkbox_id = build_component_id(
+            kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
+        )
+
+        checklist_value = ["checked"] if enabled else []
+        input_group = html.Div(
+            style={"display": "flex", "align-items": "center"},
+            children=[
+                dcc.Checklist(id=checkbox_id,
+                              options=[{"label": "", "value": "checked"}],
+                              value=checklist_value),
+                html.Div(style=dict(flex="auto"), children=component)
+            ]
+        )
+        return input_group, checkbox_id, "value"
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):

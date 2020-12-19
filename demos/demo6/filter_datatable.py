@@ -1,6 +1,5 @@
 import dash
 import dash_express as dx
-import numpy as np
 import plotly.express as px
 tips = px.data.tips()
 import dash_html_components as html
@@ -13,8 +12,6 @@ template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400p
 
 
 def filter(max_total_bill, tip_range, sex):
-    print(tip_range)
-
     # Let parameterize infer output component
     filtered = tips
 

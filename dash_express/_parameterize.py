@@ -1,11 +1,10 @@
 from functools import wraps
-from dash.dependencies import Input, Output
+from dash.dependencies import Output
 import dash_html_components as html
 import dash_core_components as dcc
-from dash_table import DataTable
 
-from dash_express.templates.div import FlatDiv, FlatDiv
-from dash_express.templates.util import build_component_id, build_id
+from dash_express.templates.div import FlatDiv
+from dash_express.templates.util import build_component_id, is_component_id
 from dash.development.base_component import Component
 
 from plotly.graph_objs import Figure
@@ -20,12 +19,6 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
 
     if labels is None:
         labels = {}
-
-    # Let template class configure app
-    # template.configure_app(app)
-
-    # Build template instance
-    # template_instance = template.instance()
 
     param_defaults = {}
     for param_name, param in params.items():
@@ -70,8 +63,10 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
                 component, prop_name = pattern, "value"
 
             # Overwrite id
-            component_id = build_component_id(kind="component", name=arg)
-            component.id = component_id
+            if not is_component_id(getattr(component, "id", None)):
+                component_id = build_component_id(kind="component", name=arg)
+                component.id = component_id
+
             pattern_inputs, pattern_fn = template.add_component(
                 component, role="input", label=label, value_prop=prop_name, optional=arg_optional
             )
@@ -135,7 +130,6 @@ def infer_output_component(fn, template):
     return wrapper
 
 
-
 def infer_component(v, template):
     # Check if pandas is already imported. Do this instead of trying to import so we
     # don't pay the time hit of importing pandas
@@ -149,25 +143,25 @@ def infer_component(v, template):
 
     if isinstance(v, Component):
         # Already a component, leave as-is
-        v.id = build_id(kind="component", name=name)
+        v.id = build_component_id(kind="component", name=name)
         return v
     elif isinstance(v, Figure) or (
             isinstance(v, dict) and ("data" in v or "layout" in v)
     ):
-        return template.Graph(v, name=name)
+        return template.Graph(v, id=build_component_id(kind="graph", name=name))
     elif pd is not None and isinstance(v, pd.DataFrame):
         return template.DataTable(
-            id=build_id(kind="datatable", name=name),
+            id=build_component_id(kind="datatable", name=name),
             columns=[{"name": i, "id": i} for i in v.columns],
             data=v.to_dict('records'),
         )
     elif isinstance(v, list):
         return html.Div(
-            id=build_id(kind="div", name=name),
+            id=build_component_id(kind="div", name=name),
             children=[infer_component(el, template) for el in v]
         )
     elif isinstance(v, str):
-        return dcc.Markdown(v, id=build_id(kind="markdown", name=name))
+        return dcc.Markdown(v, id=build_component_id(kind="markdown", name=name))
     else:
         # Try string representation
-        return html.Pre(str(v), id=build_id(kind="pre", name=name))
+        return html.Pre(str(v), id=build_component_id(kind="pre", name=name))

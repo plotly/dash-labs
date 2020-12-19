@@ -2,7 +2,10 @@ def select(component, name=None, kind=None):
     from dash.development.base_component import Component
 
     if not isinstance(component, Component):
-        raise ValueError("select requires a Dash component")
+        raise ValueError(
+            "select requires a Dash component\n"
+            f"    Received object of type {type(component)}: {component}"
+        )
 
     def matches(c):
         if name is None and kind is None:
@@ -29,7 +32,7 @@ def select(component, name=None, kind=None):
         elif isinstance(children, list):
             return [
                 match
-                for child in children
+                for child in children if isinstance(child, Component)
                 for match in select(child, name=name, kind=kind)
             ]
     return []

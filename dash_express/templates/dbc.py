@@ -1,8 +1,6 @@
-from dash.dependencies import Input
-
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
-from .util import build_id, filter_kwargs, build_component_id
+from .util import filter_kwargs, build_component_id
 
 
 class BaseDbcTemplateInstance(BaseTemplateInstance):
@@ -28,7 +26,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def Dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
+    def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
         import dash_bootstrap_components as dbc
 
         if not options:
@@ -46,38 +44,36 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
             value = options[0]["value"]
 
         return dbc.Select(
-            id=build_component_id(kind="dropdown", name=name),
             options=options,
             value=value,
+            **filter_kwargs(id=id)
         )
 
     @classmethod
-    def Input(cls, value=None, name=None, **kwargs):
+    def Input(cls, value=None, id=None, **kwargs):
         import dash_bootstrap_components as dbc
         return dbc.Input(
-            id=build_component_id(kind="input", name=name),
             value=value,
-            **kwargs
+            **filter_kwargs(id=id, **kwargs)
         )
 
     @classmethod
-    def Checkbox(cls, option, value=None, name=None, **kwargs):
+    def Checkbox(cls, option, value=None, id=None, **kwargs):
         import dash_bootstrap_components as dbc
         if isinstance(option, str):
             option = {"label": option, "value": option}
 
         return dbc.Checklist(
-            id=build_component_id(kind="checkbox", name=name),
             options=[option],
             value=value if value is not None else option["value"],
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     @classmethod
     def build_optional_component(self, component, enabled=True):
         """ Should come before labeling """
         import dash_bootstrap_components as dbc
-        checkbox_id = build_id(
+        checkbox_id = build_component_id(
             kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
         )
 

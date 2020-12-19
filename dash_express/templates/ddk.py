@@ -1,8 +1,7 @@
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
-import dash_core_components as dcc
 
-from dash_express.templates.util import filter_kwargs, build_component_id, build_id
+from dash_express.templates.util import filter_kwargs
 
 
 class BaseDDKTemplateInstance(BaseTemplateInstance):
@@ -44,28 +43,11 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         return layout_component, "label"
 
     @classmethod
-    def build_optional_component(self, component, enabled=True):
-        checkbox_id = build_id(
-            kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
-        )
-
-        checklist_value = ["checked"] if enabled else []
-        input_group = html.Div(
-            style={"display": "flex", "align-items": "center"},
-            children=[
-                dcc.Checklist(id=checkbox_id, options=[{"label": "", "value": "checked"}], value=checklist_value),
-                html.Div(style=dict(flex="auto"), children=component)
-            ]
-        )
-        return input_group, checkbox_id, "value"
-
-    @classmethod
-    def Graph(cls, figure, name=None, **kwargs):
+    def Graph(cls, figure, id=None, **kwargs):
         import dash_design_kit as ddk
         return ddk.Graph(
-            id=build_component_id(kind="graph", name=name),
             figure=figure,
-            **filter_kwargs(**kwargs)
+            **filter_kwargs(id=id, **kwargs)
         )
 
     @classmethod
