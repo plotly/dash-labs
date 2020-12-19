@@ -1,5 +1,5 @@
 from functools import wraps
-from dash.dependencies import Output
+from dash.dependencies import Output, State, Input
 import dash_html_components as html
 import dash_core_components as dcc
 
@@ -10,7 +10,7 @@ from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
 
-def parameterize(app, fn, params, template=None, labels=None, optional=()):
+def parameterize(app, fn, params, template=None, labels=None, optional=(), manual=False):
     """
     Parameterize a function using a
     """
@@ -25,6 +25,7 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
         param_defaults[param_name] = param
 
     all_inputs = []
+    all_state = []
     param_index_mapping = {}
 
     for arg, pattern in param_defaults.items():
@@ -74,7 +75,8 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
             raise Exception(f"unknown pattern for {arg} with type {type(pattern)}")
 
         # Compute positional indices of this pattern's inputs
-        input_inds = [i + len(all_inputs) for i in range(len(pattern_inputs))]
+        # Add 1 for manual since that will push inputs down a slot
+        input_inds = [i + len(all_inputs) + int(manual) for i in range(len(pattern_inputs))]
 
         # Update all inputs list
         all_inputs.extend(pattern_inputs)
@@ -90,6 +92,18 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
             # Use single positional argument value as parameter
             param_index_mapping[arg] = input_inds[0]
 
+    if manual:
+        # Add compute button input
+        button = template.Button(
+            children="Update",
+            id=build_component_id(kind="button", name="update-parameters")
+        )
+        template.add_component(button, role="input", value_prop="n_clicks")
+
+        # Convert all inputs to state
+        all_state = [State(ip.component_id, ip.component_property) for ip in all_inputs]
+        all_inputs = [Input(button.id, "n_clicks")]
+
     # For now, all output placed as children of Div
     template.add_component(html.Div(id="output"), role="output", value_prop="children")
     output = Output("output", "children")
@@ -97,7 +111,7 @@ def parameterize(app, fn, params, template=None, labels=None, optional=()):
     # Register callback with output component inference
     fn = map_input_parameters(fn, param_index_mapping)
     fn = infer_output_component(fn, template)
-    app.callback(output, all_inputs)(fn)
+    app.callback(output, all_inputs, all_state)(fn)
 
     return template.build_layout(app)
 

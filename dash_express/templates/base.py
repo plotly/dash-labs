@@ -123,6 +123,10 @@ class BaseTemplateInstance:
 
     # Methods designed to be overridden by subclasses
     @classmethod
+    def Button(cls, *args, id=None, **kwargs):
+        return html.Button(*args, **filter_kwargs(id=id, **kwargs))
+
+    @classmethod
     def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
         if not options:
             raise ValueError("Options may not be empty")

@@ -26,6 +26,11 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
 
     # Methods designed to be overridden by subclasses
     @classmethod
+    def Button(cls, *args, id=None, **kwargs):
+        import dash_bootstrap_components as dbc
+        return dbc.Button(*args, **filter_kwargs(id=id, **kwargs))
+
+    @classmethod
     def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
         import dash_bootstrap_components as dbc
 
