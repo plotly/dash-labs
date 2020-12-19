@@ -12,7 +12,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # Function to parameterize
 def greet(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return template.build_graph(figure=px.line(
+    return template.Graph(figure=px.line(
         x=xs, y=getattr(np, fun)(xs + phase) * float(amplitude)
     ).update_layout(title_text=figure_title))
 

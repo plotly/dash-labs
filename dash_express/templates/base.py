@@ -125,7 +125,7 @@ class BaseTemplateInstance:
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
+    def Dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
         if not options:
             raise ValueError("Options may not be empty")
 
@@ -144,13 +144,13 @@ class BaseTemplateInstance:
         )
 
     def add_dropdown(self, options, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.build_dropdown(options, value=value, name=name, **kwargs)
+        component = self.Dropdown(options, value=value, name=name, **kwargs)
         # if optional:
         #     component = self.build_optional_component(component)
         return self.add_component(component, role=role, label=label, value_prop=self._dropdown_value_prop, optional=optional)
 
     @classmethod
-    def build_slider(cls, min, max, step=None, value=None, name=None, **kwargs):
+    def Slider(cls, min, max, step=None, value=None, name=None, **kwargs):
         return dcc.Slider(
             id=build_id(kind="slider", name=name),
             min=min,
@@ -160,11 +160,11 @@ class BaseTemplateInstance:
         )
 
     def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.build_slider(min, max, step=step, value=value, name=name, **kwargs)
+        component = self.Slider(min, max, step=step, value=value, name=name, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._slider_value_prop)
 
     @classmethod
-    def build_input(cls, value=None, name=None, **kwargs):
+    def Input(cls, value=None, name=None, **kwargs):
         return dcc.Input(
             id=build_id(kind="input", name=name),
             value=value,
@@ -172,11 +172,11 @@ class BaseTemplateInstance:
         )
 
     def add_input(self, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.build_input(value=value, name=name, **kwargs)
+        component = self.Input(value=value, name=name, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._input_value_prop)
 
     @classmethod
-    def build_checkbox(cls, option, value=None, name=None, **kwargs):
+    def Checkbox(cls, option, value=None, name=None, **kwargs):
         if isinstance(option, str):
             option = {"label": option, "value": option}
 
@@ -188,24 +188,25 @@ class BaseTemplateInstance:
         )
 
     def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, **kwargs):
-        component = self.build_checkbox(option, value=value, name=name, **kwargs)
+        component = self.Checkbox(option, value=value, name=name, **kwargs)
         return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._checklist_value_prop)
 
     @classmethod
-    def build_graph(cls, figure, name=None, **kwargs):
+    def Graph(cls, figure, name=None, **kwargs):
         return dcc.Graph(
             id=build_id(kind="graph", **filter_kwargs(name=name)),
             figure=figure,
             **filter_kwargs(**kwargs)
         )
 
-    @classmethod
-    def Graph(self, figure, **kwargs):
-        return self.build_graph(figure)
-
     def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
-        component = self.build_graph(figure, name=name, **kwargs)
+        component = self.Graph(figure, name=name, **kwargs)
         return self.add_component(component, role=role, label=label, value_prop="figure")
+
+    @classmethod
+    def DataTable(cls, *args, **kwargs):
+        from dash_table import DataTable
+        return DataTable(*args, **kwargs)
 
     @classmethod
     def _configure_app(cls, app):

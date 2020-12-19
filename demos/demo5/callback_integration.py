@@ -24,7 +24,7 @@ template = dx.templates.DdkSidebar(title="Iris Features")
 
 # Use interact to create components
 def iris(x, y):
-    return template.build_graph(
+    return template.Graph(
         figure=px.scatter(df, x=x, y=y, color="species"),
     )
 

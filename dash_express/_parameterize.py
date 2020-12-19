@@ -154,9 +154,9 @@ def infer_component(v, template):
     elif isinstance(v, Figure) or (
             isinstance(v, dict) and ("data" in v or "layout" in v)
     ):
-        return template.build_graph(v, name=name)
+        return template.Graph(v, name=name)
     elif pd is not None and isinstance(v, pd.DataFrame):
-        return DataTable(
+        return template.DataTable(
             id=build_id(kind="datatable", name=name),
             columns=[{"name": i, "id": i} for i in v.columns],
             data=v.to_dict('records'),

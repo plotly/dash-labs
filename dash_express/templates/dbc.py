@@ -6,12 +6,20 @@ from .util import build_id, filter_kwargs, build_component_id
 
 
 class BaseDbcTemplateInstance(BaseTemplateInstance):
+    # - Align sliders vertically with an outline that matches dropdowns/inputs
+    # - Undo the negative margins that table rows pick up from bootstrap's own row
+    #   CSS class. Otherwise, table expand in width outside of their container.
     _inline_css = """
             <style>
             .dcc-slider {
                 padding: 12px 20px 12px 20px !important;
                 border: 1px solid #ced4da;
                 border-radius: .25rem;
+             }
+             
+             .dash-spreadsheet .row {
+                margin-left: 0;
+                margin-right: 0;
              }
             </style>"""
 
@@ -20,7 +28,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
+    def Dropdown(cls, options, value=None, clearable=False, name=None, **kwargs):
         import dash_bootstrap_components as dbc
 
         if not options:
@@ -44,7 +52,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         )
 
     @classmethod
-    def build_input(cls, value=None, name=None, **kwargs):
+    def Input(cls, value=None, name=None, **kwargs):
         import dash_bootstrap_components as dbc
         return dbc.Input(
             id=build_component_id(kind="input", name=name),
@@ -53,7 +61,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         )
 
     @classmethod
-    def build_checkbox(cls, option, value=None, name=None, **kwargs):
+    def Checkbox(cls, option, value=None, name=None, **kwargs):
         import dash_bootstrap_components as dbc
         if isinstance(option, str):
             option = {"label": option, "value": option}
@@ -225,6 +233,7 @@ class DbcSidebar(BaseDbcTemplateInstance):
 
         row = dbc.Row(
             align="top",
+            style={"padding": "10px", "margin": "0"},
             children=[
                 dbc.Col(
                     children=dbc.Card(
@@ -236,9 +245,6 @@ class DbcSidebar(BaseDbcTemplateInstance):
                 ),
                 dbc.Col(
                     children=self._components['output'],
-                    style={
-                        "padding": "1.25rem"
-                    },
                 )
             ]
         )
@@ -248,6 +254,6 @@ class DbcSidebar(BaseDbcTemplateInstance):
     def maybe_wrap_layout(self, layout):
         import dash_bootstrap_components as dbc
         if self.full:
-            return dbc.Container(layout, fluid=True)
+            return dbc.Container(layout, fluid=True, style={"padding": 0})
         else:
             return layout

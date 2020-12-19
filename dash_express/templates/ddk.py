@@ -60,13 +60,19 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         return input_group, checkbox_id, "value"
 
     @classmethod
-    def build_graph(cls, figure, name=None, **kwargs):
+    def Graph(cls, figure, name=None, **kwargs):
         import dash_design_kit as ddk
         return ddk.Graph(
             id=build_component_id(kind="graph", name=name),
             figure=figure,
             **filter_kwargs(**kwargs)
         )
+
+    @classmethod
+    def DataTable(cls, *args, **kwargs):
+        import dash_design_kit as ddk
+        return ddk.DataTable(*args, **kwargs)
+
 
     def maybe_wrap_layout(self, layout):
         import dash_design_kit as ddk
