@@ -1,9 +1,20 @@
-from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
+from dash.dependencies import Input
+
+from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
 from .util import build_id, filter_kwargs, build_component_id
 
 
 class BaseDbcTemplateInstance(BaseTemplateInstance):
+    _inline_css = """
+            <style>
+            .dcc-slider {
+                padding: 12px 20px 12px 20px !important;
+                border: 1px solid #ced4da;
+                border-radius: .25rem;
+             }
+            </style>"""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -73,7 +84,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
                 html.Div(style=dict(flex="auto"), children=component)
             ]
         )
-        return input_group
+        return input_group, checkbox_id, "checked"
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):
@@ -87,8 +98,21 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
 
         return layout_component, "children"
 
+    @classmethod
+    def _configure_app(cls, app):
+        super()._configure_app(app)
+        import dash_bootstrap_components as dbc
+        # Check if there are any bootstrap css themes already added
+        add_theme = True
+        for url in app.config.external_stylesheets:
+            if "bootstrapcdn" in url:
+                add_theme = False
+                break
+        if add_theme:
+            app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
 
-class DbcCardTemplateInstance(BaseDbcTemplateInstance):
+
+class DbcCard(BaseDbcTemplateInstance):
     def __init__(self, title=None, full=True, columns=12, min_width=400, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -134,7 +158,7 @@ class DbcCardTemplateInstance(BaseDbcTemplateInstance):
         )
 
 
-class DbcRowTemplateInstance(BaseDbcTemplateInstance):
+class DbcRow(BaseDbcTemplateInstance):
     def __init__(
             self, title=None, row_height=None, input_cols=4, min_input_width="300px", **kwargs
     ):
@@ -179,7 +203,7 @@ class DbcRowTemplateInstance(BaseDbcTemplateInstance):
         ])
 
 
-class DbcSidebarTemplateInstance(BaseDbcTemplateInstance):
+class DbcSidebar(BaseDbcTemplateInstance):
     def __init__(
             self, title=None, sidebar_columns=4, **kwargs
     ):
@@ -230,49 +254,3 @@ class DbcSidebarTemplateInstance(BaseDbcTemplateInstance):
             return dbc.Container(layout, fluid=True)
         else:
             return layout
-
-
-class BaseDbcTemplate(BaseTemplate):
-    @classmethod
-    def configure_app(cls, app):
-        super().configure_app(app)
-        import dash_bootstrap_components as dbc
-        # Check if there are any bootstrap css themes already added
-        add_theme = True
-        for url in app.config.external_stylesheets:
-            if "bootstrapcdn" in url:
-                add_theme = False
-                break
-        if add_theme:
-            app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
-
-
-class DbcCard(BaseDbcTemplate):
-    _template_instance_cls = DbcCardTemplateInstance
-
-    def __init__(self, title=None, columns=12, min_width=400, height=None, **kwargs):
-        super().__init__(
-            title=title, columns=columns, min_width=min_width, height=height, **kwargs
-        )
-
-
-class DbcSidebar(BaseDbcTemplate):
-    _template_instance_cls = DbcSidebarTemplateInstance
-
-    def __init__(self, title=None, sidebar_columns=4, **kwargs):
-        super().__init__(
-            title=title, sidebar_columns=sidebar_columns, **kwargs
-        )
-
-
-class DbcRow(BaseDbcTemplate):
-    _template_instance_cls = DbcRowTemplateInstance
-
-    def __init__(
-            self, title=None, row_height=None, input_cols=4,
-            min_input_width="300px", **kwargs
-    ):
-        super().__init__(
-            title=title, row_height=row_height,
-            input_cols=input_cols, min_input_width=min_input_width, **kwargs
-        )

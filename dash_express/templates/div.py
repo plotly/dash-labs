@@ -1,8 +1,8 @@
-from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
+from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
 
 
-class FlatDivTemplateInstance(BaseTemplateInstance):
+class FlatDiv(BaseTemplateInstance):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -13,10 +13,3 @@ class FlatDivTemplateInstance(BaseTemplateInstance):
         children.extend(self._components['input'])
         children.extend(self._components['output'])
         return html.Div(children=children)
-
-
-class FlatDiv(BaseTemplate):
-    _template_instance_cls = FlatDivTemplateInstance
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)

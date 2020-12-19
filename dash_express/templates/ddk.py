@@ -1,10 +1,12 @@
-from dash_express.templates.base import BaseTemplateInstance, BaseTemplate
+from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
 
 from dash_express.templates.util import filter_kwargs, build_component_id
 
 
 class BaseDDKTemplateInstance(BaseTemplateInstance):
+    _label_value_prop = "label"
+
     def __init__(
             self,
             theme=None,
@@ -60,7 +62,7 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
             return layout
 
 
-class DdkCardTemplateInstance(BaseDDKTemplateInstance):
+class DdkCard(BaseDDKTemplateInstance):
     def __init__(self, title=None, width=None, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -92,7 +94,7 @@ class DdkCardTemplateInstance(BaseDDKTemplateInstance):
         return layout
 
 
-class DdkRowTemplateInstance(BaseDDKTemplateInstance):
+class DdkRow(BaseDDKTemplateInstance):
     def __init__(self, title=None, input_width=30, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -127,7 +129,7 @@ class DdkRowTemplateInstance(BaseDDKTemplateInstance):
         return layout
 
 
-class DdkSidebarTemplateInstance(BaseDDKTemplateInstance):
+class DdkSidebar(BaseDDKTemplateInstance):
     def __init__(self, title=None, sidebar_width="300px", **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -163,50 +165,3 @@ class DdkSidebarTemplateInstance(BaseDDKTemplateInstance):
         children.append(sidebar_companion)
 
         return children
-
-
-class BaseDdkTemplate(BaseTemplate):
-    _label_value_prop = "label"
-
-
-class DdkCard(BaseDdkTemplate):
-    _template_instance_cls = DdkCardTemplateInstance
-
-    def __init__(self, title=None, width=None, height=None, **kwargs):
-        """
-        TODO: User docstring here
-        """
-        super().__init__(
-            title=title, width=width, height=height, **kwargs
-        )
-
-
-class DdkRow(BaseDdkTemplate):
-    _template_instance_cls = DdkRowTemplateInstance
-
-    def __init__(self, title=None, input_width=30, **kwargs):
-        """
-        TODO: User docstring here
-        Also the common DDK options:
-            theme=None,
-            show_editor=None,
-            theme_dev_tools=None,
-            embedded=None,
-            show_undo_redo=None,
-            use_mobile_viewport=None,
-        """
-        super().__init__(
-            title=title, input_width=input_width, **kwargs
-        )
-
-
-class DdkSidebar(BaseDdkTemplate):
-    _template_instance_cls = DdkSidebarTemplateInstance
-
-    def __init__(self, title=None, sidebar_width="300px", **kwargs):
-        """
-        TODO: User docstring here
-        """
-        super().__init__(
-            title=title, sidebar_width=sidebar_width, **kwargs
-        )

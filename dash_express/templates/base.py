@@ -2,7 +2,7 @@ from functools import wraps, update_wrapper
 from dash.dependencies import Input, Output, MATCH, ALL
 import dash_html_components as html
 import dash_core_components as dcc
-from dash.exceptions import PreventUpdate
+import re
 
 from dash_express.templates.util import build_id, filter_kwargs, build_component_id, \
     build_component_pattern
@@ -28,52 +28,100 @@ dx_index = """<!DOCTYPE html>
 
 
 class BaseTemplateInstance:
-    def __init__(self, label_prop, full=True):
+    _label_value_prop = "children"
+    _inline_css = None
+
+    def __init__(self, full=True):
         # Maybe this is a TemplateBuilder class with options and a .template()
         # method that build template that has the
         self.full = full
-        self.label_prop = label_prop
         self._components = dict(input=[], output=[])
+        self._dynamic_label_callback_args = []
+        self._disable_component_callback_args = []
 
-    def add_component(self, component, role=None, label=None):
+    @classmethod
+    def _style_class_component(cls, component):
+        if (isinstance(component, (dcc.Slider, dcc.RangeSlider))
+                and not getattr(component, "className", None)):
+            component.className = "dcc-slider"
+
+    def add_component(self, component, value_prop, role=None, label=None, optional=False):
         """
         component id should have been created with build_component_id
         """
         # Validate / infer input_like and output_like
         if role is None:
-            # Default kind to output for graphs, and input for everythig else
+            # Default kind to output for graphs, and input for everything else
             if component.__class__.__name__ == "Graph":
                 role = "output"
             else:
                 role = "input"
 
+        self._style_class_component(component)
+
+        # Get reference to dependency class object for role
+        Dependency = Input if role == "input" else Output
+        dependencies = []
+
+        if optional:
+            layout_component, checkbox_id, checkbox_prop = self.build_optional_component(component)
+            optional_dependency = Dependency(checkbox_id, checkbox_prop)
+            dependencies.append(optional_dependency)
+
+            self._disable_component_callback_args.append([
+                Output(component.id, "disabled"),
+                [optional_dependency]
+            ])
+            # Value function
+            dependency_fn = lambda val, enabled: val if enabled else None
+        else:
+            optional_dependency = None
+            dependency_fn = None
+            layout_component = component
+
         if label:
             label_name = str(component.id["name"]) + "-label"
-            if "{value" in label:
+            if not isinstance(label, str) or "{value" in label:
                 # Callback to update label
-                initial_value = label.format(value=getattr(component, "value", ""))
+                value = getattr(component, value_prop, "")
+                if isinstance(label, str):
+                    initial_value = label.format(value=value)
+                else:
+                    initial_value = label(value)
 
                 # Build id for label
                 label_id = build_id(
                     kind="formatted_label", name=label_name,
-                    label_link=component.id["id"],
-                    label_link_prop="value",
-                    format_string=label,
                 )
 
-                # Update component id's label link
-                component.id["label_link"] = component.id["id"]
-                component.id["label_link_prop"] = "value"
+                # Figure out callback arguments for updating label
+                update_label_inputes = [Input(component.id, value_prop)]
+                if optional_dependency is not None:
+                    update_label_inputes.append(optional_dependency)
+
+                self._dynamic_label_callback_args.append([
+                    Output(label_id, self._label_value_prop),
+                    update_label_inputes,
+                    dependency_fn,
+                    label,
+                ])
             else:
                 initial_value = label
                 label_id = build_id(kind="label", name=label_name)
 
             layout_component, label_value_prop = \
-                self.build_labeled_component(component, label_id, initial_value=initial_value)
-        else:
-            layout_component = component
+                self.build_labeled_component(layout_component, label_id, initial_value=initial_value)
 
         self._components[role].append(layout_component)
+
+        dependencies.insert(0, Dependency(component.id, value_prop))
+
+        return dependencies, dependency_fn
+
+    _dropdown_value_prop = "value"
+    _slider_value_prop = "value"
+    _input_value_prop = "value"
+    _checklist_value_prop = "value"
 
     # Methods designed to be overridden by subclasses
     @classmethod
@@ -88,50 +136,44 @@ class BaseTemplateInstance:
             value = options[0]["value"]
 
         return dcc.Dropdown(
-            id=build_component_id(kind="dropdown", name=name),
+            id=build_id(kind="dropdown", name=name),
             options=options,
             clearable=clearable,
             value=value,
             **filter_kwargs(**kwargs)
         )
 
-    def add_dropdown(self, options, value=None, optional=False, role="input", label=None, name=None, **kwargs):
+    def add_dropdown(self, options, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         component = self.build_dropdown(options, value=value, name=name, **kwargs)
-        if optional:
-            component = self.build_optional_component(component)
-        self.add_component(component, role=role, label=label)
-        return component
+        # if optional:
+        #     component = self.build_optional_component(component)
+        return self.add_component(component, role=role, label=label, value_prop=self._dropdown_value_prop, optional=optional)
 
     @classmethod
     def build_slider(cls, min, max, step=None, value=None, name=None, **kwargs):
         return dcc.Slider(
-            id=build_component_id(kind="slider", name=name),
+            id=build_id(kind="slider", name=name),
             min=min,
             max=max,
             value=value if value is not None else min,
-            className="dcc-slider",
             **filter_kwargs(step=step, **kwargs)
         )
 
-    def add_slider(self, min, max, step=None, value=None, optional=False, role="input", label=None, name=None, **kwargs):
+    def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         component = self.build_slider(min, max, step=step, value=value, name=name, **kwargs)
-        if optional:
-            component = self.build_optional_component(component)
-        self.add_component(component, role=role, label=label)
-        return component
+        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._slider_value_prop)
 
     @classmethod
     def build_input(cls, value=None, name=None, **kwargs):
         return dcc.Input(
-            id=build_component_id(kind="input", name=name),
+            id=build_id(kind="input", name=name),
             value=value,
             **filter_kwargs(**kwargs)
         )
 
-    def add_input(self, value=None, role="input", label=None, name=None, **kwargs):
+    def add_input(self, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         component = self.build_input(value=value, name=name, **kwargs)
-        self.add_component(component, role=role, label=label)
-        return component
+        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._input_value_prop)
 
     @classmethod
     def build_checkbox(cls, option, value=None, name=None, **kwargs):
@@ -139,34 +181,71 @@ class BaseTemplateInstance:
             option = {"label": option, "value": option}
 
         return dcc.Checklist(
-            id=build_component_id(kind="checkbox", name=name),
+            id=build_id(kind="checkbox", name=name),
             options=[option],
             value=value if value is not None else option["value"],
             **filter_kwargs(**kwargs)
         )
 
-    def add_checkbox(self, option, value=None, role="input", label=None, name=None, **kwargs):
+    def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         component = self.build_checkbox(option, value=value, name=name, **kwargs)
-        self.add_component(component, role=role, label=label)
-        return component
+        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._checklist_value_prop)
 
     @classmethod
     def build_graph(cls, figure, name=None, **kwargs):
         return dcc.Graph(
-            id=build_component_id(kind="graph", name=name),
+            id=build_id(kind="graph", **filter_kwargs(name=name)),
             figure=figure,
             **filter_kwargs(**kwargs)
         )
 
+    @classmethod
+    def Graph(self, figure, **kwargs):
+        return self.build_graph(figure)
+
     def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
         component = self.build_graph(figure, name=name, **kwargs)
-        self.add_component(component, role=role, label=label)
-        return component
+        return self.add_component(component, role=role, label=label, value_prop="figure")
 
-    @property
-    def layout(self):
+    @classmethod
+    def _configure_app(cls, app):
+        if cls._inline_css:
+            app.index_string = app.index_string.replace(
+                "{%css%}", "{%css%}" + cls._inline_css
+            )
+
+    def build_layout(self, app):
+        # Build structure
         layout = self._perform_layout()
         layout = self.maybe_wrap_layout(layout)
+
+        # Add callbacks
+        for output, inputs, dependency_fn, label in self._dynamic_label_callback_args:
+            @app.callback(output, inputs)
+            def format_label(*args, dependency_fn=dependency_fn, label=label):
+                if dependency_fn is not None:
+                    val = dependency_fn(*args)
+                else:
+                    val = args[0]
+
+                if isinstance(label, str):
+                    if val is not None:
+                        return label.format(value=val)
+                    else:
+                        # Replace the {value...} wildcard with "None"
+                        return re.sub("{value(:[^}]*)?}", "None", label)
+                else:
+                    return label(val)
+
+        # Checkboxes
+        for output, inputs in self._disable_component_callback_args:
+            @app.callback(output, inputs)
+            def disable_component(checked):
+                return not checked
+
+        # CSS
+        self._configure_app(app)
+
         return layout
 
     def _perform_layout(self):
@@ -177,7 +256,7 @@ class BaseTemplateInstance:
 
     @classmethod
     def build_optional_component(self, component, enabled=True):
-        return component
+        return component, None, None
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):
@@ -193,110 +272,3 @@ class BaseTemplateInstance:
             ]
         )
         return layout_component, "children"
-
-
-class BaseTemplate:
-    _template_instance_cls = BaseTemplateInstance
-    _label_value_prop = "children"
-    _inline_css = """
-        <style>
-        .dcc-slider {
-            padding: 12px 20px 12px 20px !important;
-            border: 1px solid #ced4da;
-            border-radius: .25rem;
-         }
-        </style>"""
-
-    @classmethod
-    def _configure_label_formatting_callbacks(cls, app):
-        # Pattern matching callback for labels with {value} formatting
-        for value_prop in ["value", "children", "date", "data"]:
-            @app.callback(
-                Output(
-                    {"id": ALL, "label_link": MATCH, 'kind': "formatted_label", "name": ALL,
-                     "format_string": ALL, "label_link_prop": value_prop},
-                    cls._label_value_prop
-                ),
-                [Input(build_component_pattern(label_link=MATCH, label_link_prop=value_prop), value_prop)],
-            )
-            def update_label(v):
-                # Unwrap single element v due to pattern matching callback
-                ctx = dash.callback_context
-                format_string = ctx.outputs_list[0]["id"]["format_string"]
-                v = v[0]
-                # v = None
-                if v is None:
-                    return ["Disabled"]
-                else:
-                    return [format_string.format(value=v)]
-
-    @classmethod
-    def _configure_index_str(cls, app):
-        app.index_string = app.index_string.replace("{%css%}", "{%css%}" + cls._inline_css)
-
-    @classmethod
-    def _configure_disabel_checkboxes(cls, app):
-        @app.callback(
-            Output(
-                build_component_pattern(disable_link=MATCH, disable_link_prop="checked"),
-                "disabled",
-            ),
-            [Input(
-                build_component_pattern(disable_link=MATCH, disable_link_prop="disabled", kind="disable-checkbox"),
-                # {"id": ALL, "disable_link": MATCH, "kind": "disable-checkbox", "name": ALL, "disable_link_prop": "checked"},
-                "checked"
-            )]
-        )
-        def update_disable_checkboxes(checked):
-            ctx = dash.callback_context
-            print(ctx.inputs_list)
-            print(ctx.outputs_list)
-            print(checked)
-            print("")
-            if checked is None:
-                return PreventUpdate
-            return [not bool(checked[0])]
-
-    @classmethod
-    def configure_app(cls, app):
-        # TODO: use locking to ensure that we only do this once per app.
-        cls._configure_label_formatting_callbacks(app)
-        cls._configure_index_str(app)
-        cls._configure_disabel_checkboxes(app)
-
-    @classmethod
-    def all_component_ids(cls):
-        return Input(
-            {"id": ALL, "kind": ALL, "name": ALL, "link": ALL, "link_source_prop": ALL},
-            "value"
-        )
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
-    def instance(self, **kwargs):
-        combined_kwargs = dict(self.kwargs, **kwargs)
-        return self._template_instance_cls(label_prop=self._label_value_prop, **combined_kwargs)
-
-    # Methods designed to be overridden by subclasses
-    @classmethod
-    def build_dropdown(cls, options, value=None, **kwargs):
-        return cls._template_instance_cls.build_dropdown(options, value=value, **kwargs)
-
-    @classmethod
-    def build_slider(cls, min, max, step=None, value=None, **kwargs):
-        return cls._template_instance_cls.build_slider(
-            min, max, step=step, value=value, **kwargs
-        )
-
-    @classmethod
-    def build_input(cls, value=None, **kwargs):
-        return cls._template_instance_cls.build_input(value=value, **kwargs)
-
-    @classmethod
-    def build_checkbox(cls, options, value=None, **kwargs):
-        return cls._template_instance_cls.build_checkbox(options, value=value, **kwargs)
-
-    @classmethod
-    def build_graph(cls, figure, **kwargs):
-        return cls._template_instance_cls.build_graph(figure, **kwargs)
