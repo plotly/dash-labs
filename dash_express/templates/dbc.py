@@ -69,10 +69,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
     def build_optional_component(self, component, enabled=True):
         """ Should come before labeling """
         import dash_bootstrap_components as dbc
-        component.id["disable_link"] = component.id["id"]
-        component.id["disable_link_prop"] = "checked"
-        checkbox_id = build_component_id(
-            disable_link=component.id["id"], disable_link_prop="disabled",
+        checkbox_id = build_id(
             kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
         )
 

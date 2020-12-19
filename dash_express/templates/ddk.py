@@ -1,11 +1,19 @@
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
+import dash_core_components as dcc
 
-from dash_express.templates.util import filter_kwargs, build_component_id
+from dash_express.templates.util import filter_kwargs, build_component_id, build_id
 
 
 class BaseDDKTemplateInstance(BaseTemplateInstance):
     _label_value_prop = "label"
+
+    _inline_css = """
+            <style>
+            .dcc-slider {
+                padding: 12px 20px 12px 20px !important;
+             }
+            </style>"""
 
     def __init__(
             self,
@@ -34,6 +42,22 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
             id=label_id, label=initial_value, children=component
         )
         return layout_component, "label"
+
+    @classmethod
+    def build_optional_component(self, component, enabled=True):
+        checkbox_id = build_id(
+            kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
+        )
+
+        checklist_value = ["checked"] if enabled else []
+        input_group = html.Div(
+            style={"display": "flex", "align-items": "center"},
+            children=[
+                dcc.Checklist(id=checkbox_id, options=[{"label": "", "value": "checked"}], value=checklist_value),
+                html.Div(style=dict(flex="auto"), children=component)
+            ]
+        )
+        return input_group, checkbox_id, "value"
 
     @classmethod
     def build_graph(cls, figure, name=None, **kwargs):

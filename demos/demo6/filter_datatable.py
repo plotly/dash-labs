@@ -6,8 +6,8 @@ tips = px.data.tips()
 import dash_html_components as html
 import dash_core_components as dcc
 app = dash.Dash(__name__)
-template = dx.templates.DbcSidebar(title="Dash Express App")
-# template = dx.templates.DdkSidebar(title="Dash Express App")
+# template = dx.templates.DbcSidebar(title="Dash Express App")
+template = dx.templates.DdkSidebar(title="Dash Express App")
 # template = dx.templates.DccCard(title="Dash Express App")
 
 

@@ -241,7 +241,7 @@ class BaseTemplateInstance:
         for output, inputs in self._disable_component_callback_args:
             @app.callback(output, inputs)
             def disable_component(checked):
-                return not checked
+                return not bool(checked)
 
         # CSS
         self._configure_app(app)
@@ -256,7 +256,7 @@ class BaseTemplateInstance:
 
     @classmethod
     def build_optional_component(self, component, enabled=True):
-        return component, None, None
+        raise NotImplementedError
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):

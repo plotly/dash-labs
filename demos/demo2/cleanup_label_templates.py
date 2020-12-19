@@ -4,9 +4,9 @@ import numpy as np
 import plotly.express as px
 
 app = dash.Dash(__name__)
-template = dx.templates.DbcSidebar(title="Dash Express App")
-# template = dx.templates.DdkSidebarTemplateInstance(title="Dash Express App")
-# template = dx.templates.DccCardTemplateInstance(title="Dash Express App")
+# template = dx.templates.DbcSidebar(title="Dash Express App")
+template = dx.templates.DdkSidebar(title="Dash Express App")
+# template = dx.templates.DccCard(title="Dash Express App")
 # template = dx.templates.FlatDivTemplateInstance()
 
 
