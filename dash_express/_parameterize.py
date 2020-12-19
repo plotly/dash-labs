@@ -146,7 +146,6 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
 def map_input_parameters(fn, param_index_mapping):
     @wraps(fn)
     def wrapper(*args):
-        print(args)
         kwargs = {}
         for param, mapping in param_index_mapping.items():
             if isinstance(mapping, int):
