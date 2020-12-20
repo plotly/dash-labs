@@ -43,6 +43,8 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
             pattern_inputs, pattern_fn = template.add_dropdown(
                 options=options, label=label, name=arg, optional=arg_optional
             )
+        elif isinstance(pattern, tuple) and pattern and isinstance(pattern[0], Input):
+            pattern_inputs, pattern_fn = pattern, None
         elif isinstance(pattern, Component) or (
                 isinstance(pattern, tuple) and
                 len(pattern) == 2 and

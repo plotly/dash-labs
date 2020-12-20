@@ -70,36 +70,59 @@ class BaseTemplateInstance:
                 Output(component.id, "disabled"),
                 [optional_dependency]
             ])
+
             # Value function
-            dependency_fn = lambda val, enabled: val if enabled else None
+            def dependency_fn(enabled, *args):
+                if not enabled:
+                    return None
+                elif isinstance(value_prop, list):
+                    # Return as list
+                    return args
+                else:
+                    # Return as scalar
+                    return args[0]
         else:
-            optional_dependency = None
-            dependency_fn = None
+            def dependency_fn(*args):
+                if isinstance(value_prop, list):
+                    # Return as list
+                    return args
+                else:
+                    # Return as scalar
+                    return args[0]
+
             layout_component = component
+
+        # Figure out callback arguments for updating label
+        if isinstance(value_prop, list):
+            for prop in value_prop:
+                dependencies.append(Dependency(component.id, prop))
+        else:
+            dependencies.append(Dependency(component.id, value_prop))
 
         if label:
             label_name = str(component.id["name"]) + "-label"
             if not isinstance(label, str) or "{value" in label:
-                # Callback to update label
-                value = getattr(component, value_prop, "")
-                if isinstance(label, str):
-                    initial_value = label.format(value=value)
-                else:
-                    initial_value = label(value)
+                # TODO: only valid for role="input"?
 
                 # Build id for label
                 label_id = build_component_id(
                     kind="formatted_label", name=label_name,
                 )
 
-                # Figure out callback arguments for updating label
-                update_label_inputes = [Input(component.id, value_prop)]
-                if optional_dependency is not None:
-                    update_label_inputes.append(optional_dependency)
+                # Callback to update label
+                if isinstance(value_prop, list):
+                    value = [getattr(component, prop, "") for prop in value_prop]
+                else:
+                    value = getattr(component, value_prop, "")
+
+                if isinstance(label, str):
+                    initial_value = label.format(value=value)
+                else:
+                    initial_value = label(value)
 
                 self._dynamic_label_callback_args.append([
                     Output(label_id, self._label_value_prop),
-                    update_label_inputes,
+                    dependencies,
                     dependency_fn,
                     label,
                 ])
@@ -111,8 +134,6 @@ class BaseTemplateInstance:
                 self.build_labeled_component(layout_component, label_id, initial_value=initial_value)
 
         self._components[role].append(layout_component)
-
-        dependencies.insert(0, Dependency(component.id, value_prop))
 
         return dependencies, dependency_fn
 
@@ -230,11 +251,12 @@ class BaseTemplateInstance:
         for output, inputs, dependency_fn, label in self._dynamic_label_callback_args:
             @app.callback(output, inputs)
             def format_label(*args, dependency_fn=dependency_fn, label=label):
+
                 if dependency_fn is not None:
                     val = dependency_fn(*args)
                 else:
                     val = args[0]
-
+                print(args, val)
                 if isinstance(label, str):
                     if val is not None:
                         return label.format(value=val)
