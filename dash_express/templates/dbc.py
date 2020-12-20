@@ -97,7 +97,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         import dash_bootstrap_components as dbc
         layout_component = dbc.FormGroup(
             children=[
-                dbc.Label(id=label_id, children=[initial_value]),
+                dbc.Label(id=label_id, children=[initial_value], style={"display": "block"}),
                 component,
             ]
         )
