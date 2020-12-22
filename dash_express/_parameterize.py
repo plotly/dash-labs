@@ -11,7 +11,7 @@ from plotly.graph_objs import Figure
 import copy
 
 
-def parameterize(app, input, output=None, template=None, labels=None, optional=(), manual=False):
+def parameterize(app, input, output=None, state=None, template=None, labels=None, optional=(), manual=False):
     """
     Parameterize a function using a
     """
@@ -27,16 +27,31 @@ def parameterize(app, input, output=None, template=None, labels=None, optional=(
     if output is None:
         output = (html.Div(id=build_component_id("div", "output")), "children")
 
-    param_defaults = {}
-    for param_name, param in input.items():
-        param_defaults[param_name] = param
+    # Preprocess state. End up with input and state values all in the input dict
+    # and with state being a list of keys into that dict
+    if state is None:
+        state = []
+    elif isinstance(state, (tuple, list)) and state and isinstance(state[0], (str, int)):
+        # TODO: validate state values in input
+        state = list(state)
+    elif isinstance(state, dict):
+        input = dict(input, **state)
+        state = list(state)
+    else:
+        raise ValueError("Invalid state")
 
-    all_inputs = []
-    all_state = []
-    param_index_mapping = {}
+    if manual:
+        state.extend(list(input))
+
+    param_patterns = {}
+    for param_name, param in input.items():
+        param_patterns[param_name] = param
+
+    param_dependencies = {}
+    param_functions = {}
 
     # inputs
-    for arg, pattern in param_defaults.items():
+    for arg, pattern in param_patterns.items():
         label = labels.get(arg, arg)
         arg_optional = arg in optional
 
@@ -87,23 +102,46 @@ def parameterize(app, input, output=None, template=None, labels=None, optional=(
             raise Exception(f"unknown pattern for {arg} with type {type(pattern)}")
 
         # Compute positional indices of this pattern's inputs
-        # Add 1 for manual since that will push inputs down a slot
-        input_inds = [i + len(all_inputs) + int(manual) for i in range(len(pattern_inputs))]
+        if arg in state or manual:
+            # This is state
+            param_dependencies[arg] = [State(ip.component_id, ip.component_property) for ip in pattern_inputs]
+        else:
+            # This is an input
+            param_dependencies[arg] = pattern_inputs
 
-        # Update all inputs list
-        all_inputs.extend(pattern_inputs)
+        param_functions[arg] = pattern_fn
 
-        # Build mapping from parameter name to positional arguments
+    # Build param to index mapping
+    num_inputs = int(manual)
+    for param, dependencies in param_dependencies.items():
+        if isinstance(dependencies[0], Input):
+            num_inputs += len(dependencies)
+
+    all_inputs = []
+    all_state = []
+    param_index_mapping = {}
+    for param, dependencies in param_dependencies.items():
+        if isinstance(dependencies[0], Input):
+            arg_inds = [i + len(all_inputs) for i in range(len(dependencies))]
+            all_inputs.extend(dependencies)
+        else:  # State
+            arg_inds = [
+                i + num_inputs + len(all_state) for i in range(len(dependencies))
+            ]
+            all_state.extend(dependencies)
+
+        pattern_fn = param_functions[param]
         if pattern_fn is not None:
             # Compute parameter value as function of positional argument values
-            param_index_mapping[arg] = (pattern_fn, input_inds)
-        elif len(input_inds) > 1:
+            param_index_mapping[param] = (pattern_fn, arg_inds)
+        elif len(arg_inds) > 1:
             # Pass tuple positional argument values as parameter
-            param_index_mapping[arg] = input_inds
+            param_index_mapping[param] = arg_inds
         else:
             # Use single positional argument value as parameter
-            param_index_mapping[arg] = input_inds[0]
+            param_index_mapping[param] = arg_inds[0]
 
+    # State
     if manual:
         # Add compute button input
         button = template.Button(
@@ -111,11 +149,9 @@ def parameterize(app, input, output=None, template=None, labels=None, optional=(
             id=build_component_id(kind="button", name="update-parameters")
         )
         template.add_component(button, role="input", value_property="n_clicks")
+        all_inputs.append(Input(button.id, "n_clicks"))
 
-        # Convert all inputs to state
-        all_state = [State(ip.component_id, ip.component_property) for ip in all_inputs]
-        all_inputs = [Input(button.id, "n_clicks")]
-
+    # Outputs
     # For now, all output placed as children of Div
     if isinstance(output, list):
         output_dependencies = []
