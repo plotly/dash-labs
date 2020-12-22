@@ -31,7 +31,7 @@ table = DataTable(
     ),
     template=template,
     labels={
-        "max_total_bill": "Max total bill ($): {value:.2f}",
+        "max_total_bill": "Max total bill ($): {:.2f}",
         "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
         "sex": "Patron Gender",
     },

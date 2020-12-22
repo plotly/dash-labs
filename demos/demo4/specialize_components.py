@@ -32,8 +32,8 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
     labels={
         "fun": "Function",
         "figure_title": "Figure Title",
-        "phase": "Phase: {value}",
-        "amplitude": "Amplitude: {value}"
+        "phase": "Phase: {}",
+        "amplitude": "Amplitude: {}"
     }
 )
 def callback_components(fun, figure_title, phase, amplitude):

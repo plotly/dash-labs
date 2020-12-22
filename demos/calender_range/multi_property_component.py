@@ -29,7 +29,7 @@ daterange = dcc.DatePickerRange(id=daterange_id)
     template=template,
     labels={
         "input_val": "Graph Title",
-        "date_range": "Date: {value}",
+        "date_range": "Date: {} to {}",
     },
     optional=["date_range"]
 )
@@ -45,4 +45,4 @@ layout.children.append(daterange)
 app.layout = layout
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=9083)
+    app.run_server(debug=True, port=9087)

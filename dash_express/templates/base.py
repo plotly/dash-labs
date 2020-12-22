@@ -122,7 +122,7 @@ class BaseTemplateInstance:
 
         if label:
             label_name = str(component.id["name"]) + "-label"
-            if not isinstance(label, str) or "{value" in label:
+            if not isinstance(label, str) or "{" in label:
                 # TODO: only valid for role="input"?
 
                 # Build id for label
@@ -137,7 +137,10 @@ class BaseTemplateInstance:
                     value = getattr(component, value_property, "")
 
                 if isinstance(label, str):
-                    initial_value = label.format(value=value)
+                    if isinstance(value, (tuple, list)):
+                        initial_value = label.format(*value)
+                    else:
+                        initial_value = label.format(value)
                 else:
                     initial_value = label(value)
 
@@ -319,13 +322,15 @@ class BaseTemplateInstance:
                     val = dependency_fn(*args)
                 else:
                     val = args[0]
-                print(args, val)
                 if isinstance(label, str):
                     if val is not None:
-                        return label.format(value=val)
+                        if isinstance(val, (list, tuple)):
+                            return label.format(*val)
+                        else:
+                            return label.format(val)
                     else:
                         # Replace the {value...} wildcard with "None"
-                        return re.sub("{value(:[^}]*)?}", "None", label)
+                        return re.sub(r"\{[^}]*\}", "None", label)
                 else:
                     return label(val)
 

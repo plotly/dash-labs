@@ -20,8 +20,9 @@ template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400p
     ),
     template=template,
     labels={
-        "max_total_bill": "Max total bill ($): {value:.2f}",
-        "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
+        "max_total_bill": "Max total bill ($): {:.2f}",
+        "tip_range": "Tip range ($): {} - {}",
+        # "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
         "sex": "Patron Gender",
     },
     optional=["max_total_bill", "max_tip", "sex", "tip_range"]

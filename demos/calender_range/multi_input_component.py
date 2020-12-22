@@ -21,7 +21,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
     template=template,
     labels={
         "input_val": "Graph Title",
-        "date_range": "Date: {value}",
+        "date_range": "Date: {} to {}",
     },
 )
 def callback_components(input_val, date_range):

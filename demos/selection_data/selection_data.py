@@ -29,7 +29,7 @@ graph = template.Graph(id=graph_id)
     output=[(graph, "figure"), (html.Div(), "children")],
     template=template,
     labels={
-        "max_total_bill": "Max total bill ($): {value:.2f}",
+        "max_total_bill": "Max total bill ($): {:.2f}",
         "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
         "sex": "Patron Gender",
     },
@@ -56,25 +56,6 @@ def filter_table(max_total_bill, tip_range, sex, selectedData):
         filtered,
     ]]
 
-
-# callback_components = dx.parameterize(
-#     app,
-#     input=dict(
-#         max_total_bill=(0, 50.0, 0.25),
-#         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
-#         sex=["Male", "Female"],
-#     ),
-#     output=dict(
-#         selectedData=(graph, "selectedData")
-#     ),
-#     template=template,
-#     labels={
-#         "max_total_bill": "Max total bill ($): {value:.2f}",
-#         "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
-#         "sex": "Patron Gender",
-#     },
-#     optional=["max_total_bill", "max_tip", "sex", "tip_range"]
-# )
 
 app.layout = filter_table.layout
 

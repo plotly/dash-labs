@@ -22,8 +22,8 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
     labels={
         "fun": "Function",
         "figure_title": "Figure Title",
-        "phase": "Phase: {value}",
-        "amplitude": "Amplitude: {value}"
+        "phase": "Phase: {}",
+        "amplitude": "Amplitude: {}"
     },
     optional=["fun", "phase"],
     manual=True,
