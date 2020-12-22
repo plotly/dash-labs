@@ -3,26 +3,45 @@ import dash_html_components as html
 import dash_core_components as dcc
 import re
 import dash_table  # noqa: Needs table initialization
+from functools import update_wrapper
+from collections import OrderedDict
 
 from dash_express.templates.util import filter_kwargs, build_component_id
 
-dx_index = """<!DOCTYPE html>
-<html>
-    <head>
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>"""
+
+class ParameterComponents:
+    def __init__(
+            self, name, value, value_property, label, label_property,
+            enabler, enabler_property, container, container_property
+    ):
+        self.name = name
+        self.value = value
+        self.value_property = value_property
+        self.label = label
+        self.label_property = label_property
+        self.enable = enabler
+        self.enable_property = enabler_property
+        self.container = container
+        self.container_property = container_property
+
+
+class CallbackComponents:
+    def __init__(self, app, input, output, layout, fn=None):
+        # Set properties
+        self.app = app
+        self.fn = fn
+        self.input = input
+        self.output = output
+        self.layout = layout
+
+        # wrap self to look like input function
+        if self.fn is not None:
+            update_wrapper(self, self.fn)
+
+    def __call__(self, *args, **kwargs):
+        if self.fn is None:
+            raise ValueError("CallbackComponents instance does not wrap a function")
+        return self.fn(*args, **kwargs)
 
 
 class BaseTemplateInstance:
@@ -33,7 +52,7 @@ class BaseTemplateInstance:
         # Maybe this is a TemplateBuilder class with options and a .template()
         # method that build template that has the
         self.full = full
-        self._components = dict(input=[], output=[])
+        self._role_param_components = dict(input=OrderedDict(), output=OrderedDict())
         self._dynamic_label_callback_args = []
         self._disable_component_callback_args = []
 
@@ -43,7 +62,7 @@ class BaseTemplateInstance:
                 and not getattr(component, "className", None)):
             component.className = "dcc-slider"
 
-    def add_component(self, component, value_prop, role=None, label=None, optional=False):
+    def add_component(self, component, value_property, name=None, role=None, label=None, optional=False):
         """
         component id should have been created with build_component_id
         """
@@ -62,8 +81,9 @@ class BaseTemplateInstance:
         dependencies = []
 
         if optional:
-            layout_component, checkbox_id, checkbox_prop = self.build_optional_component(component)
-            optional_dependency = Dependency(checkbox_id, checkbox_prop)
+            container, container_property, enabler, enabler_property = \
+                self.build_optional_component(component)
+            optional_dependency = Dependency(enabler.id, enabler_property)
             dependencies.append(optional_dependency)
 
             self._disable_component_callback_args.append([
@@ -75,29 +95,30 @@ class BaseTemplateInstance:
             def dependency_fn(enabled, *args):
                 if not enabled:
                     return None
-                elif isinstance(value_prop, list):
+                elif isinstance(value_property, list):
                     # Return as list
                     return args
                 else:
                     # Return as scalar
                     return args[0]
         else:
+            container, container_property = component, value_property
+            enabler, enabler_property = None, None
+
             def dependency_fn(*args):
-                if isinstance(value_prop, list):
+                if isinstance(value_property, list):
                     # Return as list
                     return args
                 else:
                     # Return as scalar
                     return args[0]
-
-            layout_component = component
 
         # Figure out callback arguments for updating label
-        if isinstance(value_prop, list):
-            for prop in value_prop:
+        if isinstance(value_property, list):
+            for prop in value_property:
                 dependencies.append(Dependency(component.id, prop))
         else:
-            dependencies.append(Dependency(component.id, value_prop))
+            dependencies.append(Dependency(component.id, value_property))
 
         if label:
             label_name = str(component.id["name"]) + "-label"
@@ -110,10 +131,10 @@ class BaseTemplateInstance:
                 )
 
                 # Callback to update label
-                if isinstance(value_prop, list):
-                    value = [getattr(component, prop, "") for prop in value_prop]
+                if isinstance(value_property, list):
+                    value = [getattr(component, prop, "") for prop in value_property]
                 else:
-                    value = getattr(component, value_prop, "")
+                    value = getattr(component, value_property, "")
 
                 if isinstance(label, str):
                     initial_value = label.format(value=value)
@@ -130,10 +151,30 @@ class BaseTemplateInstance:
                 initial_value = label
                 label_id = build_component_id(kind="label", name=label_name)
 
-            layout_component, label_value_prop = \
-                self.build_labeled_component(layout_component, label_id, initial_value=initial_value)
+            container, container_property, label, label_property = \
+                self.build_labeled_component(
+                    container, label_id, initial_value=initial_value
+                )
+        else:
+            label, label_property = None, None
 
-        self._components[role].append(layout_component)
+        param_components = ParameterComponents(
+            name=name,
+            value=component,
+            value_property=value_property,
+            label=label,
+            label_property=label_property,
+            enabler=enabler,
+            enabler_property=enabler_property,
+            container=container,
+            container_property = container_property,
+        )
+
+        # Use component index as name if no name provided
+        if name is None:
+            name = len(self._role_param_components[role])
+
+        self._role_param_components[role][name] = param_components
 
         return dependencies, dependency_fn
 
@@ -165,12 +206,13 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, **kwargs)
         )
 
-    def add_dropdown(self, options, value=None, role="input", label=None, name=None, optional=False, **kwargs):
+    def add_dropdown(self, options, value=None, name=None, role="input", label=None, optional=False, **kwargs):
         id = build_component_id(kind="dropdown", name=name)
         component = self.Dropdown(options, id=id, value=value, **kwargs)
-        # if optional:
-        #     component = self.build_optional_component(component)
-        return self.add_component(component, role=role, label=label, value_prop=self._dropdown_value_prop, optional=optional)
+        return self.add_component(
+            component, value_property=self._dropdown_value_prop,
+            name=name, role=role, label=label, optional=optional
+        )
 
     @classmethod
     def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
@@ -184,7 +226,10 @@ class BaseTemplateInstance:
     def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         id = build_component_id(kind="slider", name=name)
         component = self.Slider(min, max, id=id, step=step, value=value, **kwargs)
-        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._slider_value_prop)
+        return self.add_component(
+            component, value_property=self._slider_value_prop,
+            name=name, role=role, label=label, optional=optional
+        )
 
     @classmethod
     def Input(cls, value=None, id=None, **kwargs):
@@ -196,7 +241,10 @@ class BaseTemplateInstance:
     def add_input(self, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         id = build_component_id(kind="input", name=name)
         component = self.Input(value=value, id=id, **kwargs)
-        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._input_value_prop)
+        return self.add_component(
+            component, value_property=self._input_value_prop,
+            name=name, role=role, label=label, optional=optional
+        )
 
     @classmethod
     def Checkbox(cls, option, id=id, value=None, **kwargs):
@@ -212,7 +260,10 @@ class BaseTemplateInstance:
     def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, **kwargs):
         id = build_component_id(kind="checkbox", name=name)
         component = self.Checkbox(option, value=value, id=id, **kwargs)
-        return self.add_component(component, role=role, label=label, optional=optional, value_prop=self._checklist_value_prop)
+        return self.add_component(
+            component, value_property=self._checklist_value_prop,
+            name=name, role=role, label=label, optional=optional
+        )
 
     @classmethod
     def Graph(cls, figure=None, id=None, **kwargs):
@@ -223,7 +274,10 @@ class BaseTemplateInstance:
     def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
         id = build_component_id(kind="graph", name=name)
         component = self.Graph(figure, id=id, **kwargs)
-        return self.add_component(component, role=role, label=label, value_prop="figure")
+        return self.add_component(
+            component, value_property="figure",
+            name=name, role=role, label=label
+        )
 
     @classmethod
     def DataTable(cls, *args, **kwargs):
@@ -233,7 +287,9 @@ class BaseTemplateInstance:
     def add_datatable(self, *args, name=None, role=None, label=None, **kwargs):
         id = build_component_id(kind="graph", name=name)
         component = self.DataTable(*args, id=id, **kwargs)
-        return self.add_component(component, role=role, label=label, value_prop="data")
+        return self.add_component(
+            component, value_property="data", name=name, role=role, label=label
+        )
 
     @classmethod
     def _configure_app(cls, app):
@@ -241,6 +297,13 @@ class BaseTemplateInstance:
             app.index_string = app.index_string.replace(
                 "{%css%}", "{%css%}" + cls._inline_css
             )
+
+    def callback_components(self, app):
+        layout = self.build_layout(app)
+        return CallbackComponents(
+            app, input=self._role_param_components['input'],
+            output=self._role_param_components['output'], layout=layout
+        )
 
     def build_layout(self, app):
         # Build structure
@@ -283,6 +346,14 @@ class BaseTemplateInstance:
     def maybe_wrap_layout(self, layout):
         return layout
 
+    @property
+    def output_containers(self):
+        return [c.container for c in self._role_param_components['output'].values()]
+
+    @property
+    def input_containers(self):
+        return [c.container for c in self._role_param_components['input'].values()]
+
     @classmethod
     def build_optional_component(self, component, enabled=True):
         checkbox_id = build_component_id(
@@ -290,28 +361,33 @@ class BaseTemplateInstance:
         )
 
         checklist_value = ["checked"] if enabled else []
-        input_group = html.Div(
+        checkbox = dcc.Checklist(
+            id=checkbox_id, options=[{"label": "", "value": "checked"}],
+            value=checklist_value
+        )
+        checkbox_property = "value"
+        container = html.Div(
             style={"display": "flex", "align-items": "center"},
             children=[
-                dcc.Checklist(id=checkbox_id,
-                              options=[{"label": "", "value": "checked"}],
-                              value=checklist_value),
+                checkbox,
                 html.Div(style=dict(flex="auto"), children=component)
             ]
         )
-        return input_group, checkbox_id, "value"
+        container_property = "children"
+        return container, container_property, checkbox, checkbox_property
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):
         # Subclass could use bootstrap or ddk
-        layout_component = html.Div(
+        label = html.Label(id=label_id, children=initial_value)
+        container = html.Div(
             style={"padding-top": 10},
             children=[
-                html.Label(id=label_id, children=initial_value),
+                label,
                 html.Div(
                     style={"display": "block"},
                     children=component
                 ),
             ]
         )
-        return layout_component, "children"
+        return container, "children", label, "children"

@@ -10,6 +10,6 @@ class FlatDiv(BaseTemplateInstance):
     def _perform_layout(self):
         # No callbacks here. Must be constant or idempotent
         children = []
-        children.extend(self._components['input'])
-        children.extend(self._components['output'])
+        children.extend(self.input_containers)
+        children.extend(self.output_containers)
         return html.Div(children=children)

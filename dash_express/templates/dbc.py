@@ -81,28 +81,28 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         checkbox_id = build_component_id(
             kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
         )
-
-        input_group = dbc.InputGroup(
-            [
-                dbc.InputGroupAddon(dbc.Checkbox(
+        checkbox = dbc.Checkbox(
                     id=checkbox_id, checked=enabled
-                ), addon_type="prepend"),
+                )
+        checkbox_property = "checked"
+
+        container = dbc.InputGroup(
+            [
+                dbc.InputGroupAddon(checkbox, addon_type="prepend"),
                 html.Div(style=dict(flex="auto"), children=component)
             ]
         )
-        return input_group, checkbox_id, "checked"
+        return container, "children", checkbox, checkbox_property
 
     @classmethod
     def build_labeled_component(cls, component, label_id, initial_value):
         import dash_bootstrap_components as dbc
-        layout_component = dbc.FormGroup(
-            children=[
-                dbc.Label(id=label_id, children=[initial_value], style={"display": "block"}),
-                component,
-            ]
+        label = dbc.Label(id=label_id, children=[initial_value], style={"display": "block"})
+        container = dbc.FormGroup(
+            children=[label, component]
         )
 
-        return layout_component, "children"
+        return container, "children", label, "children"
 
     @classmethod
     def _configure_app(cls, app):
@@ -136,13 +136,9 @@ class DbcCard(BaseDbcTemplateInstance):
             card_children.append(dbc.CardHeader(self.title))
 
         card_body_children = []
-        card_body_children.extend(
-            self._components['output']
-        )
+        card_body_children.extend(self.output_containers)
         card_body_children.append(html.Hr())
-        card_body_children.extend(
-            self._components['input']
-        )
+        card_body_children.extend(self.input_containers)
 
         card_children.append(dbc.CardBody(children=card_body_children))
 
@@ -180,7 +176,7 @@ class DbcRow(BaseDbcTemplateInstance):
         if self.title:
             output_card_children.append(dbc.CardHeader(self.title))
 
-        output_card_children.extend(self._components['output'])
+        output_card_children.extend(self.output_containers)
 
         input_card_style = {}
         if self.min_input_width is not None:
@@ -197,7 +193,7 @@ class DbcRow(BaseDbcTemplateInstance):
         return dbc.Row(style=row_style, children=[
             dbc.Col(
                 children=dbc.Card(
-                    children=self._components['input'],
+                    children=self.input_containers,
                     body=True
                 ),
                 style=input_card_style,
@@ -238,14 +234,14 @@ class DbcSidebar(BaseDbcTemplateInstance):
             children=[
                 dbc.Col(
                     children=dbc.Card(
-                        children=self._components['input'],
+                        children=self.input_containers,
                         body=True,
                     ),
                     style=sidebar_card_style,
                     **filter_kwargs(md=self.sidebar_columns),
                 ),
                 dbc.Col(
-                    children=self._components['output'],
+                    children=self.output_containers,
                 )
             ]
         )

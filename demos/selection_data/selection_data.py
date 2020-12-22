@@ -41,10 +41,10 @@ def filter(max_total_bill, tip_range, sex, selectedData):
     ]
 
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     filter,
-    params=dict(
+    input=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],
@@ -61,7 +61,7 @@ layout = dx.parameterize(
     optional=["max_total_bill", "max_tip", "sex", "tip_range"]
 )
 
-app.layout = layout
+app.layout = callback_components.layout
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9038)

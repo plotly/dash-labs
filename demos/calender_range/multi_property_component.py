@@ -23,10 +23,10 @@ def callback_fn(input_val, date_range):
 daterange_id = dx.build_component_id("daterange", "daterange")
 daterange = dcc.DatePickerRange(id=daterange_id)
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     callback_fn,
-    params=dict(
+    input=dict(
         input_val="Initial Title",
         # date_range=(dcc.DatePickerRange(), ["start_date", "end_date"])
         date_range=(Input(daterange_id, "start_date"), Input(daterange_id, "end_date")),
@@ -40,6 +40,7 @@ layout = dx.parameterize(
 )
 
 # Add daterange component outside of parameterize
+layout = callback_components.layout
 layout.children.append(daterange)
 
 app.layout = layout

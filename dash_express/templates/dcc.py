@@ -21,9 +21,10 @@ class DccCard(BaseTemplateInstance):
         children = []
         if self.title:
             children.append(html.H2(self.title))
-        children.append(html.Div(self._components['output']))
+
+        children.append(html.Div(self.output_containers))
         children.append(html.Hr())
-        children.append(html.Div(self._components['input']))
+        children.append(html.Div(self.input_containers))
         layout = html.Div(
             style={
                 "width": self.width,

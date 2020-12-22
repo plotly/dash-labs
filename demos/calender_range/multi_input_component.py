@@ -19,10 +19,10 @@ def callback_fn(input_val, date_range):
     )
 
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     callback_fn,
-    params=dict(
+    input=dict(
         input_val="Initial Title",
         date_range=(dcc.DatePickerRange(), ["start_date", "end_date"])
     ),
@@ -33,7 +33,7 @@ layout = dx.parameterize(
     },
 )
 
-app.layout = layout
+app.layout = callback_components.layout
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9003)

@@ -29,17 +29,17 @@ def iris(x, y):
     )
 
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     iris,
-    params=dict(
+    input=dict(
         x=template.Dropdown(options=feature_options, value="sepal_length"),
         y=template.Dropdown(options=feature_options, value="sepal_width"),
     ),
     template=template,
 )
 
-app.layout = layout
+app.layout = callback_components.layout
 
 
 # make sure that x and y values can't be the same variable

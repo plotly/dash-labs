@@ -37,10 +37,10 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
-        layout_component = ddk.ControlItem(
+        container = ddk.ControlItem(
             id=label_id, label=initial_value, children=component
         )
-        return layout_component, "label"
+        return container, "children", container, "label"
 
     @classmethod
     def Graph(cls, figure=None, id=None, **kwargs):
@@ -90,12 +90,12 @@ class DdkCard(BaseDDKTemplateInstance):
 
         card_children.append(html.Div(
             style={"padding": 20},
-            children=html.Div(self._components['output'])
+            children=html.Div(self.output_containers)
         ))
         card_children.append(html.Hr(
             style={"width": "100%", "margin": "auto"}
         ))
-        card_children.extend(self._components['input'])
+        card_children.extend(self.input_containers)
 
         layout = ddk.ControlCard(
             children=card_children,
@@ -116,7 +116,7 @@ class DdkRow(BaseDDKTemplateInstance):
 
         # Input card
         input_card = ddk.ControlCard(
-            children=self._components['input'],
+            children=self.input_containers,
             width=self.input_width,
             # **filter_kwargs(width=self.input_width),
         )
@@ -124,7 +124,7 @@ class DdkRow(BaseDDKTemplateInstance):
         output_card_children = []
         if self.title is not None:
             output_card_children.append(ddk.CardHeader(title=self.title))
-        output_card_children.extend(self._components['output'])
+        output_card_children.extend(self.output_containers)
 
         output_card = ddk.Card(
             children=output_card_children,
@@ -157,7 +157,7 @@ class DdkSidebar(BaseDDKTemplateInstance):
         # Input card
         sidebar_children = []
         sidebar_children.append(ddk.ControlCard(
-            children=self._components['input'],
+            children=self.input_containers,
         ))
 
         sidebar = ddk.Sidebar(
@@ -168,7 +168,7 @@ class DdkSidebar(BaseDDKTemplateInstance):
         children.append(sidebar)
 
         output_card_children = []
-        output_card_children.extend(self._components['output'])
+        output_card_children.extend(self.output_containers)
 
         output_card = ddk.Card(children=output_card_children)
 

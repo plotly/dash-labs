@@ -41,7 +41,7 @@ table = DataTable(
 layout = dx.parameterize(
     app,
     filter,
-    params=dict(
+    input=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],

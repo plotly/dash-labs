@@ -45,10 +45,10 @@ table_div_id = dx.build_component_id(kind="div", name="output-table")
 num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
 num_selected_input = template.Input(id=num_selected_input_id)
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     filter,
-    params=dict(
+    input=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],
@@ -70,6 +70,7 @@ layout = dx.parameterize(
     ]
 )
 
+layout = callback_components.layout
 layout.children.insert(0, num_selected_input)
 
 app.layout = layout

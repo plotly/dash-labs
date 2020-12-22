@@ -10,7 +10,7 @@ from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
 
-def parameterize(app, fn, params, output=None, template=None, labels=None, optional=(), manual=False):
+def parameterize(app, fn, input, output=None, template=None, labels=None, optional=(), manual=False):
     """
     Parameterize a function using a
     """
@@ -24,7 +24,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
         output = (html.Div(id=build_component_id("div", "output")), "children")
 
     param_defaults = {}
-    for param_name, param in params.items():
+    for param_name, param in input.items():
         param_defaults[param_name] = param
 
     all_inputs = []
@@ -61,7 +61,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
                 component.id = component_id
 
             pattern_inputs, pattern_fn = template.add_component(
-                component, role="input", label=label, value_prop=prop_name, optional=arg_optional
+                component, role="input", label=label, value_property=prop_name, optional=arg_optional
             )
         elif isinstance(pattern, tuple):
             if len(pattern) == 2:
@@ -90,7 +90,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
         # Update all inputs list
         all_inputs.extend(pattern_inputs)
 
-        # Build mapping from parameter nmae to positional arguments
+        # Build mapping from parameter name to positional arguments
         if pattern_fn is not None:
             # Compute parameter value as function of positional argument values
             param_index_mapping[arg] = (pattern_fn, input_inds)
@@ -107,7 +107,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
             children="Update",
             id=build_component_id(kind="button", name="update-parameters")
         )
-        template.add_component(button, role="input", value_prop="n_clicks")
+        template.add_component(button, role="input", value_property="n_clicks")
 
         # Convert all inputs to state
         all_state = [State(ip.component_id, ip.component_property) for ip in all_inputs]
@@ -121,7 +121,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
                 output_dependencies.append(output_el)
             else:
                 output_component, output_property = output_el
-                template.add_component(output_component, role="output", value_prop=output_property)
+                template.add_component(output_component, role="output", value_property=output_property)
                 output_dependencies.append(
                     Output(output_component.id, output_property)
                 )
@@ -130,7 +130,7 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
             output_dependencies = output
         else:
             template.add_component(
-                output[0], role="output", value_prop=output[1]
+                output[0], role="output", value_property=output[1]
             )
             output_dependencies = Output(output[0].id, output[1])
 
@@ -140,9 +140,8 @@ def parameterize(app, fn, params, output=None, template=None, labels=None, optio
     app.callback(output_dependencies, all_inputs, all_state)(fn)
 
     # build layout
-    layout = template.build_layout(app)
-
-    return layout
+    callback_components = template.callback_components(app)
+    return callback_components
 
 
 def map_input_parameters(fn, param_index_mapping):

@@ -18,10 +18,10 @@ def greet(fun, figure_title, phase, amplitude):
     ).update_layout(title_text=figure_title))
 
 
-layout = dx.parameterize(
+callback_components = dx.parameterize(
     app,
     greet,
-    params=dict(
+    input=dict(
         fun=["sin", "cos", "exp"],
         figure_title="Initial Title",
         phase=(1, 10),
@@ -36,7 +36,7 @@ layout = dx.parameterize(
     }
 )
 
-app.layout = layout
+app.layout = callback_components.layout
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9003)
