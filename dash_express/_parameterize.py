@@ -10,7 +10,7 @@ from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
 
-def parameterize(app, fn, input, output=None, template=None, labels=None, optional=(), manual=False):
+def parameterize(app, input, output=None, template=None, labels=None, optional=(), manual=False):
     """
     Parameterize a function using a
     """
@@ -115,11 +115,21 @@ def parameterize(app, fn, input, output=None, template=None, labels=None, option
     # For now, all output placed as children of Div
     if isinstance(output, list):
         output_dependencies = []
-        for output_el in output:
+        for i, output_el in enumerate(output):
             if isinstance(output_el, Output):
                 output_dependencies.append(output_el)
             else:
-                output_component, output_property = output_el
+                if isinstance(output_el, tuple):
+                    output_component, output_property = output_el
+                else:
+                    output_component = output_el
+                    output_property = "value"
+
+                # Overwrite id
+                if not is_component_id(getattr(output_component, "id", None)):
+                    component_id = build_component_id(kind="component", name=i)
+                    output_component.id = component_id
+
                 template.add_component(output_component, role="output", value_property=output_property)
                 output_dependencies.append(
                     Output(output_component.id, output_property)
@@ -128,19 +138,33 @@ def parameterize(app, fn, input, output=None, template=None, labels=None, option
         if isinstance(output, Output):
             output_dependencies = output
         else:
+            if isinstance(output, tuple):
+                output_component, output_property = output
+            else:
+                output_component = output
+                output_property = "value"
+
+            # Overwrite id
+            if not is_component_id(getattr(output_component, "id", None)):
+                component_id = build_component_id(kind="component", name=0)
+                output_component.id = component_id
+
             template.add_component(
-                output[0], role="output", value_property=output[1]
+                output_component, role="output", value_property=output_property
             )
-            output_dependencies = Output(output[0].id, output[1])
+            output_dependencies = Output(output_component.id, output_property)
 
-    # Register callback with output component inference
-    fn = map_input_parameters(fn, param_index_mapping)
-    fn = infer_output_component(fn, template, output_dependencies)
-    app.callback(output_dependencies, all_inputs, all_state)(fn)
+    def wrapped(fn):
+        # Register callback with output component inference
+        fn = map_input_parameters(fn, param_index_mapping)
+        fn = infer_output_component(fn, template, output_dependencies)
+        app.callback(output_dependencies, all_inputs, all_state)(fn)
 
-    # build layout
-    callback_components = template.callback_components(app)
-    return callback_components
+        # build layout
+        callback_components = template.callback_components(app)
+        return callback_components
+
+    return wrapped
 
 
 def map_input_parameters(fn, param_index_mapping):
@@ -178,7 +202,7 @@ def infer_output_component(fn, template, output_dependencies):
                     res[i] = infer_component(res[i], template)
         else:
             res = fn(*args, **kwargs)
-            if output_dependencies.component_id == "children":
+            if output_dependencies.component_property == "children":
                 res = infer_component(res, template)
         return res
     return wrapper

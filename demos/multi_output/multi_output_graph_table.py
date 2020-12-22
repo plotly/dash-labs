@@ -12,8 +12,39 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400px", show_editor=True)
 # template = dx.templates.DccCard(title="Dash Express App")
 
+graph_id = dx.build_component_id(kind="graph", name="output-graph")
+graph = template.Graph(id=graph_id)
 
-def filter(max_total_bill, tip_range, sex, selectedData):
+table_div_id = dx.build_component_id(kind="div", name="output-table")
+
+num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
+num_selected_input = template.Input(id=num_selected_input_id)
+
+
+@dx.parameterize(
+    app,
+    input=dict(
+        max_total_bill=(0, 50.0, 0.25),
+        tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
+        sex=["Male", "Female"],
+        # selectedData=(graph, "selectedData"),
+        selectedData=Input(graph_id, "selectedData"),
+    ),
+    template=template,
+    labels={
+        "max_total_bill": "Max total bill ($): {value:.2f}",
+        "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
+        "sex": "Patron Gender",
+    },
+    optional=["max_total_bill", "max_tip", "sex", "tip_range"],
+    output=[
+        (graph, "figure"),
+        # Output(graph_id, "figure"),
+        (html.Div(id=table_div_id), "children"),
+        Output(num_selected_input_id, "value")
+    ]
+)
+def filter_table(max_total_bill, tip_range, sex, selectedData):
     if selectedData:
         num_selected = len(selectedData["points"])
     else:
@@ -37,40 +68,7 @@ def filter(max_total_bill, tip_range, sex, selectedData):
     return [fig, ["### Filtered Table", filtered], num_selected]
 
 
-graph_id = dx.build_component_id(kind="graph", name="output-graph")
-graph = template.Graph(id=graph_id)
-
-table_div_id = dx.build_component_id(kind="div", name="output-table")
-
-num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
-num_selected_input = template.Input(id=num_selected_input_id)
-
-callback_components = dx.parameterize(
-    app,
-    filter,
-    input=dict(
-        max_total_bill=(0, 50.0, 0.25),
-        tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
-        sex=["Male", "Female"],
-        # selectedData=(graph, "selectedData"),
-        selectedData=Input(graph_id, "selectedData"),
-    ),
-    template=template,
-    labels={
-        "max_total_bill": "Max total bill ($): {value:.2f}",
-        "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
-        "sex": "Patron Gender",
-    },
-    optional=["max_total_bill", "max_tip", "sex", "tip_range"],
-    output=[
-        (graph, "figure"),
-        # Output(graph_id, "figure"),
-        (html.Div(id=table_div_id), "children"),
-        Output(num_selected_input_id, "value")
-    ]
-)
-
-layout = callback_components.layout
+layout = filter_table.layout
 layout.children.insert(0, num_selected_input)
 
 app.layout = layout

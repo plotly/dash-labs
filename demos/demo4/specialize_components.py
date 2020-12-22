@@ -9,17 +9,10 @@ import plotly.express as px
 app = dash.Dash(__name__)
 template = dx.templates.DbcSidebar(title="Dash Express App")
 
+
 # Function to parameterize
-def greet(fun, figure_title, phase, amplitude):
-    xs = np.linspace(-10, 10, 100)
-    return template.Graph(figure=px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * float(amplitude)
-    ).update_layout(title_text=figure_title))
-
-
-callback_components = dx.parameterize(
+@dx.parameterize(
     app,
-    greet,
     input=dict(
         fun=["sin", "cos", "exp"],
 
@@ -43,6 +36,12 @@ callback_components = dx.parameterize(
         "amplitude": "Amplitude: {value}"
     }
 )
+def callback_components(fun, figure_title, phase, amplitude):
+    xs = np.linspace(-10, 10, 100)
+    return template.Graph(figure=px.line(
+        x=xs, y=getattr(np, fun)(xs + phase) * float(amplitude)
+    ).update_layout(title_text=figure_title))
+
 
 app.layout = callback_components.layout
 

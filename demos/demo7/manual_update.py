@@ -10,29 +10,8 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 # template = dx.templates.FlatDiv()
 
 
-def greet(fun, figure_title, phase, amplitude):
-    print("fun", fun, "figure_title", figure_title, "phase", phase, "amplitude", amplitude)
-
-    xs = np.linspace(-10, 10, 100)
-    if fun is None:
-        np_fn = lambda a: a
-    else:
-        np_fn = getattr(np, fun)
-
-    if phase is None:
-        phase = 0
-
-    # Let parameterize infer output component
-    x = xs
-    y = np_fn(xs + phase) * amplitude
-    return template.Graph(
-        figure=px.line(x=x, y=y).update_layout(title_text=figure_title)
-    )
-
-
-callback_components = dx.parameterize(
+@dx.parameterize(
     app,
-    greet,
     input=dict(
         figure_title="Initial Title",
         fun=["sin", "cos", "exp"],
@@ -49,6 +28,22 @@ callback_components = dx.parameterize(
     optional=["fun", "phase"],
     manual=True,
 )
+def callback_components(fun, figure_title, phase, amplitude):
+    xs = np.linspace(-10, 10, 100)
+    if fun is None:
+        np_fn = lambda a: a
+    else:
+        np_fn = getattr(np, fun)
+
+    if phase is None:
+        phase = 0
+
+    # Let parameterize infer output component
+    x = xs
+    y = np_fn(xs + phase) * amplitude
+    return template.Graph(
+        figure=px.line(x=x, y=y).update_layout(title_text=figure_title)
+    )
 
 app.layout = callback_components.layout
 

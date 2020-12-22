@@ -12,16 +12,8 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.FlatDiv()
 
 
-def callback_fn(input_val, date_range):
-    print(input_val, date_range)
-    return template.Graph(
-        figure=go.Figure(layout_title_text=input_val + "-" + str(date_range))
-    )
-
-
-callback_components = dx.parameterize(
+@dx.parameterize(
     app,
-    callback_fn,
     input=dict(
         input_val="Initial Title",
         date_range=(dcc.DatePickerRange(), ["start_date", "end_date"])
@@ -32,6 +24,11 @@ callback_components = dx.parameterize(
         "date_range": "Date: {value}",
     },
 )
+def callback_components(input_val, date_range):
+    print(input_val, date_range)
+    return template.Graph(
+        figure=go.Figure(layout_title_text=input_val + "-" + str(date_range))
+    )
 
 app.layout = callback_components.layout
 

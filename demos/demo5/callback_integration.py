@@ -23,23 +23,21 @@ template = dx.templates.DbcSidebar(title="Iris Features")
 
 
 # Use interact to create components
-def iris(x, y):
-    return template.Graph(
-        figure=px.scatter(df, x=x, y=y, color="species"),
-    )
-
-
-callback_components = dx.parameterize(
+@dx.parameterize(
     app,
-    iris,
     input=dict(
         x=template.Dropdown(options=feature_options, value="sepal_length"),
         y=template.Dropdown(options=feature_options, value="sepal_width"),
     ),
     template=template,
 )
+def iris(x, y):
+    return template.Graph(
+        figure=px.scatter(df, x=x, y=y, color="species"),
+    )
 
-app.layout = callback_components.layout
+
+app.layout = iris.layout
 
 
 # make sure that x and y values can't be the same variable
@@ -52,8 +50,8 @@ def filter_options(v):
 
 
 # Get the dropdown components that were created by parameterize
-x_component = callback_components.input["x"].value
-y_component = callback_components.input["y"].value
+x_component = iris.input["x"].value
+y_component = iris.input["y"].value
 
 # functionality is the same for both dropdowns, so we reuse filter_options
 app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")])(
