@@ -52,8 +52,8 @@ def filter_options(v):
 
 
 # Get the dropdown components that were created by parameterize
-x_component = dx.select_one(layout, name="x")
-y_component = dx.select_one(layout, name="y")
+x_component = callback_components.input["x"].value
+y_component = callback_components.input["y"].value
 
 # functionality is the same for both dropdowns, so we reuse filter_options
 app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")])(

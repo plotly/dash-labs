@@ -30,7 +30,6 @@ def parameterize(app, fn, input, output=None, template=None, labels=None, option
     all_inputs = []
     all_state = []
     param_index_mapping = {}
-    output_components = []
 
     # inputs
     for arg, pattern in param_defaults.items():
@@ -61,7 +60,7 @@ def parameterize(app, fn, input, output=None, template=None, labels=None, option
                 component.id = component_id
 
             pattern_inputs, pattern_fn = template.add_component(
-                component, role="input", label=label, value_property=prop_name, optional=arg_optional
+                component, name=arg, role="input", label=label, value_property=prop_name, optional=arg_optional
             )
         elif isinstance(pattern, tuple):
             if len(pattern) == 2:

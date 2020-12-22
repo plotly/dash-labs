@@ -19,8 +19,8 @@ class ParameterComponents:
         self.value_property = value_property
         self.label = label
         self.label_property = label_property
-        self.enable = enabler
-        self.enable_property = enabler_property
+        self.enabler = enabler
+        self.enabler_property = enabler_property
         self.container = container
         self.container_property = container_property
 
