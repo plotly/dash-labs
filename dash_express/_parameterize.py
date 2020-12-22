@@ -8,6 +8,7 @@ from dash_express.templates.util import build_component_id, is_component_id
 from dash.development.base_component import Component
 
 from plotly.graph_objs import Figure
+import copy
 
 
 def parameterize(app, input, output=None, template=None, labels=None, optional=(), manual=False):
@@ -16,6 +17,9 @@ def parameterize(app, input, output=None, template=None, labels=None, optional=(
     """
     if template is None:
         template = FlatDiv()
+    else:
+        # Do not modify input template
+        template = copy.deepcopy(template)
 
     if labels is None:
         labels = {}
