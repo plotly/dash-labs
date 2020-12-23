@@ -39,20 +39,23 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
     # Preprocess state. End up with input and state values all in the input dict
     # and with state being a list of keys into that dict
     if state is None:
-        state = []
-    elif isinstance(state, (tuple, list)) and state and isinstance(state[0], (str, int)):
-        # TODO: validate state values in input
-        # If not map_keyword_args, state may only be a list of integer indices,
-        # or list of State dependencies
-        state = list(state)
+        state = set()
+    elif isinstance(state, list):
+        num_inputs = len(input)
+        num_state = len(state)
+        input.update({i + num_inputs: v for i, v in enumerate(state)})
+        state = {i + num_inputs for i in range(num_state)}
+    elif isinstance(state, set):
+        # Validate state values in input
+        assert all(v in input for v in state)
     elif isinstance(state, dict):
         input = dict(input, **state)
-        state = list(state)
+        state = set(state)
     else:
         raise ValueError("Invalid state")
 
     if manual:
-        state.extend(list(input))
+        state.update(input.keys())
 
     param_patterns = {}
     for param_name, param in input.items():
@@ -107,7 +110,7 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
             pattern_inputs, pattern_fn = template.add_input(
                 value=pattern, label=label, name=arg, optional=arg_optional
             )
-        elif isinstance(pattern, Input):
+        elif isinstance(pattern, (Input, State)):
             pattern_inputs, pattern_fn = [pattern], None
         else:
             raise Exception(f"unknown pattern for {arg} with type {type(pattern)}")
