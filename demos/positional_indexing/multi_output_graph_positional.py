@@ -23,26 +23,20 @@ num_selected_input = template.Input(id=num_selected_input_id)
 
 @dx.parameterize(
     app,
-    inputs=dict(
-        max_total_bill=(0, 50.0, 0.25),
-        tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
-        sex=["Male", "Female"],
-        # selectedData=(graph, "selectedData"),
-        selectedData=Input(graph_id, "selectedData"),
-    ),
+    inputs=[(0, 50.0, 0.25), dcc.RangeSlider(min=0, max=20, value=(5, 10)), ["Male", "Female"], Input(graph_id, "selectedData")],
+    output=[
+        (graph, "figure"),
+        # Output(graph_id, "figure"),
+        (html.Div(id=table_div_id), "children"),
+        Output(num_selected_input_id, "value")
+    ],
     template=template,
     labels={
         "max_total_bill": "Max total bill ($): {:.2f}",
         "tip_range": lambda v: "Tip range ($): " + (f"{v[0]:.2f} - {v[1]:.2f}" if v else "None"),
         "sex": "Patron Gender",
     },
-    optional=["max_total_bill", "max_tip", "sex", "tip_range"],
-    output=[
-        (graph, "figure"),
-        # Output(graph_id, "figure"),
-        (html.Div(id=table_div_id), "children"),
-        Output(num_selected_input_id, "value")
-    ]
+    optional=[0, 1, 2],
 )
 def filter_table(max_total_bill, tip_range, sex, selectedData):
     if selectedData:

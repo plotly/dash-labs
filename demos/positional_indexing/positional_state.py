@@ -1,5 +1,5 @@
 import dash
-from dash.dependencies import State
+from dash.dependencies import State, Input
 
 import dash_express as dx
 import numpy as np
@@ -16,8 +16,8 @@ outside_input = dcc.Input(id=dx.build_component_id("intput", "outside-input"))
 
 @dx.parameterize(
     app,
-    input=[["sin", "cos", "exp"], "Initial Title"],
-    state=[(1, 10), (1, 20), State(outside_input.id, "value")],
+    inputs=[["sin", "cos", "exp"], "Initial Title"],
+    state=[(1, 10), (1, 20), Input(outside_input.id, "value")],
     template=template,
     labels={
         0: "Function",

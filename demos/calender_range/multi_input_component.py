@@ -14,7 +14,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         input_val="Initial Title",
         date_range=(dcc.DatePickerRange(), ["start_date", "end_date"])
     ),

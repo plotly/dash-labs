@@ -16,7 +16,7 @@ def greet(fun, figure_title, phase, amplitude):
 
 callback_components = dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         fun=["sin", "cos", "exp"], figure_title="Initial Title",
         phase=(1, 10), amplitude=(1, 10)
     ),

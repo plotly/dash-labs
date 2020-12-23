@@ -13,7 +13,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # Function to parameterize
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         fun=["sin", "cos", "exp"],
 
         # Style input using bootstrap classes

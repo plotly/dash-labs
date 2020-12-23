@@ -9,7 +9,7 @@ app = dash.Dash(__name__)
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         fun=["sin", "cos", "exp"], figure_title="Initial Title",
         phase=(1, 10), amplitude=(1, 10)
     ),
@@ -21,8 +21,8 @@ def greet(fun, figure_title, phase, amplitude):
     ).update_layout(title_text=figure_title))
 
 
-print(greet.input["phase"].enabler)
-print(greet.output[0].value, greet.output[0].value_property)
+# print(greet.input["phase"].enabler)
+# print(greet.output[0].value, greet.output[0].value_property)
 
 app.layout = greet.layout
 

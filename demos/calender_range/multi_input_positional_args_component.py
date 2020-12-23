@@ -14,7 +14,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 @dx.parameterize(
     app,
-    input=["Initial Title", (dcc.DatePickerRange(), ["start_date", "end_date"])],
+    inputs=["Initial Title", (dcc.DatePickerRange(), ["start_date", "end_date"])],
     template=template,
     labels={
         "input_val": "Graph Title",

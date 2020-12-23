@@ -12,7 +12,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 
 @dx.parameterize(
     app,
-    input=[["sin", "cos", "exp"], "Initial Title", (1, 10), (1, 20)],
+    inputs=[["sin", "cos", "exp"], "Initial Title", (1, 10), (1, 20)],
     template=template,
     labels={
         "fun": "Function",

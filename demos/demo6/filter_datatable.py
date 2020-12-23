@@ -13,7 +13,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400p
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],

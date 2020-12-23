@@ -6,13 +6,13 @@ import plotly.express as px
 from ddk_theme import theme
 
 app = dash.Dash(__name__)
-# template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
-template = dx.templates.DbcSidebar(title="Dash Express App")
+template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
+# template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DccCard(title="Dash Express App")
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         fun=["sin", "cos", "exp"],
         figure_title="Initial Title",
         phase=(1, 10),

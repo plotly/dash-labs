@@ -21,7 +21,7 @@ daterange = dcc.DatePickerRange(id=daterange_id)
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         input_val="Initial Title",
         # date_range=(dcc.DatePickerRange(), ["start_date", "end_date"])
         date_range=(Input(daterange_id, "start_date"), Input(daterange_id, "end_date")),

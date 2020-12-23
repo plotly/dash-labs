@@ -11,10 +11,13 @@ from plotly.graph_objs import Figure
 import copy
 
 
-def parameterize(app, input, output=None, state=None, template=None, labels=None, optional=(), manual=False):
+def parameterize(app, inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
     """
     Parameterize a function using a
     """
+
+    assert inputs
+
     if template is None:
         template = FlatDiv()
     else:
@@ -24,15 +27,15 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
     if labels is None:
         labels = {}
 
-    if output is None:
+    if not output:
         output = (html.Div(id=build_component_id("div", "output")), "children")
 
     # Handle positional index case
-    if isinstance(input, list):
+    if isinstance(inputs, list):
         # Convert to dict for uniform processing, will get converted back to an *args
         # list later
         map_keyword_args = False
-        input = {i: pattern for i, pattern in enumerate(input)}
+        inputs = {i: pattern for i, pattern in enumerate(inputs)}
     else:
         map_keyword_args = True
 
@@ -41,24 +44,24 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
     if state is None:
         state = set()
     elif isinstance(state, list):
-        num_inputs = len(input)
+        num_inputs = len(inputs)
         num_state = len(state)
-        input.update({i + num_inputs: v for i, v in enumerate(state)})
+        inputs.update({i + num_inputs: v for i, v in enumerate(state)})
         state = {i + num_inputs for i in range(num_state)}
     elif isinstance(state, set):
         # Validate state values in input
-        assert all(v in input for v in state)
+        assert all(v in inputs for v in state)
     elif isinstance(state, dict):
-        input = dict(input, **state)
+        inputs = dict(inputs, **state)
         state = set(state)
     else:
         raise ValueError("Invalid state")
 
     if manual:
-        state.update(input.keys())
+        state.update(inputs.keys())
 
     param_patterns = {}
-    for param_name, param in input.items():
+    for param_name, param in inputs.items():
         param_patterns[param_name] = param
 
     param_dependencies = {}
@@ -216,7 +219,10 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
             fn = map_input_arg_parameters(fn, param_index_mapping)
 
         fn = infer_output_component(fn, template, output_dependencies)
-        app.callback(output_dependencies, all_inputs, all_state)(fn)
+        app.callback(
+            output_dependencies, all_inputs, all_state,
+            prevent_initial_call=prevent_initial_call
+        )(fn)
 
         # build layout
         callback_components = template.callback_components(app)

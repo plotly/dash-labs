@@ -12,7 +12,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 
 @dx.parameterize(
     app,
-    input=dict(
+    inputs=dict(
         figure_title="Initial Title",
         phase=(1, 10),
         amplitude=(1, 10),
