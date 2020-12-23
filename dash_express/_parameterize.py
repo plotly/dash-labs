@@ -296,7 +296,7 @@ def map_output_positional_args(fn, output_index_mapping):
 
         for res_el, output_inds in zip(res, index_mapping):
             if isinstance(output_inds, tuple):
-                assert isinstance(res_el, tuple) and len(res) == len(output_inds)
+                assert isinstance(res_el, tuple) and len(res_el) == len(output_inds)
                 positional_values.extend(res_el)
             else:
                 positional_values.append(res_el)
