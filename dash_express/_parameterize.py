@@ -27,12 +27,23 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
     if output is None:
         output = (html.Div(id=build_component_id("div", "output")), "children")
 
+    # Handle positional index case
+    if isinstance(input, list):
+        # Convert to dict for uniform processing, will get converted back to an *args
+        # list later
+        map_keyword_args = False
+        input = {i: pattern for i, pattern in enumerate(input)}
+    else:
+        map_keyword_args = True
+
     # Preprocess state. End up with input and state values all in the input dict
     # and with state being a list of keys into that dict
     if state is None:
         state = []
     elif isinstance(state, (tuple, list)) and state and isinstance(state[0], (str, int)):
         # TODO: validate state values in input
+        # If not map_keyword_args, state may only be a list of integer indices,
+        # or list of State dependencies
         state = list(state)
     elif isinstance(state, dict):
         input = dict(input, **state)
@@ -52,7 +63,7 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
 
     # inputs
     for arg, pattern in param_patterns.items():
-        label = labels.get(arg, arg)
+        label = labels.get(arg, str(arg))
         arg_optional = arg in optional
 
         # Expand tuple of (component, prop_name)
@@ -196,7 +207,11 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
 
     def wrapped(fn):
         # Register callback with output component inference
-        fn = map_input_parameters(fn, param_index_mapping)
+        if map_keyword_args:
+            fn = map_input_kwarg_parameters(fn, param_index_mapping)
+        else:
+            fn = map_input_arg_parameters(fn, param_index_mapping)
+
         fn = infer_output_component(fn, template, output_dependencies)
         app.callback(output_dependencies, all_inputs, all_state)(fn)
 
@@ -207,7 +222,10 @@ def parameterize(app, input, output=None, state=None, template=None, labels=None
     return wrapped
 
 
-def map_input_parameters(fn, param_index_mapping):
+def map_input_kwarg_parameters(fn, param_index_mapping):
+    """
+    Map keyword arguments
+    """
     @wraps(fn)
     def wrapper(*args):
         kwargs = {}
@@ -223,6 +241,29 @@ def map_input_parameters(fn, param_index_mapping):
                 raise ValueError(f"Unexpected mapping: {mapping}")
             kwargs[param] = value
         return fn(**kwargs)
+
+    return wrapper
+
+
+def map_input_arg_parameters(fn, param_index_mapping):
+    """
+    Map positional arguments
+    """
+    @wraps(fn)
+    def wrapper(*args):
+        positional_args = [None for _ in range(len(param_index_mapping))]
+        for index, mapping in param_index_mapping.items():
+            if isinstance(mapping, int):
+                value = args[mapping]
+            elif isinstance(mapping, list):
+                value = tuple(args[i] for i in mapping)
+            elif isinstance(mapping, tuple):
+                mapping_fn, arg_indexes = mapping
+                value = mapping_fn(*[args[i] for i in arg_indexes])
+            else:
+                raise ValueError(f"Unexpected mapping: {mapping}")
+            positional_args[index] = value
+        return fn(*positional_args)
 
     return wrapper
 
