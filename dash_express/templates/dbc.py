@@ -37,7 +37,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
         if not options:
             raise ValueError("Options may not be empty")
 
-        if isinstance(options[0], str):
+        if isinstance(options[0], (str, int, float)):
             options = [{"label": opt, "value": opt} for opt in options]
         else:
             options = list(options)

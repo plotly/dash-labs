@@ -68,69 +68,11 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
     param_functions = {}
 
     # inputs
-    for arg, pattern in param_patterns.items():
-        label = labels.get(arg, str(arg))
-        arg_optional = arg in optional
-
-        # Expand tuple of (component, prop_name)
-        if isinstance(pattern, list):
-            options = pattern
-            pattern_inputs, pattern_fn = template.add_dropdown(
-                options=options, label=label, name=arg, optional=arg_optional
-            )
-        elif isinstance(pattern, tuple) and pattern and isinstance(pattern[0], Input):
-            pattern_inputs, pattern_fn = pattern, None
-        elif isinstance(pattern, Component) or (
-                isinstance(pattern, tuple) and
-                len(pattern) == 2 and
-                isinstance(pattern[0], Component)
-        ):
-            if isinstance(pattern, tuple):
-                component, prop_name = pattern
-            else:
-                component, prop_name = pattern, "value"
-
-            # Overwrite id
-            if not is_component_id(getattr(component, "id", None)):
-                component_id = build_component_id(kind="component", name=arg)
-                component.id = component_id
-
-            pattern_inputs, pattern_fn = template.add_component(
-                component, name=arg, role="input", label=label, value_property=prop_name, optional=arg_optional
-            )
-        elif isinstance(pattern, tuple):
-            if len(pattern) == 0:
-                pattern_inputs, pattern_fn = None, None
-            else:
-                if len(pattern) == 2:
-                    minimum, maximum = pattern
-                    step = None
-                elif len(pattern) == 3:
-                    minimum, maximum, step = pattern
-                else:
-                    raise ValueError("Tuple default must have length 2 or 3")
-
-                pattern_inputs, pattern_fn = template.add_slider(
-                    min=minimum, max=maximum, step=step, label=label, name=arg, optional=arg_optional
-                )
-        elif isinstance(pattern, str):
-            pattern_inputs, pattern_fn = template.add_input(
-                value=pattern, label=label, name=arg, optional=arg_optional
-            )
-        elif isinstance(pattern, (Input, State)):
-            pattern_inputs, pattern_fn = [pattern], None
-        else:
-            raise Exception(f"unknown pattern for {arg} with type {type(pattern)}")
-
-        # Compute positional indices of this pattern's inputs
-        if arg in state or manual:
-            # This is state
-            param_dependencies[arg] = [State(ip.component_id, ip.component_property) for ip in pattern_inputs]
-        else:
-            # This is an input
-            param_dependencies[arg] = pattern_inputs
-
-        param_functions[arg] = pattern_fn
+    for param, pattern in param_patterns.items():
+        add_parameter_component(
+            param, pattern, param_functions, param_dependencies, labels, optional, template,
+            state, manual
+        )
 
     # Build param to index mapping
     num_inputs = int(manual)
@@ -233,6 +175,121 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
         return callback_components
 
     return wrapped
+
+
+def add_parameter_component(
+        param, pattern, param_functions, param_dependencies, labels, optional, template,
+        state, manual
+):
+    pattern_fn, pattern_inputs = add_param_component_to_template(
+        param, pattern, labels, optional, template
+    )
+    update_param_dependencies(
+        param, pattern_inputs, pattern_fn, param_dependencies, param_functions, state, manual
+    )
+
+
+def update_param_dependencies(
+        param, pattern_inputs, pattern_fn, param_dependencies, param_functions, state, manual
+):
+    param_functions[param] = pattern_fn
+    # Compute positional indices of this pattern's inputs
+    if param in state or manual:
+        # This is state
+        param_dependencies[param] = [
+            State(ip.component_id, ip.component_property) for ip in pattern_inputs
+        ]
+    else:
+        # This is an input
+        param_dependencies[param] = pattern_inputs
+
+
+def add_param_component_to_template(param, pattern, labels, optional, template):
+    label = labels.get(param, str(param))
+    arg_optional = param in optional
+    # Expand tuple of (component, prop_name)
+    if isinstance(pattern, list):
+        options = pattern
+        pattern_inputs, pattern_fn = template.add_dropdown(
+            options=options, label=label, name=param, optional=arg_optional
+        )
+    elif isinstance(pattern, tuple) and pattern and isinstance(pattern[0], Input):
+        pattern_inputs, pattern_fn = pattern, None
+    elif isinstance(pattern, Component) or (
+            isinstance(pattern, tuple) and
+            len(pattern) == 2 and
+            isinstance(pattern[0], Component)
+    ):
+        if isinstance(pattern, tuple):
+            component, prop_name = pattern
+        else:
+            component, prop_name = pattern, "value"
+
+        # Overwrite id
+        if not is_component_id(getattr(component, "id", None)):
+            component_id = build_component_id(kind="component", name=param)
+            component.id = component_id
+
+        pattern_inputs, pattern_fn = template.add_component(
+            component, name=param, role="input", label=label, value_property=prop_name,
+            optional=arg_optional
+        )
+    elif isinstance(pattern, tuple):
+        if len(pattern) == 0:
+            pattern_inputs, pattern_fn = None, None
+        else:
+            if len(pattern) == 2:
+                minimum, maximum = pattern
+                step = None
+            elif len(pattern) == 3:
+                minimum, maximum, step = pattern
+            else:
+                raise ValueError("Tuple default must have length 2 or 3")
+
+            pattern_inputs, pattern_fn = template.add_slider(
+                min=minimum, max=maximum, step=step, label=label, name=param,
+                optional=arg_optional
+            )
+    elif isinstance(pattern, str):
+        pattern_inputs, pattern_fn = template.add_input(
+            value=pattern, label=label, name=param, optional=arg_optional
+        )
+    elif isinstance(pattern, (Input, State)):
+        pattern_inputs, pattern_fn = [pattern], None
+    elif isinstance(pattern, dict):
+        pattern_keys = list(pattern)
+        pattern_keys_inputs = {}
+        pattern_keys_fns = {}
+        for pattern_key, pattern_val in pattern.items():
+            pattern_key_fn, pattern_key_inputs = add_param_component_to_template(
+                pattern_key, pattern_val, labels, optional, template
+            )
+            pattern_keys_inputs[pattern_key] = pattern_key_inputs
+            pattern_keys_fns[pattern_key] = pattern_key_fn
+
+        # Build flat tuple of input dependencies
+        pattern_inputs = tuple([ip for pkip in pattern_keys_inputs.values() for ip in pkip])
+
+        # Build pattern function that maps this tuple back to dict form
+        def pattern_fn(*tuple_vals):
+            res = {}
+            i = 0
+            for pattern_key in pattern_keys:
+                n = len(pattern_keys_inputs[pattern_key])
+                key_vals = tuple_vals[i:i + n]
+                i += n
+
+                pattern_key_fn = pattern_keys_fns[pattern_key]
+                if pattern_key_fn is not None:
+                    key_vals = pattern_key_fn(*key_vals)
+                elif len(key_vals) == 1:
+                    key_vals = key_vals[0]
+                res[pattern_key] = key_vals
+
+            return res
+    else:
+        raise Exception(f"unknown pattern for {param} with type {type(pattern)}")
+    return pattern_fn, pattern_inputs
 
 
 def map_input_kwarg_parameters(fn, param_index_mapping):
