@@ -170,46 +170,41 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
 
     # Outputs
     # For now, all output placed as children of Div
-    if isinstance(output, list):
-        output_dependencies = []
-        for i, output_el in enumerate(output):
-            if isinstance(output_el, Output):
-                output_dependencies.append(output_el)
-            else:
-                if isinstance(output_el, tuple):
-                    output_component, output_property = output_el
-                else:
-                    output_component = output_el
-                    output_property = "value"
-
-                # Overwrite id
-                if not is_component_id(getattr(output_component, "id", None)):
-                    component_id = build_component_id(kind="component", name=i)
-                    output_component.id = component_id
-
-                template.add_component(output_component, role="output", value_property=output_property)
-                output_dependencies.append(
-                    Output(output_component.id, output_property)
-                )
+    if not isinstance(output, list):
+        output = [output]
+        scalar_output = True
     else:
-        if isinstance(output, Output):
-            output_dependencies = output
+        scalar_output = False
+
+    output_dependencies = []
+    output_index_mapping = []
+    for i, output_el in enumerate(output):
+        if isinstance(output_el, Output):
+            output_el_deps = [output_el]
         else:
-            if isinstance(output, tuple):
-                output_component, output_property = output
+            if isinstance(output_el, tuple):
+                output_component, output_property = output_el
             else:
-                output_component = output
+                output_component = output_el
                 output_property = "value"
 
             # Overwrite id
             if not is_component_id(getattr(output_component, "id", None)):
-                component_id = build_component_id(kind="component", name=0)
+                component_id = build_component_id(kind="component", name=i)
                 output_component.id = component_id
 
-            template.add_component(
-                output_component, role="output", value_property=output_property
-            )
-            output_dependencies = Output(output_component.id, output_property)
+            output_el_deps, _ = template.add_component(output_component, role="output", value_property=output_property)
+
+        output_el_inds = [len(output_dependencies) + i for i in range(len(output_el_deps))]
+        if len(output_el_inds) > 1:
+            output_index_mapping.append(tuple(output_el_inds))
+        else:
+            output_index_mapping.append(output_el_inds[0])
+        output_dependencies.extend(output_el_deps)
+
+    if scalar_output:
+        output_dependencies = output_dependencies[0]
+        output_index_mapping = output_index_mapping[0]
 
     def wrapped(fn):
         # Register callback with output component inference
@@ -217,6 +212,8 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
             fn = map_input_kwarg_parameters(fn, param_index_mapping)
         else:
             fn = map_input_arg_parameters(fn, param_index_mapping)
+
+        fn = map_output_positional_args(fn, output_index_mapping)
 
         fn = infer_output_component(fn, template, output_dependencies)
         app.callback(
@@ -273,6 +270,41 @@ def map_input_arg_parameters(fn, param_index_mapping):
                 raise ValueError(f"Unexpected mapping: {mapping}")
             positional_args[index] = value
         return fn(*positional_args)
+
+    return wrapper
+
+
+def map_output_positional_args(fn, output_index_mapping):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        positional_values = []
+        res = fn(*args, **kwargs)
+        index_mapping = output_index_mapping
+
+        if isinstance(output_index_mapping, list):
+            assert isinstance(res, list) and len(res) == len(output_index_mapping)
+            scalar_output = False
+        elif isinstance(output_index_mapping, tuple):
+            assert isinstance(res, tuple) and len(res) == len(output_index_mapping)
+            res = [res]
+            index_mapping = [output_index_mapping]
+            scalar_output = True
+        else:
+            res = [res]
+            index_mapping = [output_index_mapping]
+            scalar_output = True
+
+        for res_el, output_inds in zip(res, index_mapping):
+            if isinstance(output_inds, tuple):
+                assert isinstance(res_el, tuple) and len(res) == len(output_inds)
+                positional_values.extend(res_el)
+            else:
+                positional_values.append(res_el)
+
+        if scalar_output:
+            positional_values = positional_values[0]
+
+        return positional_values
 
     return wrapper
 
