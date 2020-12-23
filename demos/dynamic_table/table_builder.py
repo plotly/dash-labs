@@ -26,7 +26,7 @@ def serverside_table(df, page_size=5):
         return data, page_count
 
     inputs = Input(table_id, "page_current")
-    return (table, ["data", "page_count"]), inputs, update_table
+    return (table, ["data", "page_count"]), update_table, inputs
 
 
 def clientside_table(df, page_size=5):
@@ -41,8 +41,8 @@ def clientside_table(df, page_size=5):
         page_size=page_size,
     )
 
-    def update_table(df):
+    def update_table(df, *args):
         data = df.to_dict('records')
         return data
 
-    return (table, "data"), update_table
+    return (table, "data"), update_table, ()

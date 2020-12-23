@@ -21,7 +21,7 @@ num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
 num_selected_input = template.Input(id=num_selected_input_id)
 
 # Build serverside table parts
-table_component, table_inputs, update_table = serverside_table(tips)
+table_component, update_table, table_inputs = serverside_table(tips)
 
 
 @dx.parameterize(

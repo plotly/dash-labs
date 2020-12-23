@@ -99,16 +99,20 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
                 component, name=arg, role="input", label=label, value_property=prop_name, optional=arg_optional
             )
         elif isinstance(pattern, tuple):
-            if len(pattern) == 2:
-                minimum, maximum = pattern
-                step = None
-            elif len(pattern) == 3:
-                minimum, maximum, step = pattern
+            if len(pattern) == 0:
+                pattern_inputs, pattern_fn = None, None
             else:
-                raise ValueError("Tuple default must have length 2 or 3")
-            pattern_inputs, pattern_fn = template.add_slider(
-                min=minimum, max=maximum, step=step, label=label, name=arg, optional=arg_optional
-            )
+                if len(pattern) == 2:
+                    minimum, maximum = pattern
+                    step = None
+                elif len(pattern) == 3:
+                    minimum, maximum, step = pattern
+                else:
+                    raise ValueError("Tuple default must have length 2 or 3")
+
+                pattern_inputs, pattern_fn = template.add_slider(
+                    min=minimum, max=maximum, step=step, label=label, name=arg, optional=arg_optional
+                )
         elif isinstance(pattern, str):
             pattern_inputs, pattern_fn = template.add_input(
                 value=pattern, label=label, name=arg, optional=arg_optional
@@ -131,13 +135,16 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
     # Build param to index mapping
     num_inputs = int(manual)
     for param, dependencies in param_dependencies.items():
-        if isinstance(dependencies[0], Input):
+        if dependencies and isinstance(dependencies[0], Input):
             num_inputs += len(dependencies)
 
     all_inputs = []
     all_state = []
     param_index_mapping = {}
     for param, dependencies in param_dependencies.items():
+        if dependencies is None:
+            param_index_mapping[param] = ()
+            continue
         if isinstance(dependencies[0], Input):
             arg_inds = [i + len(all_inputs) for i in range(len(dependencies))]
             all_inputs.extend(dependencies)
@@ -241,8 +248,11 @@ def map_input_kwarg_parameters(fn, param_index_mapping):
             elif isinstance(mapping, list):
                 value = tuple(args[i] for i in mapping)
             elif isinstance(mapping, tuple):
-                mapping_fn, arg_indexes = mapping
-                value = mapping_fn(*[args[i] for i in arg_indexes])
+                if not mapping:
+                    value = ()
+                else:
+                    mapping_fn, arg_indexes = mapping
+                    value = mapping_fn(*[args[i] for i in arg_indexes])
             else:
                 raise ValueError(f"Unexpected mapping: {mapping}")
             kwargs[param] = value
