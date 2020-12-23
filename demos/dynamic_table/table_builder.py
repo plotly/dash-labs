@@ -4,7 +4,14 @@ from dash_table import DataTable
 import math
 
 
-def serverside_table(df, page_size=5):
+def build_table(df, page_size=5, serverside=False):
+    if serverside:
+        return _serverside_table(df, page_size=page_size)
+    else:
+        return _clientside_table(df, page_size=page_size)
+
+
+def _serverside_table(df, page_size=5):
     table_id = dx.build_component_id("table", "output-table")
     table = DataTable(
         id=table_id,
@@ -29,14 +36,13 @@ def serverside_table(df, page_size=5):
     return (table, ["data", "page_count"]), update_table, inputs
 
 
-def clientside_table(df, page_size=5):
+def _clientside_table(df, page_size=5):
     table_id = dx.build_component_id("table", "output-table")
     table = DataTable(
         id=table_id,
         columns=[
             {"name": i, "id": i} for i in sorted(df.columns)
         ],
-        data=df.to_dict('records'),
         page_current=0,
         page_size=page_size,
     )

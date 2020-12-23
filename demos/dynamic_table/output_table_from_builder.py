@@ -6,7 +6,7 @@ import plotly.express as px
 import dash_html_components as html
 import dash_core_components as dcc
 
-from table_builder import clientside_table
+from table_builder import build_table
 
 tips = px.data.tips()
 app = dash.Dash(__name__)
@@ -21,7 +21,7 @@ num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
 num_selected_input = template.Input(id=num_selected_input_id)
 
 # Build serverside table parts
-table_component, update_table, table_inputs = clientside_table(tips.iloc[:0])
+table_component, update_table, table_inputs = build_table(tips, serverside=True)
 
 
 @dx.parameterize(
@@ -30,8 +30,8 @@ table_component, update_table, table_inputs = clientside_table(tips.iloc[:0])
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],
+        table_values=table_inputs,
         selectedData=Input(graph_id, "selectedData"),
-        table_inputs=table_inputs,
     ),
     template=template,
     labels={
@@ -46,8 +46,9 @@ table_component, update_table, table_inputs = clientside_table(tips.iloc[:0])
         Output(num_selected_input_id, "value")
     ]
 )
-def filter_table(max_total_bill, tip_range, sex, selectedData, table_inputs):
-    print("table_inputs", table_inputs)
+def filter_table(max_total_bill, tip_range, sex, table_values, selectedData):
+    print("table_values", table_values)
+
     if selectedData:
         num_selected = len(selectedData["points"])
     else:
@@ -69,7 +70,7 @@ def filter_table(max_total_bill, tip_range, sex, selectedData, table_inputs):
         filtered, x="total_bill", y="tip"
     ).update_layout(uirevision=True)
 
-    return [fig, update_table(filtered, table_inputs), num_selected]
+    return [fig, update_table(filtered, table_values), num_selected]
 
 
 layout = filter_table.layout
