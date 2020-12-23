@@ -27,3 +27,22 @@ def serverside_table(df, page_size=5):
 
     inputs = Input(table_id, "page_current")
     return (table, ["data", "page_count"]), inputs, update_table
+
+
+def clientside_table(df, page_size=5):
+    table_id = dx.build_component_id("table", "output-table")
+    table = DataTable(
+        id=table_id,
+        columns=[
+            {"name": i, "id": i} for i in sorted(df.columns)
+        ],
+        data=df.to_dict('records'),
+        page_current=0,
+        page_size=page_size,
+    )
+
+    def update_table(df):
+        data = df.to_dict('records')
+        return data
+
+    return (table, "data"), update_table
