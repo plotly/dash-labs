@@ -10,6 +10,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
 # template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DccCard(title="Dash Express App")
 
+
 @dx.parameterize(
     inputs=dict(
         fun=["sin", "cos", "exp"],

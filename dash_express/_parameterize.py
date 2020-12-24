@@ -6,15 +6,14 @@ import dash_core_components as dcc
 from dash_express.templates.div import FlatDiv
 from dash_express.templates.util import build_component_id, is_component_id
 from dash.development.base_component import Component
-from templates.base import TemplatedDecorator
 from plotly.graph_objs import Figure
-import copy
 
 
 def parameterize(inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
     """
     Parameterize a function using a
     """
+    from dash_express.templates.base import TemplatedDecorator
 
     assert inputs
 
@@ -139,7 +138,9 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
                 component_id = build_component_id(kind="component", name=i)
                 output_component.id = component_id
 
-            output_el_deps, _ = template.add_component(output_component, role="output", value_property=output_property)
+            output_el_deps, _ = template.add_component(
+                output_component, role="output", value_property=output_property, containered=False
+            )
 
         output_el_inds = [len(output_dependencies) + i for i in range(len(output_el_deps))]
         if len(output_el_inds) > 1:

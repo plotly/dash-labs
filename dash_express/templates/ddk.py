@@ -1,7 +1,7 @@
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
 
-from dash_express.templates.util import filter_kwargs
+from dash_express.templates.util import filter_kwargs, build_component_id
 
 
 class BaseDDKTemplateInstance(BaseTemplateInstance):
@@ -12,6 +12,16 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
             .dcc-slider {
                 padding: 12px 20px 12px 20px !important;
              }
+             
+             .param-markdown > p {
+                margin-top: 0.25rem;
+                margin-bottom: 0.5rem;
+             }
+             .param-markdown > h1, h2, h3, h4, h5 {
+                margin-bottom: 0;
+                margin-top: 0;
+             }
+             
             </style>"""
 
     def __init__(
@@ -43,6 +53,15 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         return container, "children", container, "label"
 
     @classmethod
+    def build_containered_component(cls, component):
+        import dash_design_kit as ddk
+
+        # Subclass could use bootstrap or ddk
+        container_id = build_component_id("container")
+        container = ddk.ControlItem(id=container_id, children=component)
+        return container, "children"
+
+    @classmethod
     def Graph(cls, figure=None, id=None, **kwargs):
         import dash_design_kit as ddk
         return ddk.Graph(
@@ -54,23 +73,19 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         import dash_design_kit as ddk
         return ddk.DataTable(*args, **kwargs)
 
-
-    def maybe_wrap_layout(self, layout):
+    def _wrap_layout(self, layout):
         import dash_design_kit as ddk
-        if self.full:
-            return ddk.App(
-                children=layout,
-                **filter_kwargs(
-                    theme=self.theme,
-                    show_editor=self.show_editor,
-                    theme_dev_tools=self.theme_dev_tools,
-                    embedded=self.embedded,
-                    show_undo_redo=self.show_undo_redo,
-                    use_mobile_viewport=self.use_mobile_viewport,
-                )
+        return ddk.App(
+            children=layout,
+            **filter_kwargs(
+                theme=self.theme,
+                show_editor=self.show_editor,
+                theme_dev_tools=self.theme_dev_tools,
+                embedded=self.embedded,
+                show_undo_redo=self.show_undo_redo,
+                use_mobile_viewport=self.use_mobile_viewport,
             )
-        else:
-            return layout
+        )
 
 
 class DdkCard(BaseDDKTemplateInstance):

@@ -5,6 +5,7 @@ import re
 import dash_table  # noqa: Needs table initialization
 from functools import update_wrapper
 from collections import OrderedDict
+import copy
 
 from dash_express.templates.util import filter_kwargs, build_component_id
 
@@ -26,14 +27,17 @@ class ParameterComponents:
 
 
 class CallbackComponents:
-    def __init__(self, app, input, output, layout, fn=None):
+    def __init__(self, app, input, output):
         # Set properties
-        self.input = input
-        self.output = output
-        self.layout = layout
+        self.input = copy.copy(input)
+        self.output = copy.copy(output)
 
 
 class TemplatedDecorator:
+    """
+    Class that stands in place of a decorated function and contains references to
+    a template
+    """
     def __init__(self, fn, template):
         self.fn = fn
         self.template = template
@@ -55,17 +59,16 @@ class TemplatedDecorator:
         Register callbacks and don't return anything. Assumes user already has
         references to all components involved.
         """
-        self.template.layout(app)
+        self.template.register_callbacks(app)
 
 
 class BaseTemplateInstance:
     _label_value_prop = "children"
     _inline_css = None
 
-    def __init__(self, full=True):
+    def __init__(self):
         # Maybe this is a TemplateBuilder class with options and a .template()
         # method that build template that has the
-        self.full = full
         self._role_param_components = dict(input=OrderedDict(), output=OrderedDict())
         self._dynamic_label_callback_args = []
         self._disable_component_callback_args = []
@@ -77,10 +80,16 @@ class BaseTemplateInstance:
                 and not getattr(component, "className", None)):
             component.className = "dcc-slider"
 
-    def add_component(self, component, value_property, name=None, role=None, label=None, optional=False):
+    def add_component(
+            self, component, value_property, name=None, role=None, label=None,
+            containered=True, optional=False, before=None, after=None,
+    ):
         """
         component id should have been created with build_component_id
         """
+        if getattr(component, "id", None) is None:
+            component.id = build_component_id("component")
+
         # Validate / infer input_like and output_like
         if role is None:
             # Default kind to output for graphs, and input for everything else
@@ -172,6 +181,9 @@ class BaseTemplateInstance:
                 self.build_labeled_component(
                     container, label_id, initial_value=initial_value
                 )
+        elif containered:
+            label, label_property = None, None
+            container, container_property = self.build_containered_component(container)
         else:
             label, label_property = None, None
 
@@ -191,7 +203,29 @@ class BaseTemplateInstance:
         if name is None:
             name = len(self._role_param_components[role])
 
-        self._role_param_components[role][name] = param_components
+        if before is None and after is None:
+            self._role_param_components[role][name] = param_components
+        else:
+            keys = list(self._role_param_components[role])
+            if before is not None:
+                if isinstance(before, int):
+                    before_index = before
+                else:
+                    before_index = keys.index(before)
+                insert_index = before_index
+            else:  # after is not None:
+                if isinstance(after, int):
+                    after_index = after
+                else:
+                    after_index = keys.index(after)
+                insert_index = after_index + 1
+
+            items = list(self._role_param_components[role].items())
+            items.insert(insert_index, (name, param_components))
+
+            # Replace integer names with index to avoid overwriting
+            items = [(k if isinstance(k, str) else i, v) for i, (k, v) in enumerate(items)]
+            self._role_param_components[role] = OrderedDict(items)
 
         return dependencies, dependency_fn
 
@@ -238,6 +272,21 @@ class BaseTemplateInstance:
 
     # Methods designed to be overridden by subclasses
     @classmethod
+    def Markdown(cls, *args, id=None, **kwargs):
+        return dcc.Markdown(
+            *args, className="param-markdown", **filter_kwargs(id=id, **kwargs)
+        )
+
+    def add_markdown(self, *args, role=None, name=None, before=None, after=None, **kwargs):
+        id = build_component_id(kind="markdown", name=name)
+        component = self.Markdown(*args, id=id, **kwargs)
+        # markdown has no label
+        return self.add_component(
+            component, value_property="children",
+            name=name, role=role, label=None, before=before, after=after
+        )
+
+    @classmethod
     def Button(cls, *args, id=None, **kwargs):
         return html.Button(*args, **filter_kwargs(id=id, **kwargs))
 
@@ -259,12 +308,12 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, **kwargs)
         )
 
-    def add_dropdown(self, options, value=None, name=None, role="input", label=None, optional=False, **kwargs):
+    def add_dropdown(self, options, value=None, name=None, role="input", label=None, optional=False, before=None, after=None, **kwargs):
         id = build_component_id(kind="dropdown", name=name)
         component = self.Dropdown(options, id=id, value=value, **kwargs)
         return self.add_component(
             component, value_property=self._dropdown_value_prop,
-            name=name, role=role, label=label, optional=optional
+            name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
     @classmethod
@@ -276,12 +325,12 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, step=step, **kwargs)
         )
 
-    def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, **kwargs):
+    def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
         id = build_component_id(kind="slider", name=name)
         component = self.Slider(min, max, id=id, step=step, value=value, **kwargs)
         return self.add_component(
             component, value_property=self._slider_value_prop,
-            name=name, role=role, label=label, optional=optional
+            name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
     @classmethod
@@ -291,12 +340,12 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, **kwargs)
         )
 
-    def add_input(self, value=None, role="input", label=None, name=None, optional=False, **kwargs):
+    def add_input(self, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
         id = build_component_id(kind="input", name=name)
         component = self.Input(value=value, id=id, **kwargs)
         return self.add_component(
             component, value_property=self._input_value_prop,
-            name=name, role=role, label=label, optional=optional
+            name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
     @classmethod
@@ -310,12 +359,12 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, **kwargs)
         )
 
-    def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, **kwargs):
+    def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
         id = build_component_id(kind="checkbox", name=name)
         component = self.Checkbox(option, value=value, id=id, **kwargs)
         return self.add_component(
             component, value_property=self._checklist_value_prop,
-            name=name, role=role, label=label, optional=optional
+            name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
     @classmethod
@@ -324,12 +373,12 @@ class BaseTemplateInstance:
             **filter_kwargs(id=id, figure=figure, **kwargs)
         )
 
-    def add_graph(self, figure, role="output", label=None, name=None, **kwargs):
+    def add_graph(self, figure, role="output", label=None, name=None, before=None, after=None, **kwargs):
         id = build_component_id(kind="graph", name=name)
         component = self.Graph(figure, id=id, **kwargs)
         return self.add_component(
             component, value_property="figure",
-            name=name, role=role, label=label
+            name=name, role=role, label=label, containered=False, before=before, after=after
         )
 
     @classmethod
@@ -337,11 +386,11 @@ class BaseTemplateInstance:
         from dash_table import DataTable
         return DataTable(*args, **kwargs)
 
-    def add_datatable(self, *args, name=None, role=None, label=None, **kwargs):
+    def add_datatable(self, *args, name=None, role=None, label=None, before=None, after=None, **kwargs):
         id = build_component_id(kind="graph", name=name)
         component = self.DataTable(*args, id=id, **kwargs)
         return self.add_component(
-            component, value_property="data", name=name, role=role, label=label
+            component, value_property="data", name=name, role=role, label=label, before=before, after=after
         )
 
     @classmethod
@@ -351,21 +400,38 @@ class BaseTemplateInstance:
                 "{%css%}", "{%css%}" + cls._inline_css
             )
 
-    def callback_components(self, app):
-        layout = self.layout(app)
-        return CallbackComponents(
-            app, input=self._role_param_components['input'],
-            output=self._role_param_components['output'], layout=layout
-        )
+    def register_callbacks(self, app):
+        """
+        Register callbacks and don't return anything, and don't do any other app
+        configuration (e.g. installing CSS).
 
-    def layout(self, app):
-        # Build structure
-        layout = self._perform_layout()
-        layout = self.maybe_wrap_layout(layout)
-
+        Assumes user already has references to all components involved.
+        """
         # Add registered callbacks
         for fn, args, kwargs in self._app_callbacks:
             app.callback(*args, **kwargs)(fn)
+
+    def callback_components(self, app):
+        # Add callbacks
+        self.register_callbacks(app)
+
+        # Configure app props like CSS
+        self._configure_app(app)
+
+        return CallbackComponents(
+            app,
+            input=self._role_param_components['input'],
+            output=self._role_param_components['output'],
+        )
+
+    def layout(self, app, full=True):
+        # Build structure
+        layout = self._perform_layout()
+        if full:
+            layout = self._wrap_layout(layout)
+
+        # Add callbacks
+        self.register_callbacks(app)
 
         # Configure app props like CSS
         self._configure_app(app)
@@ -375,7 +441,8 @@ class BaseTemplateInstance:
     def _perform_layout(self):
         raise NotImplementedError
 
-    def maybe_wrap_layout(self, layout):
+    @classmethod
+    def _wrap_layout(cls, layout):
         return layout
 
     @property
@@ -412,7 +479,9 @@ class BaseTemplateInstance:
     def build_labeled_component(cls, component, label_id, initial_value):
         # Subclass could use bootstrap or ddk
         label = html.Label(id=label_id, children=initial_value)
+        container_id = build_component_id("container")
         container = html.Div(
+            id=container_id,
             style={"padding-top": 10},
             children=[
                 label,
@@ -423,3 +492,22 @@ class BaseTemplateInstance:
             ]
         )
         return container, "children", label, "children"
+
+    @classmethod
+    def build_containered_component(cls, component):
+        """
+        Alternative to bulid_labeled_component for use without label, but for
+        Unitform spacing with it
+        """
+        container_id = build_component_id("container")
+        container = html.Div(
+            id=container_id,
+            style={"padding-top": 10},
+            children=[
+                html.Div(
+                    style={"display": "block"},
+                    children=component
+                ),
+            ]
+        )
+        return container, "children"

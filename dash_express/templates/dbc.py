@@ -19,6 +19,13 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
                 margin-left: 0;
                 margin-right: 0;
              }
+             
+             .param-markdown > p {
+                margin-bottom: 0.5rem;
+             }
+             .param-markdown > p:last-of-type {
+                margin-bottom: 0;
+             }
             </style>"""
 
     def __init__(self, **kwargs):
@@ -98,11 +105,23 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
     def build_labeled_component(cls, component, label_id, initial_value):
         import dash_bootstrap_components as dbc
         label = dbc.Label(id=label_id, children=[initial_value], style={"display": "block"})
+        container_id = build_component_id("container")
         container = dbc.FormGroup(
+            id=container_id,
             children=[label, component]
         )
 
         return container, "children", label, "children"
+
+    @classmethod
+    def build_containered_component(cls, component):
+        import dash_bootstrap_components as dbc
+        container_id = build_component_id("container")
+        container = dbc.FormGroup(
+            id=container_id,
+            children=[component]
+        )
+        return container, "children"
 
     @classmethod
     def _configure_app(cls, app):
@@ -248,9 +267,7 @@ class DbcSidebar(BaseDbcTemplateInstance):
         children.append(row)
         return children
 
-    def maybe_wrap_layout(self, layout):
+    @classmethod
+    def _wrap_layout(cls, layout):
         import dash_bootstrap_components as dbc
-        if self.full:
-            return dbc.Container(layout, fluid=True, style={"padding": 0})
-        else:
-            return layout
+        return dbc.Container(layout, fluid=True, style={"padding": 0})
