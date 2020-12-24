@@ -197,9 +197,8 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
             fn, output_dependencies, all_inputs, all_state,
             prevent_initial_call=prevent_initial_call
         )
-        #
-        # # build layout
-        # callback_components = template.callback_components(app)
+
+        # build TemplateDecorator
         return TemplatedDecorator(fn, template)
 
     return wrapped
