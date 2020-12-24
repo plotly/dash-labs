@@ -34,6 +34,7 @@ def function_browser(fun, figure_title, phase, amplitude):
     ).update_layout(title_text=figure_title))
 
 
+# Add extra component to template
 template.add_markdown("# First Group", role="input", before="fun")
 template.add_markdown([
     "# Second Group\n"

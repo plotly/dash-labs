@@ -9,6 +9,25 @@ from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
 
+class ParameterWrapper:
+    def __init__(self, value):
+        self.value = value
+
+def state(value):
+    return StateParameterWrapper(value)
+
+def fixed(value):
+    return FixedParameterWrapper(value)
+
+class FixedParameterWrapper(ParameterWrapper):
+    def __init__(self, value):
+        super().__init__(value)
+
+class StateParameterWrapper(ParameterWrapper):
+    def __init__(self, value):
+        super().__init__(value)
+
+
 def parameterize(inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
     """
     Parameterize a function using a
@@ -35,30 +54,35 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
     else:
         map_keyword_args = True
 
-    # Preprocess state. End up with input and state values all in the input dict
-    # and with state being a list of keys into that dict
+    # Merge all parameters specified in the state collection into the input dict,
+    # and keep track of the keys that are State in the state_keys set
     if state is None:
-        state = set()
+        state_keys = set()
     elif isinstance(state, list):
         num_inputs = len(inputs)
         num_state = len(state)
         inputs.update({i + num_inputs: v for i, v in enumerate(state)})
-        state = {i + num_inputs for i in range(num_state)}
-    elif isinstance(state, set):
-        # Validate state values in input
-        assert all(v in inputs for v in state)
+        state_keys = {i + num_inputs for i in range(num_state)}
+    # elif isinstance(state_keys, set):
+    #     # Validate state values in input
+    #     assert all(v in inputs for v in state_keys)
     elif isinstance(state, dict):
         inputs = dict(inputs, **state)
-        state = set(state)
+        state_keys = set(state)
     else:
         raise ValueError("Invalid state")
 
-    if manual:
-        state.update(inputs.keys())
-
     param_patterns = {}
     for param_name, param in inputs.items():
+        # Replace state wrappers around input values with raw value and add name
+        # to state_keys dict
+        if isinstance(param, StateParameterWrapper):
+            param = param.value
+            state_keys.add(param_name)
         param_patterns[param_name] = param
+
+    if manual:
+        state_keys.update(inputs.keys())
 
     param_dependencies = {}
     param_functions = {}
@@ -67,7 +91,7 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
     for param, pattern in param_patterns.items():
         add_parameter_component(
             param, pattern, param_functions, param_dependencies, labels, optional, template,
-            state, manual
+            state_keys, manual
         )
 
     # Build param to index mapping
