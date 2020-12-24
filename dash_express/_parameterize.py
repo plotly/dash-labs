@@ -41,6 +41,9 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
 
     if labels is None:
         labels = {}
+    elif isinstance(labels, list):
+        # Convert to integer dict for processing consistency
+        labels = {i: label for i, label in enumerate(labels)}
 
     if not output:
         output = (html.Div(id=build_component_id("div", "output")), "children")
@@ -63,9 +66,6 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
         num_state = len(state)
         inputs.update({i + num_inputs: v for i, v in enumerate(state)})
         state_keys = {i + num_inputs for i in range(num_state)}
-    # elif isinstance(state_keys, set):
-    #     # Validate state values in input
-    #     assert all(v in inputs for v in state_keys)
     elif isinstance(state, dict):
         inputs = dict(inputs, **state)
         state_keys = set(state)
@@ -73,12 +73,18 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
         raise ValueError("Invalid state")
 
     param_patterns = {}
+    fixed_param_values = {}
     for param_name, param in inputs.items():
         # Replace state wrappers around input values with raw value and add name
         # to state_keys dict
+        if isinstance(param, FixedParameterWrapper):
+            fixed_param_values[param_name] = param.value
+            continue
+
         if isinstance(param, StateParameterWrapper):
             param = param.value
             state_keys.add(param_name)
+
         param_patterns[param_name] = param
 
     if manual:
@@ -180,9 +186,9 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
     def wrapped(fn):
         # Register callback with output component inference
         if map_keyword_args:
-            fn = map_input_kwarg_parameters(fn, param_index_mapping)
+            fn = map_input_kwarg_parameters(fn, param_index_mapping, fixed_param_values)
         else:
-            fn = map_input_arg_parameters(fn, param_index_mapping)
+            fn = map_input_arg_parameters(fn, param_index_mapping, fixed_param_values)
 
         fn = map_output_positional_args(fn, output_index_mapping)
 
@@ -314,13 +320,13 @@ def add_param_component_to_template(param, pattern, labels, optional, template):
     return pattern_fn, pattern_inputs
 
 
-def map_input_kwarg_parameters(fn, param_index_mapping):
+def map_input_kwarg_parameters(fn, param_index_mapping, fixed_param_values):
     """
     Map keyword arguments
     """
     @wraps(fn)
     def wrapper(*args):
-        kwargs = {}
+        kwargs = dict(fixed_param_values)
         for param, mapping in param_index_mapping.items():
             if isinstance(mapping, int):
                 value = args[mapping]
@@ -340,15 +346,23 @@ def map_input_kwarg_parameters(fn, param_index_mapping):
     return wrapper
 
 
-def map_input_arg_parameters(fn, param_index_mapping):
+def map_input_arg_parameters(fn, param_index_mapping, fixed_param_values):
     """
     Map positional arguments
     """
     @wraps(fn)
     def wrapper(*args):
-        positional_args = [None for _ in range(len(param_index_mapping))]
+        num_args = len(param_index_mapping) + len(fixed_param_values)
+        positional_args = [None for _ in range(num_args)]
+
+        # Add fixed
+        for index, value in fixed_param_values.items():
+            positional_args[index] = value
+
         for index, mapping in param_index_mapping.items():
-            if isinstance(mapping, int):
+            if index in fixed_param_values:
+                value = fixed_param_values[index]
+            elif isinstance(mapping, int):
                 value = args[mapping]
             elif isinstance(mapping, list):
                 value = tuple(args[i] for i in mapping)
