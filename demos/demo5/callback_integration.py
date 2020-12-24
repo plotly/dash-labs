@@ -24,7 +24,6 @@ template = dx.templates.DbcSidebar(title="Iris Features")
 
 # Use interact to create components
 @dx.parameterize(
-    app,
     inputs=dict(
         x=template.Dropdown(options=feature_options, value="sepal_length"),
         y=template.Dropdown(options=feature_options, value="sepal_width"),
@@ -37,7 +36,7 @@ def iris(x, y):
     )
 
 
-app.layout = iris.layout
+app.layout = iris.layout(app)
 
 
 # make sure that x and y values can't be the same variable

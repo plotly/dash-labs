@@ -25,7 +25,6 @@ table_component, update_table, table_inputs = build_table(tips, serverside=True)
 
 
 @dx.parameterize(
-    app,
     inputs=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
@@ -73,7 +72,7 @@ def filter_table(max_total_bill, tip_range, sex, table_values, selectedData):
     return [fig, update_table(filtered, table_values), num_selected]
 
 
-layout = filter_table.layout
+layout = filter_table.layout(app)
 layout.children.insert(0, num_selected_input)
 
 app.layout = layout

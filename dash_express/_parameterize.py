@@ -6,12 +6,12 @@ import dash_core_components as dcc
 from dash_express.templates.div import FlatDiv
 from dash_express.templates.util import build_component_id, is_component_id
 from dash.development.base_component import Component
-
+from templates.base import TemplatedDecorator
 from plotly.graph_objs import Figure
 import copy
 
 
-def parameterize(app, inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
+def parameterize(inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
     """
     Parameterize a function using a
     """
@@ -20,9 +20,6 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
 
     if template is None:
         template = FlatDiv()
-    else:
-        # Do not modify input template
-        template = copy.deepcopy(template)
 
     if labels is None:
         labels = {}
@@ -165,14 +162,14 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
         fn = map_output_positional_args(fn, output_index_mapping)
 
         fn = infer_output_component(fn, template, output_dependencies)
-        app.callback(
-            output_dependencies, all_inputs, all_state,
+        template.register_app_callback(
+            fn, output_dependencies, all_inputs, all_state,
             prevent_initial_call=prevent_initial_call
-        )(fn)
-
-        # build layout
-        callback_components = template.callback_components(app)
-        return callback_components
+        )
+        #
+        # # build layout
+        # callback_components = template.callback_components(app)
+        return TemplatedDecorator(fn, template)
 
     return wrapped
 

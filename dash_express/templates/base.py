@@ -28,20 +28,34 @@ class ParameterComponents:
 class CallbackComponents:
     def __init__(self, app, input, output, layout, fn=None):
         # Set properties
-        self.app = app
-        self.fn = fn
         self.input = input
         self.output = output
         self.layout = layout
 
-        # wrap self to look like input function
-        if self.fn is not None:
-            update_wrapper(self, self.fn)
+
+class TemplatedDecorator:
+    def __init__(self, fn, template):
+        self.fn = fn
+        self.template = template
+        update_wrapper(self, self.fn)
 
     def __call__(self, *args, **kwargs):
         if self.fn is None:
             raise ValueError("CallbackComponents instance does not wrap a function")
         return self.fn(*args, **kwargs)
+
+    def callback_components(self, app):
+        return self.template.callback_components(app)
+
+    def layout(self, app):
+        return self.template.layout(app)
+
+    def register_callbacks(self, app):
+        """
+        Register callbacks and don't return anything. Assumes user already has
+        references to all components involved.
+        """
+        self.template.layout(app)
 
 
 class BaseTemplateInstance:
@@ -55,6 +69,7 @@ class BaseTemplateInstance:
         self._role_param_components = dict(input=OrderedDict(), output=OrderedDict())
         self._dynamic_label_callback_args = []
         self._disable_component_callback_args = []
+        self._app_callbacks = []
 
     @classmethod
     def _style_class_component(cls, component):
@@ -86,10 +101,9 @@ class BaseTemplateInstance:
             optional_dependency = Dependency(enabler.id, enabler_property)
             dependencies.append(optional_dependency)
 
-            self._disable_component_callback_args.append([
-                Output(component.id, "disabled"),
-                [optional_dependency]
-            ])
+            self._register_disable_optional_component_callback(
+                component, enabler, enabler_property
+            )
 
             # Value function
             def dependency_fn(enabled, *args):
@@ -144,12 +158,12 @@ class BaseTemplateInstance:
                 else:
                     initial_value = label(value)
 
-                self._dynamic_label_callback_args.append([
+                self._register_dynamic_label_callback(
                     Output(label_id, self._label_value_prop),
                     dependencies,
                     dependency_fn,
                     label,
-                ])
+                )
             else:
                 initial_value = label
                 label_id = build_component_id(kind="label", name=label_name)
@@ -185,6 +199,42 @@ class BaseTemplateInstance:
     _slider_value_prop = "value"
     _input_value_prop = "value"
     _checklist_value_prop = "value"
+
+    def _register_dynamic_label_callback(self, output, inputs, dependency_fn, label):
+        def format_label(*args):
+            if dependency_fn is not None:
+                val = dependency_fn(*args)
+            else:
+                val = args[0]
+            if isinstance(label, str):
+                if val is not None:
+                    if isinstance(val, (list, tuple)):
+                        return label.format(*val)
+                    else:
+                        return label.format(val)
+                else:
+                    # Replace the {value...} wildcard with "None"
+                    return re.sub(r"\{[^}]*\}", "None", label)
+            else:
+                return label(val)
+
+        self.register_app_callback(format_label, output, inputs)
+
+    def _register_disable_optional_component_callback(
+            self, component, enabler_component, enabler_property
+    ):
+        output = Output(component.id, "disabled")
+        inputs = [Input(enabler_component.id, enabler_property)]
+
+        def disable_component(checked):
+            return not bool(checked)
+
+        self.register_app_callback(disable_component, output, inputs)
+
+    def register_app_callback(self, fn, *args, **kwargs):
+        self._app_callbacks.append((
+            fn, args, kwargs
+        ))
 
     # Methods designed to be overridden by subclasses
     @classmethod
@@ -302,45 +352,22 @@ class BaseTemplateInstance:
             )
 
     def callback_components(self, app):
-        layout = self.build_layout(app)
+        layout = self.layout(app)
         return CallbackComponents(
             app, input=self._role_param_components['input'],
             output=self._role_param_components['output'], layout=layout
         )
 
-    def build_layout(self, app):
+    def layout(self, app):
         # Build structure
         layout = self._perform_layout()
         layout = self.maybe_wrap_layout(layout)
 
-        # Add callbacks
-        for output, inputs, dependency_fn, label in self._dynamic_label_callback_args:
-            @app.callback(output, inputs)
-            def format_label(*args, dependency_fn=dependency_fn, label=label):
+        # Add registered callbacks
+        for fn, args, kwargs in self._app_callbacks:
+            app.callback(*args, **kwargs)(fn)
 
-                if dependency_fn is not None:
-                    val = dependency_fn(*args)
-                else:
-                    val = args[0]
-                if isinstance(label, str):
-                    if val is not None:
-                        if isinstance(val, (list, tuple)):
-                            return label.format(*val)
-                        else:
-                            return label.format(val)
-                    else:
-                        # Replace the {value...} wildcard with "None"
-                        return re.sub(r"\{[^}]*\}", "None", label)
-                else:
-                    return label(val)
-
-        # Checkboxes
-        for output, inputs in self._disable_component_callback_args:
-            @app.callback(output, inputs)
-            def disable_component(checked):
-                return not bool(checked)
-
-        # CSS
+        # Configure app props like CSS
         self._configure_app(app)
 
         return layout

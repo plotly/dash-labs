@@ -12,7 +12,6 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 # Function to parameterize
 @dx.parameterize(
-    app,
     inputs=dict(
         fun=["sin", "cos", "exp"],
 
@@ -43,7 +42,7 @@ def callback_components(fun, figure_title, phase, amplitude):
     ).update_layout(title_text=figure_title))
 
 
-app.layout = callback_components.layout
+app.layout = callback_components.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9006)

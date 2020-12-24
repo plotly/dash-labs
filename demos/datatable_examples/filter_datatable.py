@@ -23,7 +23,6 @@ table = DataTable(
 
 
 @dx.parameterize(
-    app,
     inputs=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
@@ -54,7 +53,7 @@ def filter_table(max_total_bill, tip_range, sex):
     return filtered.to_dict('records')
 
 
-app.layout = filter_table.layout
+app.layout = filter_table.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9077)

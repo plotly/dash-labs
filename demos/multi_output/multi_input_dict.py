@@ -13,7 +13,6 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 
 @dx.parameterize(
-    app,
     inputs=dict(
         input_val="Initial Title",
         dates=dict(
@@ -38,7 +37,7 @@ def callback_components(input_val, dates):
     return [fig, (start_date, end_date)]
 
 
-app.layout = callback_components.layout
+app.layout = callback_components.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9091)

@@ -13,7 +13,6 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 
 @dx.parameterize(
-    app,
     inputs=["Initial Title", (dcc.DatePickerRange(), ["start_date", "end_date"])],
     template=template,
     labels={
@@ -27,7 +26,7 @@ def callback_components(input_val, date_range):
         figure=go.Figure(layout_title_text=input_val + "-" + str(date_range))
     )
 
-app.layout = callback_components.layout
+app.layout = callback_components.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9803)

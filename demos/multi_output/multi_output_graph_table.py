@@ -22,7 +22,6 @@ num_selected_input = template.Input(id=num_selected_input_id)
 
 
 @dx.parameterize(
-    app,
     inputs=dict(
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
@@ -68,7 +67,7 @@ def filter_table(max_total_bill, tip_range, sex, selectedData):
     return [fig, ["### Filtered Table", filtered], num_selected]
 
 
-layout = filter_table.layout
+layout = filter_table.layout(app)
 layout.children.insert(0, num_selected_input)
 
 app.layout = layout

@@ -11,7 +11,6 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 
 
 @dx.parameterize(
-    app,
     inputs=dict(
         figure_title="Initial Title",
         fun=["sin", "cos", "exp"],
@@ -48,7 +47,7 @@ def callback_components(fun, figure_title, phase, amplitude):
 
 print(template.output_containers)
 
-app.layout = callback_components.layout
+app.layout = callback_components.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9003)

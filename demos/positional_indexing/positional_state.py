@@ -15,7 +15,6 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 outside_input = dcc.Input(id=dx.build_component_id("intput", "outside-input"))
 
 @dx.parameterize(
-    app,
     inputs=[["sin", "cos", "exp"], "Initial Title"],
     state=[(1, 10), (1, 20), Input(outside_input.id, "value")],
     template=template,
@@ -47,7 +46,7 @@ def callback_components(fun, figure_title, phase, amplitude, outside_state):
     )
 
 print(template.output_containers)
-layout = callback_components.layout
+layout = callback_components.layout(app)
 layout.children.insert(0, outside_input)
 app.layout = layout
 
