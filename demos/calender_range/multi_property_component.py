@@ -15,7 +15,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.FlatDiv()
 
 
-daterange_id = dx.build_component_id("daterange", "daterange")
+daterange_id = dx.build_id("daterange")
 daterange = dcc.DatePickerRange(id=daterange_id)
 
 

@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 from dash_express.templates.div import FlatDiv
-from dash_express.templates.util import build_component_id, is_component_id
+from dash_express.templates.util import build_id
 from dash.development.base_component import Component
 from plotly.graph_objs import Figure
 
@@ -46,7 +46,7 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
         labels = {i: label for i, label in enumerate(labels)}
 
     if not output:
-        output = (html.Div(id=build_component_id("div", "output")), "children")
+        output = (html.Div(id=build_id("output-div")), "children")
 
     # Handle positional index case
     if isinstance(inputs, list):
@@ -138,7 +138,7 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
         # Add compute button input
         button = template.Button(
             children="Update",
-            id=build_component_id(kind="button", name="update-parameters")
+            id=build_id(name="update-parameters")
         )
         template.add_component(button, role="input", value_property="n_clicks")
         all_inputs.append(Input(button.id, "n_clicks"))
@@ -164,8 +164,8 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
                 output_property = "value"
 
             # Overwrite id
-            if not is_component_id(getattr(output_component, "id", None)):
-                component_id = build_component_id(kind="component", name=i)
+            if getattr(output_component, "id", None):
+                component_id = build_id(name=i)
                 output_component.id = component_id
 
             output_el_deps, _ = template.add_component(
@@ -253,8 +253,8 @@ def add_param_component_to_template(param, pattern, labels, optional, template):
             component, prop_name = pattern, "value"
 
         # Overwrite id
-        if not is_component_id(getattr(component, "id", None)):
-            component_id = build_component_id(kind="component", name=param)
+        if getattr(component, "id", None):
+            component_id = build_id(name=param)
             component.id = component_id
 
         pattern_inputs, pattern_fn = template.add_component(
@@ -443,27 +443,28 @@ def infer_component(v, template):
 
     name = "parameterized_output"
 
+    component_id = build_id(name=name)
     if isinstance(v, Component):
         # Already a component, leave as-is
-        v.id = build_component_id(kind="component", name=name)
+        v.id = component_id
         return v
     elif isinstance(v, Figure) or (
             isinstance(v, dict) and ("data" in v or "layout" in v)
     ):
-        return template.Graph(v, id=build_component_id(kind="graph", name=name))
+        return template.Graph(v, id=component_id)
     elif pd is not None and isinstance(v, pd.DataFrame):
         return template.DataTable(
-            id=build_component_id(kind="datatable", name=name),
+            id=component_id,
             columns=[{"name": i, "id": i} for i in v.columns],
             data=v.to_dict('records'),
         )
     elif isinstance(v, list):
         return html.Div(
-            id=build_component_id(kind="div", name=name),
+            id=component_id,
             children=[infer_component(el, template) for el in v]
         )
     elif isinstance(v, str):
-        return dcc.Markdown(v, id=build_component_id(kind="markdown", name=name))
+        return dcc.Markdown(v, id=component_id)
     else:
         # Try string representation
-        return html.Pre(str(v), id=build_component_id(kind="pre", name=name))
+        return html.Pre(str(v), id=component_id)

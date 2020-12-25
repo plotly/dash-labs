@@ -14,10 +14,10 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400px", show_editor=True)
 # template = dx.templates.DccCard(title="Dash Express App")
 
-graph_id = dx.build_component_id(kind="graph", name="output-graph")
+graph_id = dx.build_id(name="output-graph")
 graph = template.Graph(id=graph_id)
 
-num_selected_input_id = dx.build_component_id(kind="input", name="output-table")
+num_selected_input_id = dx.build_id(name="output-table")
 num_selected_input = template.Input(id=num_selected_input_id)
 
 # Build serverside table parts

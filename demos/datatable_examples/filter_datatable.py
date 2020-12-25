@@ -12,7 +12,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400p
 # template = dx.templates.DccCard(title="Dash Express App")
 
 
-table_id = dx.build_component_id(kind="datatable", name="output-table")
+table_id = dx.build_id(name="output-table")
 table = DataTable(
     id=table_id,
     columns=[

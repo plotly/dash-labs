@@ -14,7 +14,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DccCard(title="Dash Express App")
 
 
-graph_id = dx.build_component_id(kind="graph")
+graph_id = dx.build_id("graph")
 
 graph = template.Graph(id=graph_id)
 

@@ -12,7 +12,7 @@ def build_table(df, page_size=5, serverside=False):
 
 
 def _serverside_table(df, page_size=5):
-    table_id = dx.build_component_id("table", "output-table")
+    table_id = dx.build_id("output-table")
     table = DataTable(
         id=table_id,
         columns=[
@@ -37,7 +37,7 @@ def _serverside_table(df, page_size=5):
 
 
 def _clientside_table(df, page_size=5):
-    table_id = dx.build_component_id("table", "output-table")
+    table_id = dx.build_id("output-table")
     table = DataTable(
         id=table_id,
         columns=[

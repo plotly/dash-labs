@@ -12,7 +12,7 @@ template = dx.templates.DdkSidebar(title="Dash Express App")
 # template = dx.templates.FlatDiv()
 
 
-outside_input = dcc.Input(id=dx.build_component_id("intput", "outside-input"))
+outside_input = dcc.Input(id=dx.build_id("outside-input"))
 
 @dx.parameterize(
     inputs=[["sin", "cos", "exp"], "Initial Title"],

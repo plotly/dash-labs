@@ -1,6 +1,6 @@
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
-from .util import filter_kwargs, build_component_id
+from .util import filter_kwargs, build_id
 
 
 class BaseDbcTemplateInstance(BaseTemplateInstance):
@@ -85,7 +85,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
     def build_optional_component(self, component, enabled=True):
         """ Should come before labeling """
         import dash_bootstrap_components as dbc
-        checkbox_id = build_component_id(
+        checkbox_id = build_id(
             kind="disable-checkbox", name=str(component.id["name"]) + "-enabled",
         )
         checkbox = dbc.Checkbox(
@@ -105,7 +105,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
     def build_labeled_component(cls, component, label_id, initial_value):
         import dash_bootstrap_components as dbc
         label = dbc.Label(id=label_id, children=[initial_value], style={"display": "block"})
-        container_id = build_component_id("container")
+        container_id = build_id("container")
         container = dbc.FormGroup(
             id=container_id,
             children=[label, component]
@@ -116,7 +116,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
     @classmethod
     def build_containered_component(cls, component):
         import dash_bootstrap_components as dbc
-        container_id = build_component_id("container")
+        container_id = build_id("container")
         container = dbc.FormGroup(
             id=container_id,
             children=[component]

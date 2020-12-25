@@ -1,7 +1,7 @@
 from dash_express.templates.base import BaseTemplateInstance
 import dash_html_components as html
 
-from dash_express.templates.util import filter_kwargs, build_component_id
+from dash_express.templates.util import filter_kwargs, build_id
 
 
 class BaseDDKTemplateInstance(BaseTemplateInstance):
@@ -57,7 +57,7 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
-        container_id = build_component_id("container")
+        container_id = build_id("container")
         container = ddk.ControlItem(id=container_id, children=component)
         return container, "children"
 
