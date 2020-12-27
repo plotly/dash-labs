@@ -1,9 +1,9 @@
-from dash_express.templates.base import BaseTemplateInstance
+from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 from .util import filter_kwargs, build_id
 
 
-class BaseDbcTemplateInstance(BaseTemplateInstance):
+class BaseDbcTemplate(BaseTemplate):
     # - Align sliders vertically with an outline that matches dropdowns/inputs
     # - Undo the negative margins that table rows pick up from bootstrap's own row
     #   CSS class. Otherwise, table expand in width outside of their container.
@@ -137,7 +137,7 @@ class BaseDbcTemplateInstance(BaseTemplateInstance):
             app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
 
 
-class DbcCard(BaseDbcTemplateInstance):
+class DbcCard(BaseDbcTemplate):
     def __init__(self, title=None, full=True, columns=12, min_width=400, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -179,7 +179,7 @@ class DbcCard(BaseDbcTemplateInstance):
         )
 
 
-class DbcRow(BaseDbcTemplateInstance):
+class DbcRow(BaseDbcTemplate):
     def __init__(
             self, title=None, row_height=None, input_cols=4, min_input_width="300px", **kwargs
     ):
@@ -224,7 +224,7 @@ class DbcRow(BaseDbcTemplateInstance):
         ])
 
 
-class DbcSidebar(BaseDbcTemplateInstance):
+class DbcSidebar(BaseDbcTemplate):
     def __init__(
             self, title=None, sidebar_columns=4, **kwargs
     ):

@@ -4,13 +4,22 @@ import numpy as np
 import plotly.express as px
 
 app = dash.Dash(__name__)
-# template = dx.templates.DbcSidebar(title="Dash Express App")
-template = dx.templates.DdkSidebar(title="Dash Express App")
-# template = dx.templates.DccCard(title="Dash Express App")
+
 # template = dx.templates.FlatDiv()
+# template = dx.templates.DccCard(title="Dash Express App", width="500px")
+# template = dx.templates.DbcCard(title="Dash Express App", columns=6)
+# template = dx.templates.DbcRow(title="Dash Express App")
+# template = dx.templates.DbcSidebar(title="Dash Express App")
+# template = dx.templates.DdkCard(title="Dash Express App", width=50)
+# template = dx.templates.DdkRow(title="Dash Express App")
+# template = dx.templates.DdkSidebar(title="Dash Express App")
+
+from ddk_theme import theme
+template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
 
 
 @dx.parameterize(
+    app,
     inputs=dict(
         figure_title="Initial Title",
         fun=["sin", "cos", "exp"],
@@ -43,9 +52,7 @@ def callback_components(fun, figure_title, phase, amplitude):
         figure=px.line(x=x, y=y).update_layout(title_text=figure_title)
     )
 
-print(template.output_containers)
-
 app.layout = callback_components.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=9003)
+    app.run_server(debug=True)

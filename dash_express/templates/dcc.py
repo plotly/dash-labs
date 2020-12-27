@@ -1,9 +1,9 @@
-from dash_express.templates.base import BaseTemplateInstance
+from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 import dash_core_components as dcc
 
 
-class DccCard(BaseTemplateInstance):
+class DccCard(BaseTemplate):
     _inline_css = """
         <style>
         .dcc-slider {

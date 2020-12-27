@@ -5,6 +5,7 @@ import re
 import dash_table  # noqa: Needs table initialization
 from functools import update_wrapper
 from collections import OrderedDict
+import uuid
 import copy
 
 from dash_express.templates.util import filter_kwargs, build_id
@@ -26,12 +27,12 @@ class ParameterComponents:
         self.container_property = container_property
 
 
-class TemplatedDecorator:
+class ParameterizeDecorator:
     """
     Class that stands in place of a decorated function and contains references to
     a template
     """
-    def __init__(self, fn, template):
+    def __init__(self, fn, template: "BaseTemplate"):
         self.fn = fn
         self._template = template
         update_wrapper(self, self.fn)
@@ -46,8 +47,8 @@ class TemplatedDecorator:
         return self._template
 
     @property
-    def input(self):
-        return self.template.input
+    def inputs(self):
+        return self.template.inputs
 
     @property
     def output(self):
@@ -61,15 +62,8 @@ class TemplatedDecorator:
         """
         return self.template.layout(app, full=full)
 
-    def register_callbacks(self, app):
-        """
-        Register callbacks and don't return anything. Assumes user already has
-        references to all components involved.
-        """
-        self.template.register_callbacks(app)
 
-
-class BaseTemplateInstance:
+class BaseTemplate:
     _label_value_prop = "children"
     _inline_css = None
 
@@ -79,7 +73,8 @@ class BaseTemplateInstance:
         self._role_param_components = dict(input=OrderedDict(), output=OrderedDict())
         self._dynamic_label_callback_args = []
         self._disable_component_callback_args = []
-        self._app_callbacks = []
+        self._app_callbacks = OrderedDict()
+        self._configured_app_ids = set()
 
     @classmethod
     def _style_class_component(cls, component):
@@ -95,7 +90,7 @@ class BaseTemplateInstance:
         component id should have been created with build_component_id
         """
         if getattr(component, "id", None) is None:
-            component.id = build_id("component")
+            component.id = build_id(name or "component")
 
         # Validate / infer input_like and output_like
         if role is None:
@@ -271,15 +266,9 @@ class BaseTemplateInstance:
         self.register_app_callback(disable_component, output, inputs)
 
     def register_app_callback(self, fn, *args, **kwargs):
-        self._app_callbacks.append((
-            fn, args, kwargs
-        ))
-
-    # Methods designed to be overridden by subclasses
-    @classmethod
-    def Markdown(cls, *args, id=None, **kwargs):
-        return dcc.Markdown(
-            *args, className="param-markdown", **filter_kwargs(id=id, **kwargs)
+        uid = str(uuid.uuid4())
+        self._app_callbacks[uid] = (
+            fn, args, kwargs, set()
         )
 
     def add_markdown(self, *args, role=None, name=None, before=None, after=None, **kwargs):
@@ -291,43 +280,12 @@ class BaseTemplateInstance:
             name=name, role=role, label=None, before=before, after=after
         )
 
-    @classmethod
-    def Button(cls, *args, id=None, **kwargs):
-        return html.Button(*args, **filter_kwargs(id=id, **kwargs))
-
-    @classmethod
-    def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
-        if not options:
-            raise ValueError("Options may not be empty")
-
-        if isinstance(options[0], str):
-            options = [{"label": opt, "value": opt} for opt in options]
-
-        if value is None and clearable is False:
-            value = options[0]["value"]
-
-        return dcc.Dropdown(
-            options=options,
-            clearable=clearable,
-            value=value,
-            **filter_kwargs(id=id, **kwargs)
-        )
-
     def add_dropdown(self, options, value=None, name=None, role="input", label=None, optional=False, before=None, after=None, **kwargs):
         id = build_id(name=name if name is not None else "dropdown")
         component = self.Dropdown(options, id=id, value=value, **kwargs)
         return self.add_component(
             component, value_property=self._dropdown_value_prop,
             name=name, role=role, label=label, optional=optional, before=before, after=after
-        )
-
-    @classmethod
-    def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
-        return dcc.Slider(
-            min=min,
-            max=max,
-            value=value if value is not None else min,
-            **filter_kwargs(id=id, step=step, **kwargs)
         )
 
     def add_slider(self, min, max, step=None, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
@@ -338,13 +296,6 @@ class BaseTemplateInstance:
             name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
-    @classmethod
-    def Input(cls, value=None, id=None, **kwargs):
-        return dcc.Input(
-            value=value,
-            **filter_kwargs(id=id, **kwargs)
-        )
-
     def add_input(self, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
         id = build_id(name=name if name is not None else "input")
         component = self.Input(value=value, id=id, **kwargs)
@@ -353,29 +304,12 @@ class BaseTemplateInstance:
             name=name, role=role, label=label, optional=optional, before=before, after=after
         )
 
-    @classmethod
-    def Checkbox(cls, option, id=id, value=None, **kwargs):
-        if isinstance(option, str):
-            option = {"label": option, "value": option}
-
-        return dcc.Checklist(
-            options=[option],
-            value=value if value is not None else option["value"],
-            **filter_kwargs(id=id, **kwargs)
-        )
-
-    def add_checkbox(self, option, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
+    def add_checkbox(self, option=None, value=None, role="input", label=None, name=None, optional=False, before=None, after=None, **kwargs):
         id = build_id(name=name if name is not None else "checkbox")
         component = self.Checkbox(option, value=value, id=id, **kwargs)
         return self.add_component(
             component, value_property=self._checklist_value_prop,
             name=name, role=role, label=label, optional=optional, before=before, after=after
-        )
-
-    @classmethod
-    def Graph(cls, figure=None, id=None, **kwargs):
-        return dcc.Graph(
-            **filter_kwargs(id=id, figure=figure, **kwargs)
         )
 
     def add_graph(self, figure, role="output", label=None, name=None, before=None, after=None, **kwargs):
@@ -386,11 +320,6 @@ class BaseTemplateInstance:
             name=name, role=role, label=label, containered=False, before=before, after=after
         )
 
-    @classmethod
-    def DataTable(cls, *args, **kwargs):
-        from dash_table import DataTable
-        return DataTable(*args, **kwargs)
-
     def add_datatable(self, *args, name=None, role=None, label=None, before=None, after=None, **kwargs):
         id = build_id(name=name if name is not None else "datatable")
         component = self.DataTable(*args, id=id, **kwargs)
@@ -398,20 +327,21 @@ class BaseTemplateInstance:
             component, value_property="data", name=name, role=role, label=label, before=before, after=after
         )
 
-    @classmethod
-    def _configure_app(cls, app):
-        if cls._inline_css:
-            app.index_string = app.index_string.replace(
-                "{%css%}", "{%css%}" + cls._inline_css
-            )
-
     @property
-    def input(self):
+    def inputs(self):
         return self._role_param_components['input']
 
     @property
     def output(self):
         return self._role_param_components['output']
+
+    @property
+    def output_containers(self):
+        return [c.container for c in self._role_param_components['output'].values()]
+
+    @property
+    def input_containers(self):
+        return [c.container for c in self._role_param_components['input'].values()]
 
     def register_callbacks(self, app):
         """
@@ -421,18 +351,13 @@ class BaseTemplateInstance:
         Assumes user already has references to all components involved.
         """
         # Add registered callbacks
-        for fn, args, kwargs in self._app_callbacks:
-            if True:
+        app_id = id(app)
+        for fn, args, kwargs, registered_app_ids in self._app_callbacks.values():
+            if app_id not in registered_app_ids:
                 app.callback(*args, **kwargs)(fn)
+            registered_app_ids.add(app_id)
 
     def layout(self, app, full=True):
-        """
-        Call *either* layout or register_callbacks
-
-        :param app:
-        :param full:
-        :return:
-        """
         # Build structure
         layout = self._perform_layout()
         if full:
@@ -442,24 +367,41 @@ class BaseTemplateInstance:
         self.register_callbacks(app)
 
         # Configure app props like CSS
-        self._configure_app(app)
+        if id(app) not in self._configured_app_ids:
+            self._configure_app(app)
 
         return layout
 
+    # Methods below this comment are designed to be customized by template subclasses
     def _perform_layout(self):
+        """
+        Build the full layout, with the exception of any special top-level components
+        added by `_wrap_layout`.
+
+        :return:
+        """
         raise NotImplementedError
 
     @classmethod
     def _wrap_layout(cls, layout):
+        """
+        Optionall wrap layout in a top-level component (e.g. Ddk.App or dbc.Container)
+        :param layout:
+        :return:
+        """
         return layout
 
-    @property
-    def output_containers(self):
-        return [c.container for c in self._role_param_components['output'].values()]
+    @classmethod
+    def _configure_app(cls, app):
+        """
+        configure application object.
 
-    @property
-    def input_containers(self):
-        return [c.container for c in self._role_param_components['input'].values()]
+        e.g. install CSS / external stylsheets
+        """
+        if cls._inline_css:
+            app.index_string = app.index_string.replace(
+                "{%css%}", "{%css%}" + cls._inline_css
+            )
 
     @classmethod
     def build_optional_component(self, component, enabled=True):
@@ -519,3 +461,83 @@ class BaseTemplateInstance:
             ]
         )
         return container, "children"
+
+    # Component constructors
+    # These are uppercased class method to hopefull help communicate that they are
+    # component constructors that don't modify the template
+    @classmethod
+    def Markdown(cls, *args, id=None, **kwargs):
+        return dcc.Markdown(
+            *args, className="param-markdown", **filter_kwargs(id=id, **kwargs)
+        )
+
+    @classmethod
+    def Button(cls, *args, id=None, **kwargs):
+        return html.Button(*args, **filter_kwargs(id=id, **kwargs))
+
+    @classmethod
+    def Dropdown(cls, options, id=None, value=None, clearable=False, **kwargs):
+        if not options:
+            raise ValueError("Options may not be empty")
+
+        if isinstance(options[0], str):
+            options = [{"label": opt, "value": opt} for opt in options]
+
+        if value is None and clearable is False:
+            value = options[0]["value"]
+
+        return dcc.Dropdown(
+            options=options,
+            clearable=clearable,
+            value=value,
+            **filter_kwargs(id=id, **kwargs)
+        )
+
+    @classmethod
+    def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
+        return dcc.Slider(
+            min=min,
+            max=max,
+            value=value if value is not None else min,
+            **filter_kwargs(id=id, step=step, **kwargs)
+        )
+
+
+    @classmethod
+    def Input(cls, value=None, id=None, **kwargs):
+        return dcc.Input(
+            value=value,
+            **filter_kwargs(id=id, **kwargs)
+        )
+
+
+    @classmethod
+    def Checkbox(cls, option=None, id=id, value=None, **kwargs):
+
+        if option is None:
+            option = {"label": "", "value": "checked"}
+        if isinstance(option, str):
+            option = {"label": option, "value": option}
+
+        if value is True:
+            value = [option["value"]]
+        elif value is False:
+            value = []
+
+        return dcc.Checklist(
+            options=[option],
+            value=value,
+            **filter_kwargs(id=id, **kwargs)
+        )
+
+    @classmethod
+    def Graph(cls, figure=None, id=None, **kwargs):
+        return dcc.Graph(
+            **filter_kwargs(id=id, figure=figure, **kwargs)
+        )
+
+    @classmethod
+    def DataTable(cls, *args, **kwargs):
+        from dash_table import DataTable
+        return DataTable(*args, **kwargs)
+

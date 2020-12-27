@@ -1,10 +1,10 @@
-from dash_express.templates.base import BaseTemplateInstance
+from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 
 from dash_express.templates.util import filter_kwargs, build_id
 
 
-class BaseDDKTemplateInstance(BaseTemplateInstance):
+class BaseDDKTemplate(BaseTemplate):
     _label_value_prop = "label"
 
     _inline_css = """
@@ -34,7 +34,7 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
             use_mobile_viewport=None,
             **kwargs,
     ):
-        super(BaseDDKTemplateInstance, self).__init__(**kwargs)
+        super(BaseDDKTemplate, self).__init__(**kwargs)
         self.theme = theme
         self.show_editor = show_editor
         self.theme_dev_tools = theme_dev_tools
@@ -88,7 +88,7 @@ class BaseDDKTemplateInstance(BaseTemplateInstance):
         )
 
 
-class DdkCard(BaseDDKTemplateInstance):
+class DdkCard(BaseDDKTemplate):
     def __init__(self, title=None, width=None, height=None, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -120,7 +120,7 @@ class DdkCard(BaseDDKTemplateInstance):
         return layout
 
 
-class DdkRow(BaseDDKTemplateInstance):
+class DdkRow(BaseDDKTemplate):
     def __init__(self, title=None, input_width=30, **kwargs):
         super().__init__(**kwargs)
         self.title = title
@@ -155,7 +155,7 @@ class DdkRow(BaseDDKTemplateInstance):
         return layout
 
 
-class DdkSidebar(BaseDDKTemplateInstance):
+class DdkSidebar(BaseDDKTemplate):
     def __init__(self, title=None, sidebar_width="300px", **kwargs):
         super().__init__(**kwargs)
         self.title = title

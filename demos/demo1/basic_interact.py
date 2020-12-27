@@ -15,17 +15,16 @@ def greet(fun, figure_title, phase, amplitude):
 
 
 parameterized_greet = dx.parameterize(
+    app,
     inputs=dict(
-        fun=["sin", "cos", "exp"], figure_title="Initial Title",
-        phase=(1, 10), amplitude=(1, 10)
-    ),
+        fun=["sin", "cos", "exp"],
+        figure_title="Initial Title",
+        phase=(1, 10),
+        amplitude=(1, 10)
+    )
 )(greet)
 
-
-print(parameterized_greet.input["phase"].enabler)
-print(parameterized_greet.output[0].value, greet_components.output[0].value_property)
-
-app.layout = greet_components.layout
+app.layout = parameterized_greet.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=9001)

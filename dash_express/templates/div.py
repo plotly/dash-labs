@@ -1,8 +1,8 @@
-from dash_express.templates.base import BaseTemplateInstance
+from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 
 
-class FlatDiv(BaseTemplateInstance):
+class FlatDiv(BaseTemplate):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

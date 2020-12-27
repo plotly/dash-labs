@@ -13,6 +13,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 
 # import dash_core_components as dcc
 @dx.parameterize(
+    app,
     inputs=dict(
         fun=["sin", "cos", "exp"],
         figure_title="Initial Title",
@@ -38,8 +39,7 @@ def function_browser(fun, figure_title, phase, amplitude):
 template.add_markdown("# First Group", role="input", before="fun")
 template.add_markdown([
     "# Second Group\n"
-    "Some explanation here of this group of controls Some explanation here of this group of controls Some explanation here of this group of controls Some explanation here of this group of controls\n\n"
-    "And a second paragraph And a second paragraph And a second paragraph And a second paragraph And a second paragraph"
+    "Specify the Phase and Amplitudue for the chosen function"
 ],
     role="input", before="phase")
 
@@ -47,7 +47,11 @@ template.add_markdown([
     "# H2 Title\n",
     "Here is the *main* plot"
 ], role="output", before=0)
-template.add_dropdown(options=["A", "B", "C"], role="output")
+
+template.add_component(
+    dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
+    role="output", value_property="children"
+)
 
 app.layout = function_browser.layout(app)
 

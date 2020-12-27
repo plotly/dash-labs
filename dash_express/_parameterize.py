@@ -28,11 +28,15 @@ class StateParameterWrapper(ParameterWrapper):
         super().__init__(value)
 
 
-def parameterize(inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
+def parameterize(app, inputs=None, output=None, state=None, template=None, labels=None, optional=(), manual=False, prevent_initial_call=None):
     """
     Parameterize a function using a
     """
-    from dash_express.templates.base import TemplatedDecorator
+    from dash_express.templates.base import ParameterizeDecorator
+
+    if isinstance(inputs, Component):
+        # Wrap scalar input
+        inputs = [inputs]
 
     assert inputs
 
@@ -164,7 +168,7 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
                 output_property = "value"
 
             # Overwrite id
-            if getattr(output_component, "id", None):
+            if getattr(output_component, "id", None) is None:
                 component_id = build_id(name=i)
                 output_component.id = component_id
 
@@ -183,7 +187,7 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
         output_dependencies = output_dependencies[0]
         output_index_mapping = output_index_mapping[0]
 
-    def wrapped(fn):
+    def wrapped(fn) -> ParameterizeDecorator:
         # Register callback with output component inference
         if map_keyword_args:
             fn = map_input_kwarg_parameters(fn, param_index_mapping, fixed_param_values)
@@ -198,8 +202,11 @@ def parameterize(inputs=None, output=None, state=None, template=None, labels=Non
             prevent_initial_call=prevent_initial_call
         )
 
+        if app is not None:
+            template.register_callbacks(app)
+
         # build TemplateDecorator
-        return TemplatedDecorator(fn, template)
+        return ParameterizeDecorator(fn, template)
 
     return wrapped
 
@@ -279,6 +286,10 @@ def add_param_component_to_template(param, pattern, labels, optional, template):
             )
     elif isinstance(pattern, str):
         pattern_inputs, pattern_fn = template.add_input(
+            value=pattern, label=label, name=param, optional=arg_optional
+        )
+    elif isinstance(pattern, bool):
+        pattern_inputs, pattern_fn = template.add_checkbox(
             value=pattern, label=label, name=param, optional=arg_optional
         )
     elif isinstance(pattern, (Input, State)):
@@ -422,11 +433,11 @@ def infer_output_component(fn, template, output_dependencies):
                 )
             for i in range(len(res)):
                 # Only infer output components that are being assigned to children
-                if output_dependencies[i].component_property == "children":
+                if isinstance(res[i], (html.Div, list)) and output_dependencies[i].component_property == "children":
                     res[i] = infer_component(res[i], template)
         else:
             res = fn(*args, **kwargs)
-            if output_dependencies.component_property == "children":
+            if isinstance(res, (html.Div, list)) and output_dependencies.component_property == "children":
                 res = infer_component(res, template)
         return res
     return wrapper
@@ -457,6 +468,8 @@ def infer_component(v, template):
             id=component_id,
             columns=[{"name": i, "id": i} for i in v.columns],
             data=v.to_dict('records'),
+            page_size=15,
+
         )
     elif isinstance(v, list):
         return html.Div(
