@@ -469,7 +469,6 @@ def infer_component(v, template):
             columns=[{"name": i, "id": i} for i in v.columns],
             data=v.to_dict('records'),
             page_size=15,
-
         )
     elif isinstance(v, list):
         return html.Div(

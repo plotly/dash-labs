@@ -11,6 +11,21 @@ import copy
 from dash_express.templates.util import filter_kwargs, build_id
 
 
+class ParameterPlugin:
+    @property
+    def inputs(self):
+        raise NotImplementedError
+
+    @property
+    def output(self):
+        raise NotImplementedError
+
+    @property
+    def build(self, inputs_value, **kwargs):
+        raise NotImplementedError
+
+
+
 class ParameterComponents:
     def __init__(
             self, name, value, value_property, label, label_property,

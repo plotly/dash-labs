@@ -1,25 +1,27 @@
 import dash
 import dash_express as dx
 import plotly.express as px
-tips = px.data.tips()
-import dash_html_components as html
 from dash.dependencies import Input
 import dash_core_components as dcc
 
+tips = px.data.tips()
 
 app = dash.Dash(__name__)
-
 graph_id = dx.build_id("graph")
+template = dx.templates.DbcCard(title="Scatter Selection")
 
 @dx.parameterize(
     app,
-    template=dx.templates.DbcCard(title="Scatter Selection"),
+    template=template,
     inputs=dict(
         selectedData=Input(graph_id, "selectedData"),
     ),
     output=[
         (dcc.Graph(id=graph_id), "figure"),
-        (html.Div(), "children")
+        (template.DataTable(
+            columns=[{"name": i, "id": i} for i in tips.columns],
+            page_size=10
+        ), "data")
     ],
 )
 def filter_table(selectedData):
@@ -39,7 +41,7 @@ def filter_table(selectedData):
 
     return [
         figure,
-        [filtered],
+        filtered.to_dict('records'),
     ]
 
 

@@ -3,23 +3,25 @@ from dash.dependencies import Input, Output
 
 import dash_express as dx
 import plotly.express as px
-tips = px.data.tips()
 import dash_html_components as html
 import dash_core_components as dcc
 
+from table_plugin import Table
+
+tips = px.data.tips()
 app = dash.Dash(__name__)
 template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400px", show_editor=True)
 # template = dx.templates.DccCard(title="Dash Express App")
 
-graph_id = dx.build_id("output-graph")
+graph_id = dx.build_id(name="output-graph")
 graph = template.Graph(id=graph_id)
 
-table_div_id = dx.build_id("output-table")
-
-num_selected_input_id = dx.build_id("output-table")
+num_selected_input_id = dx.build_id(name="output-table")
 num_selected_input = template.Input(id=num_selected_input_id)
 
+# Build serverside table parts
+table_plugin = Table(tips, serverside=True)
 
 @dx.parameterize(
     app,
@@ -27,7 +29,7 @@ num_selected_input = template.Input(id=num_selected_input_id)
         max_total_bill=(0, 50.0, 0.25),
         tip_range=dcc.RangeSlider(min=0, max=20, value=(5, 10)),
         sex=["Male", "Female"],
-        # selectedData=(graph, "selectedData"),
+        table_values=table_plugin.inputs,
         selectedData=Input(graph_id, "selectedData"),
     ),
     template=template,
@@ -39,12 +41,13 @@ num_selected_input = template.Input(id=num_selected_input_id)
     optional=["max_total_bill", "max_tip", "sex", "tip_range"],
     output=[
         (graph, "figure"),
-        # Output(graph_id, "figure"),
-        (html.Div(id=table_div_id), "children"),
+        table_plugin.output,
         Output(num_selected_input_id, "value")
     ]
 )
-def filter_table(max_total_bill, tip_range, sex, selectedData):
+def filter_table(max_total_bill, tip_range, sex, table_values, selectedData):
+    print("table_values", table_values)
+
     if selectedData:
         num_selected = len(selectedData["points"])
     else:
@@ -65,7 +68,8 @@ def filter_table(max_total_bill, tip_range, sex, selectedData):
     fig = px.scatter(
         filtered, x="total_bill", y="tip"
     ).update_layout(uirevision=True)
-    return [fig, ["### Filtered Table", filtered], num_selected]
+
+    return [fig, table_plugin.build(table_values, df=filtered), num_selected]
 
 
 layout = filter_table.layout(app)
