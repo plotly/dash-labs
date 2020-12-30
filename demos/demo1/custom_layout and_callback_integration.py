@@ -33,10 +33,6 @@ def iris(x, y):
         figure=px.scatter(df, x=x, y=y, color="species"),
     )
 
-# Register parameterizeation callbacks. Just do this becuase we're not calling
-# iris.layout in this example
-iris.register_callbacks(app)
-
 # Get references to the dropdowns and register a custom callback to prevent the user
 # from setting x and y to the same variable
 

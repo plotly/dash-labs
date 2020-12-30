@@ -196,7 +196,8 @@ def parameterize(app, inputs=None, output=None, state=None, template=None, label
 
         fn = map_output_positional_args(fn, output_index_mapping)
 
-        fn = infer_output_component(fn, template, output_dependencies)
+        should_infer_output = [isinstance(output_el, html.Div) for output_el in output]
+        fn = infer_output_component(fn, template, output_dependencies, should_infer_output)
         template.register_app_callback(
             fn, output_dependencies, all_inputs, all_state,
             prevent_initial_call=prevent_initial_call
@@ -422,7 +423,7 @@ def map_output_positional_args(fn, output_index_mapping):
     return wrapper
 
 
-def infer_output_component(fn, template, output_dependencies):
+def infer_output_component(fn, template, output_dependencies, should_infer_output):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if isinstance(output_dependencies, list):
@@ -433,11 +434,11 @@ def infer_output_component(fn, template, output_dependencies):
                 )
             for i in range(len(res)):
                 # Only infer output components that are being assigned to children
-                if isinstance(res[i], (html.Div, list)) and output_dependencies[i].component_property == "children":
+                if should_infer_output[i]:
                     res[i] = infer_component(res[i], template)
         else:
             res = fn(*args, **kwargs)
-            if isinstance(res, (html.Div, list)) and output_dependencies.component_property == "children":
+            if should_infer_output:
                 res = infer_component(res, template)
         return res
     return wrapper
