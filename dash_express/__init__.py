@@ -1,5 +1,6 @@
 # from . import util, templates
 from .util import build_id
-from ._component_props import ComponentProps
-from ._callback import callback, arg
+from ._callback import arg, callback
 from . import templates
+from .plugin import Plugin
+from .component_plugin import ComponentPlugin

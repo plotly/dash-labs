@@ -4,11 +4,9 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         fun=dx.arg(["sin", "cos", "exp"], label="Function"),
         figure_title=dx.arg("Initial Title", label="Figure Title"),

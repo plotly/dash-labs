@@ -10,10 +10,9 @@ filter_table_plugin = FilterTable(
     tips, px_kwargs=dict(x="total_bill", y="tip"), page_size=12, template=template
 )
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-@dx.callback(
-    app,
+@app.callback(
     template=template,
     inputs=[filter_table_plugin.inputs],
     output=filter_table_plugin.output,
@@ -27,5 +26,3 @@ app.layout = filter_table.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
-

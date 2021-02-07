@@ -1,10 +1,10 @@
 from dash.dependencies import Input
 import dash_express as dx
 import plotly.express as px
-from dash_express.plugin import ParameterPlugin
+from dash_express import ComponentPlugin
 
 
-class FilterTable(ParameterPlugin):
+class FilterTable(ComponentPlugin):
     def __init__(self, df, px_kwargs=None, page_size=5, template=None):
         if px_kwargs is None:
             px_kwargs = dict(x=df.columns[0], y=df.columns[1])
@@ -22,12 +22,12 @@ class FilterTable(ParameterPlugin):
         self.graph_id = dx.build_id(name="filter-table-graph")
         self.datatable_id = dx.build_id(name="filter-table-table")
         self._output = [
-            template.Graph(id=self.graph_id).props["figure"],
-            template.DataTable(
+            dx.arg(template.Graph(id=self.graph_id), props="figure"),
+            dx.arg(template.DataTable(
                 id=self.datatable_id,
                 columns=[{"name": i, "id": i} for i in self.df.columns],
                 page_size=self.page_size
-            ).props["data"],
+            ), props="data"),
         ]
 
         self._inputs = Input(self.graph_id, "selectedData")

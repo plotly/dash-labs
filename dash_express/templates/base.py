@@ -1,4 +1,6 @@
 import sys
+from typing import Union
+
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table  # noqa: Needs table initialization
@@ -7,16 +9,18 @@ import datetime
 
 from dash.development.base_component import Component
 
-from dash_express import ComponentProps
 from dash_express.util import filter_kwargs, build_id, insert_into_ordered_dict
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
 class ArgumentComponents:
-    value: ComponentProps
-    label: ComponentProps
-    container: ComponentProps
+    arg_component: Component
+    arg_props: Union[str, tuple, dict]
+    label_component: Component
+    label_props: Union[str, tuple, dict]
+    container_component: Component
+    container_props: Union[str, tuple, dict]
 
 
 class BaseTemplate:
@@ -41,25 +45,36 @@ class BaseTemplate:
         cls, component, value_property=(), label=None, containered=True
     ):
         # Get reference to dependency class object for role
-        parameter_cp = component.props[value_property]
-        container_cp = parameter_cp
+        arg_component = component
+        arg_props = value_property
 
         if label:
             initial_value = label
-            container_cp, label_cp = cls.build_labeled_component(
-                container_cp.component, initial_value=initial_value
-            )
+            container_component, container_props, label, label_props = \
+                cls.build_labeled_component(
+                    arg_component, initial_value=initial_value
+                )
+            label_component = label
+            label_props = label_props
         elif containered:
-            label_cp = None
-            container_cp = cls.build_containered_component(container_cp.component)
+            label_component = None
+            label_props = None
+            container_component, container_props = cls.build_containered_component(
+                arg_component
+            )
         else:
-            label_cp = None
-            container_cp = parameter_cp
+            label_component, label_props = None, None
+            container_component, container_props = None, None
 
+        # container_component = container_cp.component
+        # container_props = container_cp.props
         return ArgumentComponents(
-            value=parameter_cp,
-            label=label_cp,
-            container=container_cp,
+            arg_component=arg_component,
+            arg_props=arg_props,
+            label_component=label_component,
+            label_props=label_props,
+            container_component=container_component,
+            container_props=container_props,
         )
 
     def add_component(
@@ -103,16 +118,8 @@ class BaseTemplate:
         return param_components
 
     @classmethod
-    def infer_input_component_props_from_pattern(cls, pattern, id=None):
-        if isinstance(pattern, ComponentProps):
-            # Nothing to do
-            return pattern
-        elif isinstance(pattern, Component):
-            # Default to value prop of component
-            # TODO: specialize error message, explaining value is the default and how
-            #       to customize with .props syntax
-            return pattern.props["value"]
-        elif isinstance(pattern, list):
+    def infer_component_and_props_from_pattern(cls, pattern):
+        if isinstance(pattern, list):
             # Dropdown
             options = pattern
 
@@ -125,10 +132,7 @@ class BaseTemplate:
                 value = options[0]["value"]
             else:
                 value = None
-            return ComponentProps(
-                cls.Dropdown(options=options, value=value, id=id),
-                "value",
-            )
+            return cls.Dropdown(options=options, value=value), "value",
         elif isinstance(pattern, tuple) and all(
             isinstance(el, (int, float)) for el in pattern
         ):
@@ -140,21 +144,20 @@ class BaseTemplate:
             else:
                 raise ValueError("Tuple pattern must have length 2 or 3")
 
-            return ComponentProps(
-                cls.Slider(min=minimum, max=maximum, value=minimum, step=step, id=id),
+            return (
+                cls.Slider(min=minimum, max=maximum, value=minimum, step=step),
                 "value",
             )
         elif isinstance(pattern, str):
-            return ComponentProps(
-                cls.Input(value=pattern, id=id),
+            return (
+                cls.Input(value=pattern),
                 "value",
             )
         elif isinstance(pattern, bool):
-            return ComponentProps(
+            return (
                 cls.Checklist(
                     options=[{"label": "", "value": "checked"}],
                     value=["checked"] if pattern else [],
-                    id=id,
                 ),
                 "value",
             )
@@ -205,7 +208,7 @@ class BaseTemplate:
         containers = []
         for role in roles:
             for pc in self.roles.get(role, {}).values():
-                containers.append(pc.container.component)
+                containers.append(pc.container_component)
 
         return containers
 
@@ -263,7 +266,7 @@ class BaseTemplate:
                 html.Div(style={"display": "block"}, children=component),
             ],
         )
-        return container.props["children"], label.props["children"]
+        return container, "children", label, "children"
 
     @classmethod
     def build_containered_component(cls, component):
@@ -279,7 +282,7 @@ class BaseTemplate:
                 html.Div(style={"display": "block"}, children=component),
             ],
         )
-        return container.props["children"]
+        return container, "children"
 
     # Component constructors
     # These are uppercased class method to hopefully help communicate that they are

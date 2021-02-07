@@ -4,16 +4,14 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
-        fun=["sin", "cos", "exp"],
-        figure_title="Initial Title",
-        phase=(1, 10),
-        amplitude=(1, 10),
+        fun=dx.arg(["sin", "cos", "exp"]),
+        figure_title=dx.arg("Initial Title"),
+        phase=dx.arg((1, 10)),
+        amplitude=dx.arg((1, 10)),
     ),
 )
 def greet(fun, figure_title, phase, amplitude):
@@ -24,7 +22,6 @@ def greet(fun, figure_title, phase, amplitude):
 
 
 app.layout = greet.layout(app)
-
 
 if __name__ == "__main__":
     app.run_server(debug=True)

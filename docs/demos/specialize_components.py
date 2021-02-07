@@ -5,11 +5,10 @@ import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import plotly.express as px
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 # Function to parameterize
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         fun=dx.arg(["sin", "cos", "exp"], label="Function"),
 
@@ -31,7 +30,7 @@ app = dash.Dash(__name__)
         ),
 
         # Dropdown instead of default slider
-        date=dx.arg(dcc.DatePickerSingle().props["date"], label="Measurement Date")
+        date=dx.arg(dcc.DatePickerSingle(), props="date", label="Measurement Date")
     ),
 )
 def callback_components(fun, figure_title, phase, date):

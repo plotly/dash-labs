@@ -1,13 +1,9 @@
 import dash_express as dx
-from unittest.mock import MagicMock
-
-from ..fixtures import test_template
+from ..fixtures import app, test_template
 
 
-def test_prevent_initial_callback_passed_through(test_template):
-    app = MagicMock()
-    @dx.callback(
-        app,
+def test_prevent_initial_callback_passed_through(app, test_template):
+    @app.callback(
         inputs=[(0, 10)],
         template=test_template,
         prevent_initial_call=False,
@@ -16,11 +12,9 @@ def test_prevent_initial_callback_passed_through(test_template):
         return a + b + c
 
     # False
-    args = app.callback.call_args
-    assert not args.kwargs.get("prevent_initial_call", False)
+    app._callback_list[0]["prevent_initial_call"] is False
 
-    @dx.callback(
-        app,
+    @app.callback(
         inputs=[(0, 10)],
         template=test_template,
         prevent_initial_call=True,
@@ -29,5 +23,4 @@ def test_prevent_initial_callback_passed_through(test_template):
         return a + b + c
 
     # True
-    args = app.callback.call_args
-    assert args.kwargs["prevent_initial_call"]
+    app._callback_list[1]["prevent_initial_call"] is False

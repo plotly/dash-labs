@@ -6,13 +6,14 @@ from dash_express.grouping import make_grouping_by_position, grouping_len
 from . import make_deps, assert_deps_eq, mock_fn_with_return, make_letters, \
     make_letters_grouping, make_numbers_grouping
 from ..fixtures import (
-    test_template, app, scalar_grouping_size, tuple_grouping_size, dict_grouping_size,
-    mixed_grouping_size
+    test_template, app, tuple_grouping_size, dict_grouping_size, mixed_grouping_size
 )
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 
 # Helpers
+from ..helpers_for_testing import flat_deps
+
 button_props = [p for p in html.Button().available_properties if p.isidentifier()]
 
 
@@ -67,7 +68,7 @@ def button_component_prop_for_grouping(grouping):
     props_grouping = make_grouping_by_position(
         grouping, button_props[:grouping_len(grouping)]
     )
-    return html.Button().props[props_grouping]
+    return html.Button(), props_grouping
 
 
 def check_component_props_as_groupings(
@@ -80,19 +81,19 @@ def check_component_props_as_groupings(
     output_size = grouping_len(output_grouping)
 
     # Make buttons
-    input_button_prop = button_component_prop_for_grouping(input_grouping)
-    state_button_prop = button_component_prop_for_grouping(state_grouping)
-    output_button_prop = button_component_prop_for_grouping(output_grouping)
+    input_button, input_prop = button_component_prop_for_grouping(input_grouping)
+    state_button, state_prop = button_component_prop_for_grouping(state_grouping)
+    output_button, output_prop = button_component_prop_for_grouping(output_grouping)
 
     # Make flat dependencies
-    flat_input_deps = input_button_prop.flat_input + make_deps(Input, 1)
-    flat_state_deps = state_button_prop.flat_state
-    flat_output_deps = make_deps(Output, 1) + output_button_prop.flat_output
+    flat_input_deps = flat_deps(input_button, input_prop, "input") + make_deps(Input, 1)
+    flat_state_deps = flat_deps(state_button, state_prop, "state")
+    flat_output_deps = make_deps(Output, 1) + flat_deps(output_button, output_prop, "output")
 
     # Build grouped dependency lists
-    grouped_input_deps = [input_button_prop, flat_input_deps[-1]]
-    grouped_state_deps = [state_button_prop]
-    grouped_output_deps = [flat_output_deps[0], output_button_prop]
+    grouped_input_deps = [dx.arg(input_button, props=input_prop), flat_input_deps[-1]]
+    grouped_state_deps = [dx.arg(state_button, props=state_prop)]
+    grouped_output_deps = [flat_output_deps[0], dx.arg(output_button, output_prop)]
 
     # Build flat input/output values (state is part of input now)
     flat_input_values = (
@@ -133,6 +134,7 @@ def check_component_props_as_groupings(
                 grouped_input_values
             )
         }
+
     if output_form == "scalar":
         # Remove first extra scalar value, leave only grouped value as scalar
         grouped_output_deps = grouped_output_deps[1]
@@ -186,7 +188,7 @@ def check_component_props_as_groupings(
 
 
 def check_dependencies_as_groupings(
-        app, input_grouping, state_grouping, output_grouping,
+        app, input_grouping, state_grouping, output_grouping, template,
         input_form="list", output_form="list",
 ):
     # Compute grouping sizes
@@ -282,7 +284,7 @@ def check_dependencies_as_groupings(
         output=grouped_output_deps,
         inputs=grouped_input_deps,
         state=grouped_state_deps,
-        template=test_template
+        template=template,
     )(fn)
 
     # call flat version (like dash.Dash.callback would)
@@ -325,7 +327,7 @@ def test_varied_grouping_positional(
         [all_groupings[i] for i in ordering]
 
     check_dependencies_as_groupings(
-        app, input_grouping, state_grouping, output_grouping,
+        app, input_grouping, state_grouping, output_grouping, test_template,
         input_form=input_form, output_form=output_form
     )
 
@@ -358,4 +360,54 @@ def test_varied_grouping_component_props(
     )
 
 
-# TODO: add flag for input and output being positional vs keyword.
+def test_input_tuple_of_deps_treated_as_list(app, test_template):
+    inputs = tuple(make_deps(Input, 2))
+    state = tuple(make_deps(State, 1))
+    output = make_deps(Output, 1)[0]
+
+    # Build mock function
+    fn = mock_fn_with_return(42)
+    fn_wrapper = dx.callback(app, output, inputs, state, template=test_template)(fn)
+
+    # call flat version (like dash would)
+    assert fn_wrapper._flat_fn(1, 2, 3) == [42]
+
+    # Check how mock function was called
+    args, kwargs = fn.call_args
+    assert args == (1, 2, 3)
+    assert not kwargs
+
+    # Check order of dependencies
+    assert_deps_eq(fn_wrapper._flat_input_deps, list(inputs))
+    assert_deps_eq(fn_wrapper._flat_state_deps, list(state))
+    assert_deps_eq(fn_wrapper._flat_output_deps, [output])
+
+    args, kwargs = fn.call_args
+    print(args, kwargs)
+
+
+@pytest.mark.parametrize("output_dep_form", [list, tuple])
+@pytest.mark.parametrize("output_val_form", [list, tuple])
+def test_output_tuple_of_deps_treated_as_list(
+        app, test_template, output_dep_form, output_val_form
+):
+    inputs = make_deps(Input, 2)
+    state = make_deps(State, 1)
+    output = output_dep_form(make_deps(Output, 2))
+
+    # Build mock function
+    fn = mock_fn_with_return(output_val_form([42, 12]))
+    fn_wrapper = dx.callback(app, output, inputs, state, template=test_template)(fn)
+
+    # call flat version (like dash would)
+    assert fn_wrapper._flat_fn(1, 2, 3) == [42, 12]
+
+    # Check how mock function was called
+    args, kwargs = fn.call_args
+    assert args == (1, 2, 3)
+    assert not kwargs
+
+    # Check order of dependencies
+    assert_deps_eq(fn_wrapper._flat_input_deps, list(inputs))
+    assert_deps_eq(fn_wrapper._flat_state_deps, list(state))
+    assert_deps_eq(fn_wrapper._flat_output_deps, list(output))

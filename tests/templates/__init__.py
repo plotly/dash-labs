@@ -10,21 +10,21 @@ def check_layout_body(layout_body, template):
 
     # Check input div
     expected_input_components = [
-        pc.container.component for pc in template.roles["input"].values()
+        ac.container_component for ac in template.roles["input"].values()
     ]
     assert layout_body.children[0].id == "inputs-div"
     assert layout_body.children[0].children == expected_input_components
 
     # Check output div
     expected_output_components = [
-        pc.container.component for pc in template.roles["output"].values()
+        ac.container_component for ac in template.roles["output"].values()
     ]
     assert layout_body.children[1].id == "outputs-div"
     assert layout_body.children[1].children == expected_output_components
 
     # Check custom div
     expected_custom_components = [
-        pc.container.component for pc in template.roles["custom"].values()
+        ac.container_component for ac in template.roles["custom"].values()
     ]
     assert layout_body.children[2].id == "customs-div"
     assert layout_body.children[2].children == expected_custom_components

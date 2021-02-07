@@ -5,16 +5,15 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-@dx.callback(
-    app,
-    inputs=dict(
-        fun=dx.arg(["sin", "cos", "exp"], label="Function", kind="state"),
-        figure_title=dx.arg("Initial Title", label="Figure Title", kind="state"),
-        phase=dx.arg((1, 10), label="Phase", kind="state"),
-        amplitude=dx.arg((1, 10), label="Amplitude", kind="state"),
-        n_clicks=dx.arg(html.Button("Update").props["n_clicks"], kind="input")
+@app.callback(
+    state=dict(
+        fun=dx.arg(["sin", "cos", "exp"], label="Function"),
+        figure_title=dx.arg("Initial Title", label="Figure Title"),
+        phase=dx.arg((1, 10), label="Phase"),
+        amplitude=dx.arg((1, 10), label="Amplitude"),
+        n_clicks=dx.arg(html.Button("Update"), props="n_clicks", kind="input")
     ),
 )
 def greet(fun, figure_title, phase, amplitude, n_clicks):
