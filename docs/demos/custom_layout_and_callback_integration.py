@@ -40,7 +40,7 @@ x_component = iris.roles["input"]["x"].arg_component
 y_component = iris.roles["input"]["y"].arg_component
 
 
-# Define standalon function that computes what values to enable, reuse for both
+# Define standalone function that computes what values to enable, reuse for both
 # dropdowns with app.callback
 def filter_options(v):
     """Disable option ability to plot x vs x"""

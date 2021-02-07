@@ -5,7 +5,6 @@ import dash_core_components as dcc
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-
 @app.callback(
     inputs=dict(
         figure_title=dx.arg(dcc.Input(value="Figure Title"), label="Graph Title"),
@@ -26,7 +25,6 @@ def callback_components(figure_title, date_range):
             layout_title_text=title
         )
     )
-
 
 app.layout = callback_components.layout(app)
 

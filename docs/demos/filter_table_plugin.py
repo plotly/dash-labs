@@ -1,10 +1,10 @@
 from dash.dependencies import Input
 import dash_express as dx
 import plotly.express as px
-from dash_express import ParameterPlugin
+from dash_express import ComponentPlugin
 
 
-class FilterTable(ParameterPlugin):
+class FilterTable(ComponentPlugin):
     def __init__(self, df, px_kwargs=None, page_size=5, template=None):
         if px_kwargs is None:
             px_kwargs = dict(x=df.columns[0], y=df.columns[1])

@@ -2,10 +2,10 @@ from dash.dependencies import Input
 import dash_express as dx
 from dash_table import DataTable
 import math
-from dash_express import ParameterPlugin
+from dash_express import ComponentPlugin
 
 
-class Table(ParameterPlugin):
+class Table(ComponentPlugin):
     def __init__(self, df, page_size=5, serverside=False):
         self.df=df
         self.page_size=page_size

@@ -6,7 +6,6 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-
 @app.callback(
     inputs=dict(
         fun=dx.arg(["sin", "cos", "exp"]),
@@ -23,7 +22,6 @@ def greet(fun, figure_title, phase, amplitude):
 
 
 app.layout = greet.layout(app)
-
 
 if __name__ == "__main__":
     app.run_server(debug=True)

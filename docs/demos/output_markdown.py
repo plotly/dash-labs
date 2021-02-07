@@ -15,7 +15,6 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 def markdown_preview(input_text):
     return input_text
 
-
 app.layout = markdown_preview.layout(app)
 
 if __name__ == "__main__":

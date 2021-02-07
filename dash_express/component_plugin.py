@@ -1,4 +1,4 @@
-class ParameterPlugin:
+class ComponentPlugin:
     @property
     def inputs(self):
         raise NotImplementedError
