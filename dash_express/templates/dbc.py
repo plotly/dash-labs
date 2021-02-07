@@ -96,7 +96,7 @@ class BaseDbcTemplate(BaseTemplate):
         )
         container_id = build_id("container")
         container = dbc.FormGroup(id=container_id, children=[label, component])
-        return container.props["children"], label.props["children"]
+        return container, "children", label, "children"
 
 
     @classmethod
@@ -105,7 +105,7 @@ class BaseDbcTemplate(BaseTemplate):
 
         container_id = build_id("container")
         container = dbc.FormGroup(id=container_id, children=[component])
-        return container.props["children"]
+        return container, "children"
 
     def _configure_app(self, app):
         super()._configure_app(app)

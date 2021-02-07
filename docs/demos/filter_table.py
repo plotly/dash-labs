@@ -6,22 +6,21 @@ import dash_core_components as dcc
 
 tips = px.data.tips()
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 graph_id = dx.build_id("graph")
 template = dx.templates.DbcCard(title="Scatter Selection")
 
 
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         selectedData=Input(graph_id, "selectedData"),
     ),
     output=[
-        dcc.Graph(id=graph_id).props["figure"],
-        template.DataTable(
+        dx.arg(dcc.Graph(id=graph_id), props="figure"),
+        dx.arg(template.DataTable(
             columns=[{"name": i, "id": i} for i in tips.columns],
             page_size=10,
-        ).props["data"]
+        ), props="data")
     ],
     template=template,
 )

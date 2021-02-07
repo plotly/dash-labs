@@ -3,7 +3,7 @@ import dash_express as dx
 import numpy as np
 import plotly.express as px
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 # template = dx.templates.FlatDiv()
 # template = dx.templates.DccCard(title="Dash Express App", width="500px")
@@ -23,8 +23,7 @@ template = dx.templates.DbcSidebar(
 # template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
 
 
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         figure_title=dx.arg("Initial Title", label="Function"),
         fun=dx.arg(["sin", "cos", "exp"], label="Figure Title"),

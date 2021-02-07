@@ -7,7 +7,7 @@ import dash_html_components as html
 import pytest
 from dash.dependencies import Input, Output, State
 from dash_express.grouping import make_grouping_by_position
-
+from dash_express import Plugin
 
 # Helpers
 from templates.base import BaseTemplate
@@ -135,7 +135,7 @@ def dependency(request):
 
 @pytest.fixture
 def app():
-    return dash.Dash()
+    return dash.Dash(plugins=[Plugin()])
 
 
 class TestTemplate(BaseTemplate):
@@ -151,7 +151,7 @@ class TestTemplate(BaseTemplate):
         # Subclass could use bootstrap or ddk
         label = html.Label(id="label", children=initial_value)
         container = html.Div(id="container", children=[label, component])
-        return container.props["children"], label.props["children"]
+        return container, "children", label, "children"
 
     @classmethod
     def build_containered_component(cls, component):
@@ -160,7 +160,7 @@ class TestTemplate(BaseTemplate):
         Unitform spacing with it
         """
         container = html.Div(id="container", children=component)
-        return container.props["children"]
+        return container, "children"
 
     @classmethod
     def _add_class_to_component(cls, component):

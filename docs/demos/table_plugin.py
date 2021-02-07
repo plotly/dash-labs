@@ -2,7 +2,7 @@ from dash.dependencies import Input
 import dash_express as dx
 from dash_table import DataTable
 import math
-from dash_express.plugin import ParameterPlugin
+from dash_express import ParameterPlugin
 
 
 class Table(ParameterPlugin):
@@ -14,13 +14,11 @@ class Table(ParameterPlugin):
 
     def _compute_props(self):
         if self.serverside:
-            self._output, self._build, self._input = _serverside_table(
-                self.df, self.page_size
-            )
+            self._output_component, self._output_props, self._build, self._input = \
+                 _serverside_table(self.df, self.page_size)
         else:
-            self._output, self._build, self._input = _clientside_table(
-                self.df, self.page_size
-            )
+            self._output_component, self._output_props, self._build, self._input = \
+                _clientside_table(self.df, self.page_size)
 
     @property
     def inputs(self):
@@ -28,7 +26,7 @@ class Table(ParameterPlugin):
 
     @property
     def output(self):
-        return self._output
+        return dx.arg(self._output_component, props=self._output_props)
 
     def build(self, inputs_value, df=None):
         if df is None:
@@ -65,7 +63,7 @@ def _serverside_table(df, page_size=5):
         return data, page_count
 
     inputs = Input(table_id, "page_current")
-    return table.props[("data", "page_count")], update_table, inputs
+    return table, ("data", "page_count"), update_table, inputs
 
 
 def _clientside_table(df, page_size=5):
@@ -83,4 +81,4 @@ def _clientside_table(df, page_size=5):
         data = df.to_dict('records')
         return data
 
-    return table.props["data"], update_table, ()
+    return table, "data", update_table, ()

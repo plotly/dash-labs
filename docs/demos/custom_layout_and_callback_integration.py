@@ -17,12 +17,11 @@ feature_options = [
 ]
 
 # Build app and template
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 
 # Use parameterize to create components
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         x=dcc.Dropdown(options=feature_options, value="sepal_length"),
         y=dcc.Dropdown(options=feature_options, value="sepal_width"),
@@ -37,8 +36,8 @@ def iris(x, y):
 # from setting x and y to the same variable
 
 # Get the dropdown components that were created by parameterize
-x_component = iris.roles["input"]["x"].value
-y_component = iris.roles["input"]["y"].value
+x_component = iris.roles["input"]["x"].arg_component
+y_component = iris.roles["input"]["y"].arg_component
 
 
 # Define standalon function that computes what values to enable, reuse for both
@@ -59,9 +58,9 @@ app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")]
 )
 
 # Build a custom layout, using the parameter *containers* (not values as above)
-x_container = iris.roles["input"]["x"].container.component
-y_container = iris.roles["input"]["y"].container.component
-output_container = iris.roles["output"][0].container.component
+x_container = iris.roles["input"]["x"].container_component
+y_container = iris.roles["input"]["y"].container_component
+output_container = iris.roles["output"][0].container_component
 
 app.layout = html.Div([
     html.H1("Iris Feature Explorer"),

@@ -1,8 +1,6 @@
 import dash_express as dx
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
-import datetime
-import dash_html_components as html
 
 from . import mock_fn_with_return
 from ..fixtures import app, test_template
@@ -15,7 +13,7 @@ def test_layout_from_pattern_keyword_args(app, test_template):
         "test_slider": (0, 10),
     }
     state = {"test_input": "Initial input"}
-    output = {"test_output_markdown": dcc.Markdown().props["children"]}
+    output = {"test_output_markdown": dx.arg(dcc.Markdown(), props="children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})
@@ -26,20 +24,30 @@ def test_layout_from_pattern_keyword_args(app, test_template):
     # Check dependencies
     # Slider
     input_param_components = fn_wrapper.roles["input"]
-    assert isinstance(input_param_components["test_slider"].value.component, dcc.Slider)
-    assert input_param_components["test_slider"].value.props == "value"
-    assert fn_wrapper._flat_input_deps[0] == input_param_components["test_slider"].value.input
+    arg_component = input_param_components["test_slider"].arg_component
+    arg_props = input_param_components["test_slider"].arg_props
+    assert isinstance(arg_component, dcc.Slider)
+    assert arg_props == "value"
+    expect_input_deps = Input(arg_component.id, "value")
+    assert fn_wrapper._flat_input_deps[0] == expect_input_deps
 
     # Input Component as State
-    assert isinstance(input_param_components["test_input"].value.component, dcc.Input)
-    assert input_param_components["test_input"].value.props == "value"
-    assert fn_wrapper._flat_state_deps[0] == input_param_components["test_input"].value.input
+    input_param_components = fn_wrapper.roles["input"]
+    arg_component = input_param_components["test_input"].arg_component
+    arg_props = input_param_components["test_input"].arg_props
+    assert isinstance(arg_component, dcc.Input)
+    assert arg_props == "value"
+    expect_input_deps = Input(arg_component.id, "value")
+    assert fn_wrapper._flat_state_deps[0] == expect_input_deps
 
     # Markdown Output
     output_param_components = fn_wrapper.roles["output"]
-    assert isinstance(output_param_components["test_output_markdown"].value.component, dcc.Markdown)
-    assert output_param_components["test_output_markdown"].value.props == "children"
-    assert fn_wrapper._flat_output_deps[0] == output_param_components["test_output_markdown"].value.input
+    arg_component = output_param_components["test_output_markdown"].arg_component
+    arg_props = output_param_components["test_output_markdown"].arg_props
+    assert isinstance(arg_component, dcc.Markdown)
+    assert arg_props == "children"
+    expect_output_deps = Input(arg_component.id, "children")
+    assert fn_wrapper._flat_output_deps[0] == expect_output_deps
 
     # Check generated layout
     layout = fn_wrapper.layout(app, full=False)

@@ -354,7 +354,6 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash
 
-
 # Load data
 df = px.data.iris()
 feature_cols = [col for col in df.columns if "species" not in col]
@@ -380,6 +379,7 @@ def iris(x, y):
         figure=px.scatter(df, x=x, y=y, color="species"),
     )
 
+
 # Get references to the dropdowns and register a custom callback to prevent the user
 # from setting x and y to the same variable
 
@@ -397,6 +397,7 @@ def filter_options(v):
         for col, label in zip(feature_cols, feature_labels)
     ]
 
+
 app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")])(
     filter_options
 )
@@ -406,9 +407,9 @@ app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")]
 )
 
 # Build a custom layout, using the parameter *containers* (not values as above)
-x_container = iris.roles["input"]["x"].container.component
-y_container = iris.roles["input"]["y"].container.component
-output_container = iris.roles["output"][0].container.component
+x_container = iris.roles["input"]["x"].container.pattern
+y_container = iris.roles["input"]["y"].container.pattern
+output_container = iris.roles["output"][0].container.pattern
 
 app.layout = html.Div([
     html.H1("Iris Feature Explorer"),

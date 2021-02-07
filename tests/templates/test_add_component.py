@@ -7,25 +7,26 @@ from ..fixtures import test_template
 
 def test_add_single_component_defaults(test_template):
     button = html.Button(id="button")
-    pc = test_template.add_component(button)
+    arg_comps = test_template.add_component(button)
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 1
     assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is pc
+    assert test_template.roles["input"][0] is arg_comps
 
     # Check ParameterComponent properties
-    assert pc.value.component is button
-    assert pc.value.id == "button"
-    assert pc.value.props == ()
+    assert arg_comps.arg_component is button
+    assert arg_comps.arg_component.id == "button"
+    assert arg_comps.arg_props == ()
 
     # Check container
-    assert pc.container.id == "container"
-    assert pc.container.props == "children"
-    assert pc.container.component.children is button
+    assert arg_comps.container_component.id == "container"
+    assert arg_comps.container_props == "children"
+    assert arg_comps.container_component.children is button
 
     # Check label
-    assert pc.label is None
+    assert arg_comps.label_component is None
+    assert arg_comps.label_props is None
 
     # Check layout generation
     check_layout(test_template)
@@ -35,65 +36,68 @@ def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
     # Add with containered false
-    pc1 = test_template.add_component(
+    arg_comps1 = test_template.add_component(
         button1, containered=False, value_property="n_clicks"
     )
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 1
     assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is pc1
+    assert test_template.roles["input"][0] is arg_comps1
 
     # Check ParameterComponent properties
-    assert pc1.value.component is button1
-    assert pc1.value.id == "button1"
-    assert pc1.value.props == "n_clicks"
+    assert arg_comps1.arg_component is button1
+    assert arg_comps1.arg_component.id == "button1"
+    assert arg_comps1.arg_props == "n_clicks"
 
-    # Check container is just the vale and label is None
-    assert pc1.container is pc1.value
-    assert pc1.label is None
+    # Check that container and label are None
+    assert arg_comps1.container_component is None
+    assert arg_comps1.container_props is None
+    assert arg_comps1.label_component is None
+    assert arg_comps1.label_props is None
 
     # With label and name
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
-    pc2 = test_template.add_component(
+    arg_comps2 = test_template.add_component(
         button2, label="Button 2", value_property="n_clicks", name="button2_arg"
     )
-    assert pc2.value.id == "button2"
-    assert pc2.value.props == "n_clicks"
-    assert pc2.label.value == "Button 2"
-    assert pc2.label.id == "label"
-    assert isinstance(pc2.label.component, html.Label)
-    assert pc2.container.id == "container"
-    assert pc2.container.props == "children"
-    assert pc2.container.component.children == [
-        pc2.label.component,
-        pc2.value.component,
+    assert arg_comps2.arg_component.id == "button2"
+    assert arg_comps2.arg_props == "n_clicks"
+    assert arg_comps2.label_component.children == "Button 2"
+    assert arg_comps2.label_component.id == "label"
+    assert isinstance(arg_comps2.label_component, html.Label)
+
+    assert arg_comps2.container_component.id == "container"
+    assert arg_comps2.container_props == "children"
+    assert arg_comps2.container_component.children == [
+        arg_comps2.label_component,
+        arg_comps2.arg_component,
     ]
 
-    pc3 = test_template.add_component(
+    arg_comps3 = test_template.add_component(
         button3,
         label="Button 3",
         value_property="title",
     )
-    assert pc3.value.id == "button3"
-    assert pc3.value.props == "title"
-    assert pc3.label.value == "Button 3"
-    assert pc3.label.id == "label"
-    assert isinstance(pc3.label.component, html.Label)
-    assert pc3.container.id == "container"
-    assert pc3.container.props == "children"
-    assert pc3.container.component.children == [
-        pc3.label.component,
-        pc3.value.component,
+    assert arg_comps3.arg_component.id == "button3"
+    assert arg_comps3.arg_props == "title"
+    assert arg_comps3.label_component.children == "Button 3"
+    assert arg_comps3.label_component.id == "label"
+    assert isinstance(arg_comps3.label_component, html.Label)
+    assert arg_comps3.container_component.id == "container"
+    assert arg_comps3.container_props == "children"
+    assert arg_comps3.container_component.children == [
+        arg_comps3.label_component,
+        arg_comps3.arg_component,
     ]
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 3
     assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is pc1
-    assert test_template.roles["input"]["button2_arg"] is pc2
-    assert test_template.roles["input"][2] is pc3
+    assert test_template.roles["input"][0] is arg_comps1
+    assert test_template.roles["input"]["button2_arg"] is arg_comps2
+    assert test_template.roles["input"][2] is arg_comps3
 
     # Check order of values
     assert list(test_template.roles["input"]) == [0, "button2_arg", 2]

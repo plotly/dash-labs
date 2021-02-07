@@ -51,7 +51,7 @@ class BaseDDKTemplate(BaseTemplate):
         container = ddk.ControlItem(
             id=label_id, label=initial_value, children=component
         )
-        return container.props["children"], container.props["label"]
+        return container, "children", container, "label"
 
     @classmethod
     def build_containered_component(cls, component):
@@ -60,7 +60,7 @@ class BaseDDKTemplate(BaseTemplate):
         # Subclass could use bootstrap or ddk
         container_id = build_id("container")
         container = ddk.ControlItem(id=container_id, children=component)
-        return container.props["children"]
+        return container, "children"
 
 
     @classmethod

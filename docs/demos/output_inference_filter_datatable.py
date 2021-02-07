@@ -5,10 +5,9 @@ tips = px.data.tips()
 import dash_html_components as html
 import dash_core_components as dcc
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         tip_range=dx.arg(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range"),
         sex=dx.arg(["Male", "Female"], label="Patron Gender"),

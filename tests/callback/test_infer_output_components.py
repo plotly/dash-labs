@@ -1,22 +1,18 @@
-from dash.dependencies import Input, Output, State
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_table
 import plotly.graph_objects as go
 import pandas as pd
-import datetime
 
 import dash_express as dx
 
 from . import make_deps, mock_fn_with_return, assert_deps_eq
-from ..fixtures import (
-    app, test_template, tuple_grouping_size, dict_grouping_size, mixed_grouping_size
-)
+from ..fixtures import app, test_template
 
 
 def test_infer_output_components(app, test_template):
     inputs = [dx.arg(dcc.Slider(), label="Slider")]
-    output = html.Div().props["children"]
+    output = dx.arg(html.Div(), props="children")
 
     # Build mock function
     button = html.Button(id="test-button")
@@ -25,8 +21,8 @@ def test_infer_output_components(app, test_template):
         pd.DataFrame({"a": [1, 2, 3], "b": ["A", "BB", "CCC"]}),
         button
     ])
-    fn_wrapper = dx.callback(
-        app, output, inputs, template=test_template
+    fn_wrapper = app.callback(
+        output=output, inputs=inputs, template=test_template
     )(fn)
 
     # call flat version (like dash would)

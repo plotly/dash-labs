@@ -9,7 +9,8 @@ import dash_core_components as dcc
 from table_plugin import Table
 
 tips = px.data.tips()
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
+
 template = dx.templates.DbcSidebar(title="Dash Express App")
 # template = dx.templates.DdkSidebar(title="Dash Express App", sidebar_width="400px", show_editor=True)
 # template = dx.templates.DccCard(title="Dash Express App")
@@ -23,8 +24,7 @@ num_selected_input = template.Input(id=num_selected_input_id)
 # Build serverside table parts
 table_plugin = Table(tips, serverside=True)
 
-@dx.callback(
-    app,
+@app.callback(
     inputs=dict(
         max_total_bill=dx.arg((0, 50.0, 0.25), label="Max total bill ($)"),
         tip_range=dx.arg(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range ($)"),
@@ -34,7 +34,7 @@ table_plugin = Table(tips, serverside=True)
     ),
     template=template,
     output=[
-        graph.props["figure"],
+        dx.arg(graph, props="figure"),
         table_plugin.output,
         Output(num_selected_input_id, "value")
     ]
@@ -72,4 +72,4 @@ layout.children.insert(0, num_selected_input)
 app.layout = layout
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=9043)
+    app.run_server(debug=True)
