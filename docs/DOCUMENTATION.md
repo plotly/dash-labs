@@ -341,7 +341,7 @@ You might think that the values of the `.roles["inputs"]` and `.roles["output"]`
 
 This example uses `@app.callback` to create components and install callbacks, constructs a fully custom layout, and defines custom callbacks on the components returned by `@app.callback`. This is loosely based on the Dash Bootstrap Components example at https://dash-bootstrap-components.opensource.faculty.ai/examples/iris/. 
 
-Notice how custom callbacks are applied to the dropdowns returned by `@dx.callback` to prevent specifying the same feature as both `x` and `y` values.
+Notice how custom callbacks are applied to the dropdowns returned by `@app.callback` to prevent specifying the same feature as both `x` and `y` values.
 
 [demos/custom_layout_and_callback_integration.py](./demos/custom_layout_and_callback_integration.py)
 
@@ -714,8 +714,7 @@ In addition to specifying `Input` and `State` values as lists with positional in
 In this example, the names of the `a`, `b`, and `c` function arguments are significant, rather than their ordering:
 
 ```python
-@dx.callback(
-    app, 
+@app.callback( 
     output=[Output(...), Output(...)],
     inputs=dict(
         a=Input(...), b=Input(...)
@@ -739,8 +738,7 @@ In other contexts, unpacking composite values like this is sometimes referred to
 Dependency values can be grouped in a tuple. Here the `ab` function argument is a tuple consisting of the values of two `Input` dependency values
 
 ```python
-@dx.callback(
-    app,
+@app.callback(
     output=[Output(...), Output(...)],
     inputs=dict(
         ab=(Input(...), Input(...)),
@@ -754,8 +752,7 @@ def param_fn(ab, c):
 Or with positional indexing
 
 ```python
-@dx.callback(
-    app,
+@app.callback(
     output=[Output(...), Output(...)],
     inputs=[(Input(...), Input(...)), Input(...)]
 )
@@ -769,8 +766,7 @@ def param_fn(ab, c):
 Similarly, multiple `Input`/`State` values can be grouped together into a dictionary of values when passed to the function. Here, the `ab` argument will be passed to the function as a dict containing `"a"` and `"b"` keys with values corresponding to the `Input` dependency values in the `@app.callback` specification.
 
 ```python
-@dx.callback(
-    app,
+@app.callback(
     output=[Output(...), Output(...)],
     inputs=dict(
         ab=dict(a=Input(...), b=Input(...)),
@@ -785,8 +781,7 @@ def param_fn(ab, c):
 It's also possible to nest these groupings arbitrarily deep.
 
 ```python
-@dx.callback(
-    app,
+@app.callback(
     output=[Output(...), Output(...)],
     inputs=dict(
         abc=dict(a=Input(...), b=(Input(...), Input(...)))
@@ -802,8 +797,7 @@ The same tuple and dict groupings can be used for the function output values as 
 
 **Output tuple grouping**
 ```python
-@dx.callback(
-    app,
+@app.callback(
     output=[Output(...), (Output(...), Output(...))],
     inputs=dict(
         a=Input(...), 
@@ -817,7 +811,7 @@ def param_fn(a, b, c):
 
 **Output dict grouping**
 ```python
-@dx.callback(
+@app.callback(
     output=dict(x=Output(...), y=Output(...)),
     inputs=dict(
         a=Input(...), 
@@ -951,9 +945,9 @@ def hello_plugin(input1, input2, plugin_values):
 ...
 ```
 
-The component creation capabilities of `@dx.callback` allow plugins to define their own input and output components, as well as define dependencies to make it possible to both input and output properties of the same component.  Following this pattern, the plugins do not need to define their own callbacks, making it much easier to compose plugins and connect them with custom functionality.
+The component creation capabilities of `@app.callback` allow plugins to define their own input and output components, as well as define dependencies to make it possible to both input and output properties of the same component.  Following this pattern, the plugins do not need to define their own callbacks, making it much easier to compose plugins and connect them with custom functionality.
 
-The tuple/dict grouping feature of `@dx.callback` allow plugins to store any number of input and output components and make them look like a single value to the user. e.g. `plugin.inputs` and `plugin_values` above can be dictionaries with any number of keys, but the user can treat them as a single scalar value, so that they can always follow the same usage pattern.
+The tuple/dict grouping feature of `@app.callback` allow plugins to store any number of input and output components and make them look like a single value to the user. e.g. `plugin.inputs` and `plugin_values` above can be dictionaries with any number of keys, but the user can treat them as a single scalar value, so that they can always follow the same usage pattern.
 
 Here is a plugin implementation of the scatter+table implemented manually above. This is what would go in a reusable library.
 
@@ -1035,7 +1029,7 @@ class FilterTable(ComponentPlugin):
         return self._build(inputs_value, df)
 ```
 
-And here is how the plugin can be incorporated into a `@dx.callback` app. This is what a user would hand-code in their app.
+And here is how the plugin can be incorporated into a `@app.callback` app. This is what a user would hand-code in their app.
 
 [demos/filter_table_with_plugin.py](./demos/filter_table_with_plugin.py)
 
