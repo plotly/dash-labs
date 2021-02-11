@@ -910,7 +910,7 @@ Combining component creation and dependency values with the argument grouping fe
 ### The CallbackPlugin pattern
 Here is a proposed architecture that can be used to extract component creation and behavior into a separate class.  The `CallbackPlugin` class encapsulates the creation of inputs, output, and building (output value creation) functionality.
 
-```python=
+```python
 class CallbackPlugin:
     def __init__(config, ...):
         pass
