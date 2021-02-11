@@ -1067,3 +1067,21 @@ if __name__ == "__main__":
 Notice that `output` and `build` in the plugin return tuples. This makes it possible for the user to position all the inputs and outputs as single values in the `@app.callback` decorator, and in the wrapped function signature.  This makes it straightforward for a single call to `@app.callback` to use multiple plugins in the same function. Additionally, plugins could provide additional utility methods to expose extra info to the user inside a callback, like the list of selected indices in this case.
 
 With a bit more work in the `FilterTable` plugin, options to perform serverside paging and sorting, conditional formatting, clientside or serverside filtering, etc. could be added without changing anything for the user other than adding more configuration options to the constructor.
+
+## Potential high-level syntax
+A more concise built-in syntax could be supported if:
+ - No additional options need to be passed to the plugin's `build` method
+ - The plugin's inputs/outputs don't need to be interleaved with other input/output components
+
+```python
+...
+filter_table_plugin = FilterTable(
+    tips, px_kwargs=dict(x="total_bill", y="tip"), page_size=12, template=template
+)
+
+app = dash.Dash(__name__, plugins=[dx.Plugin()])
+
+filter_table = app.plugin(filter_table_plugin, template)
+
+app.layout = filter_table.layout(app)
+```
