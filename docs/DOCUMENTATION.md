@@ -1081,7 +1081,7 @@ filter_table_plugin = FilterTable(
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-filter_table = app.plugin(filter_table_plugin, template)
+filter_table = app.component_plugin(filter_table_plugin, template)
 
 app.layout = filter_table.layout(app)
 ```
