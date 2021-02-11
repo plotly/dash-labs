@@ -1070,6 +1070,6 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-Notice that `output` and `build` in the plugin return tuples. This makes it possible for the user to position all the inputs and outputs as single values in the `@app.callback` decorator, and in the wrapped function signature.  This makes it straightforward for a single call to `@dx.callback` to use multiple plugins in the same function. Additionally, plugins could provide additional utility methods to expose extra info to the user inside a callback, like the list of selected indices in this case.
+Notice that `output` and `build` in the plugin return tuples. This makes it possible for the user to position all the inputs and outputs as single values in the `@app.callback` decorator, and in the wrapped function signature.  This makes it straightforward for a single call to `@app.callback` to use multiple plugins in the same function. Additionally, plugins could provide additional utility methods to expose extra info to the user inside a callback, like the list of selected indices in this case.
 
 With a bit more work in the `FilterTable` plugin, options to perform serverside paging and sorting, conditional formatting, clientside or serverside filtering, etc. could be added without changing anything for the user other than adding more configuration options to the constructor.
