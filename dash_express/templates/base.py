@@ -148,11 +148,6 @@ class BaseTemplate:
                 cls.Slider(min=minimum, max=maximum, value=minimum, step=step),
                 "value",
             )
-        elif isinstance(pattern, str):
-            return (
-                cls.Input(value=pattern),
-                "value",
-            )
         elif isinstance(pattern, bool):
             return (
                 cls.Checklist(

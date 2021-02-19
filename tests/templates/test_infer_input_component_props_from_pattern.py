@@ -37,15 +37,6 @@ def test_number_tuple_to_slider_with_step(test_template):
     assert component.step == 10
 
 
-def test_string_to_input(test_template):
-    pattern = "Hello, World"
-    component, props = test_template.infer_component_and_props_from_pattern(pattern)
-
-    assert isinstance(component, dcc.Input)
-    assert props == "value"
-    assert component.value == pattern
-
-
 def test_bool_to_checkbox(test_template):
     pattern = True
     component, props = test_template.infer_component_and_props_from_pattern(pattern)
