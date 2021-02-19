@@ -8,9 +8,9 @@ from ..templates import check_layout_body
 
 
 # Tests
-def test_layout_from_pattern_keyword_args(app, test_template):
+def test_template_layout_generation(app, test_template):
     inputs = {
-        "test_slider": (0, 10),
+        "test_slider": dx.Input(dcc.Slider(min=0, max=10))
     }
     state = {"test_input": dx.State(dcc.Input(value="Initial input"))}
     output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}

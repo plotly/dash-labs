@@ -10,7 +10,10 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 # Function to parameterize
 @app.callback(
     inputs=dict(
-        fun=dx.Input(["sin", "cos", "exp"], label="Function"),
+        fun=dx.Input(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
+            value="sin"
+        ), label="Function"),
 
         # Style input using bootstrap classes
         figure_title=dx.Input(

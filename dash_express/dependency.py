@@ -26,6 +26,10 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
         else:
             return self.component.id
 
+    @property
+    def has_component(self):
+        return isinstance(self.component, Component)
+
     def set_component_and_props(self, component_id, component_property):
         if isinstance(component_id, Component):
             _validate_prop_grouping(component_id, component_property)
@@ -35,6 +39,13 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
             if getattr(self.component, "id", None) is None:
                 self.component.id = build_id()
         else:
+            if not isinstance(component_id, (str, dict)):
+                raise ValueError("Invalid component_id value: {}".format(component_id))
+            if not isinstance(component_property, str):
+                raise ValueError(
+                    "Dependencies that don't reference a component must specify single "
+                    "property as a string"
+                )
             self.component = component_id
             self.component_property = component_property
 

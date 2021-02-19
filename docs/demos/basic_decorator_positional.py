@@ -8,10 +8,13 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 
 @app.callback(
-    dx.Input(["sin", "cos", "exp"]),
-    dx.Input(dcc.Input(value="Initial Title")),
-    dx.Input((1, 10)),
-    dx.Input((1, 10)),
+    dx.Input(dcc.Dropdown(
+        options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
+        value="sin"
+    ), label="Function"),
+    dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
+    dx.Input(dcc.Slider(min=1, max=10, value=4), label="Phase"),
+    dx.Input(dcc.Slider(min=1, max=10, value=3), label="Amplitude"),
 )
 def greet(fun, figure_title, phase, amplitude):
     print(fun, figure_title, phase, amplitude)

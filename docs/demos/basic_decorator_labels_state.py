@@ -9,12 +9,13 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
     args=dict(
-        fun=dx.State(["sin", "cos", "exp"], label="Function"),
-        figure_title=dx.State(
-            dcc.Input(value="Initial Title"), label="Figure Title"
-        ),
-        phase=dx.State((1, 10), label="Phase"),
-        amplitude=dx.State((1, 10), label="Amplitude"),
+        fun=dx.State(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
+            value="sin"
+        ), label="Function"),
+        figure_title=dx.State(dcc.Input(value="Initial Title"), label="Figure Title"),
+        phase=dx.State(dcc.Slider(min=1, max=10, value=4), label="Phase"),
+        amplitude=dx.State(dcc.Slider(min=1, max=10, value=3), label="Amplitude"),
         n_clicks=dx.Input(html.Button("Update"), component_property="n_clicks", label=None)
     )
 )

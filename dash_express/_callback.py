@@ -12,14 +12,14 @@ from .dependency import DashExpressDependency, State, Input, Output
 from .templates.base import BaseTemplate
 from dash_express.grouping import (
     flatten_grouping, make_grouping_by_position, validate_grouping, grouping_len,
-    make_grouping_by_attr
+    make_grouping_by_attr, map_grouping
 )
 from dash.dependencies import (
     Input as Input_dash, Output as Output_dash, State as State_dash,
 )
 import dash_html_components as html
 
-_ALL_DEPS = (Input_dash, Output_dash, State_dash)
+_ALL_DEPS = (Input, Output, State)
 
 
 class CallbackWrapper:
@@ -65,14 +65,14 @@ class CallbackWrapper:
         return self.template.layout(app, full=full)
 
 
-def _is_dependency_grouping(val):
+def _is_reference_dependency_grouping(val):
     """Determine if input is a grouping of dependency values"""
     flat_vals = flatten_grouping(val)
     # TODO: require all the same dependency type
-    return all(isinstance(el, _ALL_DEPS) for el in flat_vals)
+    return all(isinstance(el, _ALL_DEPS) and not el.has_component for el in flat_vals)
 
 
-def _normalize_inputs(inputs, state, template):
+def _normalize_inputs(inputs, state):
     # Handle positional inputs/state as int dict
     if inputs == [] and isinstance(state, dict):
         inputs = {}
@@ -116,32 +116,17 @@ def _normalize_inputs(inputs, state, template):
     combined_inputs_state = inputs.copy()
     combined_inputs_state.update(state)
     for name, pattern in combined_inputs_state.items():
-        dep_class = State if name in state else Input
-        if _is_dependency_grouping(pattern):
+        if _is_reference_dependency_grouping(pattern):
             pass
         elif isinstance(pattern, DashExpressDependency):
             # Check is arg is holding a pattern
-            if not isinstance(pattern.component, (Component, str, dict)):
-                component, props = template.infer_component_and_props_from_pattern(
-                    pattern.component
-                )
-                pattern.set_component_and_props(component, props)
-
             if pattern.label is Component.UNDEFINED:
                 pattern.label = name
 
             if pattern.role is Component.UNDEFINED:
                 pattern.role = "input"
-
-        elif isinstance(pattern, Component):
-            pattern = dep_class(
-                component_id=pattern, label=name, role="input"
-            )
         else:
-            component, props = template.infer_component_and_props_from_pattern(pattern)
-            pattern = dep_class(
-                component_id=component, label=name, role="input"
-            )
+            raise ValueError("Invalid dependency object {}".format(pattern))
 
         all_inputs[name] = pattern
 
@@ -168,7 +153,7 @@ def _normalize_output(output):
 
     all_output = OrderedDict()
     for name, pattern in output.items():
-        if _is_dependency_grouping(pattern):
+        if _is_reference_dependency_grouping(pattern):
             # Nothing to do
             pass
         elif isinstance(pattern, DashExpressDependency):
@@ -214,7 +199,7 @@ def _get_arg_input_state_dependencies(all_inputs):
             grouping = val.dependencies
             flat_dependencies = val.flat_dependencies
         else:
-            flat_dependencies = flatten_grouping(val)
+            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
             if flat_dependencies and isinstance(flat_dependencies[0], Input_dash):
                 grouping = val
             else:
@@ -230,7 +215,7 @@ def _get_arg_input_state_dependencies(all_inputs):
             grouping = val.dependencies
             flat_dependencies = val.flat_dependencies
         else:
-            flat_dependencies = flatten_grouping(val)
+            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
             if not flat_dependencies or isinstance(flat_dependencies[0], State_dash):
                 grouping = val
             else:
@@ -257,7 +242,7 @@ def _get_arg_output_dependencies(all_outputs):
             flat_dependencies = val.flat_dependencies
         else:
             grouping = val
-            flat_dependencies = flatten_grouping(val)
+            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
 
         output_groupings[name] = grouping
         output_deps.extend(flat_dependencies)
@@ -284,7 +269,7 @@ def _callback(
         template = FlatDiv()
 
     # Preprocess non-dependency outputs into ComponentPatterns
-    all_inputs, input_form = _normalize_inputs(inputs, state, template)
+    all_inputs, input_form = _normalize_inputs(inputs, state)
     all_outputs, output_form = _normalize_output(output)
 
     # Add constructed/literal components to template
@@ -460,9 +445,19 @@ def extract_callback_args(args, kwargs, names, type_):
     else:
         while args and isinstance(args[0], (type_, type_.dependency_class)):
             arg = args.pop(0)
-            if isinstance(arg, type_.dependency_class):
-                arg = type_(arg.component_id, arg.component_property)
             parameters.append(arg)
+
+    # Convert dash.dependency objects into dash express equivalents
+    def to_dx(v):
+        if isinstance(v, type_.dependency_class):
+            return type_(v.component_id, v.component_property)
+        else:
+            return v
+    if isinstance(parameters, list):
+        parameters = [map_grouping(to_dx, p) for p in parameters]
+    else:
+        parameters = map_grouping(to_dx, parameters)
+
     return parameters
 
 

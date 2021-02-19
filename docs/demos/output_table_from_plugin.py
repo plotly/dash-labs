@@ -25,9 +25,11 @@ table_plugin = Table(tips, serverside=True)
 
 @app.callback(
     inputs=dict(
-        max_total_bill=dx.Input((0, 50.0, 0.25), label="Max total bill ($)"),
+        max_total_bill=dx.Input(dcc.Slider(min=0, max=50.0, value=0.25), label="Max total bill ($)"),
         tip_range=dx.Input(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range ($)"),
-        sex=dx.Input(["Male", "Female"], label="Patron Gender"),
+        sex=dx.Input(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["Male", "Female"]]
+        ), label="Patron Gender"),
         table_values=table_plugin.inputs,
         selectedData=dx.Input(graph_id, "selectedData"),
     ),

@@ -9,8 +9,12 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
     inputs=dict(
-        tip_range=dx.Input(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range"),
-        sex=dx.Input(["Male", "Female"], label="Patron Gender"),
+        tip_range=dx.Input(
+            dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range"
+        ),
+        sex=dx.Input(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["Male", "Female"]]
+        ), label="Patron Gender"),
     ),
 )
 def filter_table(tip_range, sex):

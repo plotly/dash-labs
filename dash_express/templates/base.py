@@ -118,48 +118,6 @@ class BaseTemplate:
         return param_components
 
     @classmethod
-    def infer_component_and_props_from_pattern(cls, pattern):
-        if isinstance(pattern, list):
-            # Dropdown
-            options = pattern
-
-            # Normalize options
-            if options and not isinstance(options[0], dict):
-                options = [{"label": opt, "value": opt} for opt in options]
-
-            # compute starting value
-            if options:
-                value = options[0]["value"]
-            else:
-                value = None
-            return cls.Dropdown(options=options, value=value), "value",
-        elif isinstance(pattern, tuple) and all(
-            isinstance(el, (int, float)) for el in pattern
-        ):
-            if len(pattern) == 2:
-                minimum, maximum = pattern
-                step = None
-            elif len(pattern) == 3:
-                minimum, maximum, step = pattern
-            else:
-                raise ValueError("Tuple pattern must have length 2 or 3")
-
-            return (
-                cls.Slider(min=minimum, max=maximum, value=minimum, step=step),
-                "value",
-            )
-        elif isinstance(pattern, bool):
-            return (
-                cls.Checklist(
-                    options=[{"label": "", "value": "checked"}],
-                    value=["checked"] if pattern else [],
-                ),
-                "value",
-            )
-        else:
-            raise ValueError("Invalid component pattern {}".format(pattern))
-
-    @classmethod
     def infer_output_component_from_value(cls, v):
         """
         This is run for the value of the `children` property of any component type.

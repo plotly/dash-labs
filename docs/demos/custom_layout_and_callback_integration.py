@@ -23,8 +23,8 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 # Use parameterize to create components
 @app.callback(
     args=dict(
-        x=dcc.Dropdown(options=feature_options, value="sepal_length"),
-        y=dcc.Dropdown(options=feature_options, value="sepal_width"),
+        x=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
+        y=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
     ),
 )
 def iris(x, y):

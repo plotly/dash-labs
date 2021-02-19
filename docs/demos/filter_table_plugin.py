@@ -30,7 +30,7 @@ class FilterTable(ComponentPlugin):
             ), "data"),
         ]
 
-        self._inputs = Input(self.graph_id, "selectedData")
+        self._inputs = dx.Input(self.graph_id, "selectedData")
 
     def _build(self, inputs_value, df=None):
         if df is None:

@@ -2,6 +2,7 @@ import dash
 import dash_express as dx
 import numpy as np
 import plotly.express as px
+import dash_core_components as dcc
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
@@ -25,10 +26,13 @@ template = dx.templates.DbcSidebar(
 
 @app.callback(
     args=dict(
-        figure_title=dx.Input(template.Input(value="Initial Title"), label="Function"),
-        fun=dx.Input(["sin", "cos", "exp"], label="Figure Title"),
-        phase=dx.Input((1, 10), label="Phase"),
-        amplitude=dx.Input((1, 10), label="Amplitude"),
+        fun=dx.Input(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
+            value="sin"
+        ), label="Function"),
+        figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
+        phase=dx.Input(dcc.Slider(min=1, max=10, value=4), label="Phase"),
+        amplitude=dx.Input(dcc.Slider(min=1, max=10, value=3), label="Amplitude"),
     ),
     template=template,
 )
