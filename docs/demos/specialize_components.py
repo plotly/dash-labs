@@ -10,10 +10,10 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 # Function to parameterize
 @app.callback(
     inputs=dict(
-        fun=dx.arg(["sin", "cos", "exp"], label="Function"),
+        fun=dx.Input(["sin", "cos", "exp"], label="Function"),
 
         # Style input using bootstrap classes
-        figure_title=dx.arg(
+        figure_title=dx.Input(
             dbc.Input(
                 type="text", value="Initial Title",
                 style={"background-color": "crimson", "color": "white"}
@@ -22,7 +22,7 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
         ),
 
         # Explicitly specify component property. Default is "value"
-        phase=dx.arg(
+        phase=dx.Input(
             dbc.Select(
                 options=[{"label": i, "value": i} for i in range(1, 10)], value=4
             ),
@@ -30,7 +30,7 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
         ),
 
         # Dropdown instead of default slider
-        date=dx.arg(dcc.DatePickerSingle(), props="date", label="Measurement Date")
+        date=dx.Input(dcc.DatePickerSingle(), "date", label="Measurement Date")
     ),
 )
 def callback_components(fun, figure_title, phase, date):

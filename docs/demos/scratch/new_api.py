@@ -1,19 +1,19 @@
 import dash
 import dash_express as dx
+from dash.dependencies import Input, InputComponent
+
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-@app.callback(
-    args=dict(
-        fun=dx.Input(["sin", "cos", "exp"], label="Function"),
-        figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
-        phase=dx.Input((1, 10), label="Phase"),
-        amplitude=dx.Input((1, 10), label="Amplitude"),
-    ),
-)
+@app.callback(dict(
+        fun=InputComponent(dcc.Dropdown(["sin", "cos", "exp"]), label="Function"),
+        figure_title=InputComponent(dcc.Input("Initial Title"), label="Figure Title"),
+        phase=InputComponent(dcc.Slider((1, 10)), label="Phase"),
+        amplitude=InputComponent(dcc.Slider((1, 10)), label="Amplitude"),
+))
 def greet(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
     return dcc.Graph(figure=px.line(

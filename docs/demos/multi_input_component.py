@@ -7,9 +7,9 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
     inputs=dict(
-        figure_title=dx.arg(dcc.Input(value="Figure Title"), label="Graph Title"),
-        date_range=dx.arg(
-            dcc.DatePickerRange(), props=("start_date", "end_date"), label="Date"
+        figure_title=dx.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
+        date_range=dx.Input(
+            dcc.DatePickerRange(), ("start_date", "end_date"), label="Date"
         )
     ),
 )

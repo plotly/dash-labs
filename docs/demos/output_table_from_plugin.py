@@ -1,5 +1,4 @@
 import dash
-from dash.dependencies import Input, Output
 
 import dash_express as dx
 import plotly.express as px
@@ -26,17 +25,17 @@ table_plugin = Table(tips, serverside=True)
 
 @app.callback(
     inputs=dict(
-        max_total_bill=dx.arg((0, 50.0, 0.25), label="Max total bill ($)"),
-        tip_range=dx.arg(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range ($)"),
-        sex=dx.arg(["Male", "Female"], label="Patron Gender"),
+        max_total_bill=dx.Input((0, 50.0, 0.25), label="Max total bill ($)"),
+        tip_range=dx.Input(dcc.RangeSlider(min=0, max=20, value=(5, 10)), label="Tip range ($)"),
+        sex=dx.Input(["Male", "Female"], label="Patron Gender"),
         table_values=table_plugin.inputs,
-        selectedData=Input(graph_id, "selectedData"),
+        selectedData=dx.Input(graph_id, "selectedData"),
     ),
     template=template,
     output=[
-        dx.arg(graph, props="figure"),
+        dx.Output(graph, "figure"),
         table_plugin.output,
-        Output(num_selected_input_id, "value")
+        dx.Output(num_selected_input_id, "value")
     ]
 )
 def filter_table(max_total_bill, tip_range, sex, table_values, selectedData):

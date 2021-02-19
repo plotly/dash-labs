@@ -24,11 +24,11 @@ template = dx.templates.DbcSidebar(
 
 
 @app.callback(
-    inputs=dict(
-        figure_title=dx.arg("Initial Title", label="Function"),
-        fun=dx.arg(["sin", "cos", "exp"], label="Figure Title"),
-        phase=dx.arg((1, 10), label="Phase"),
-        amplitude=dx.arg((1, 10), label="Amplitude"),
+    args=dict(
+        figure_title=dx.Input(template.Input(value="Initial Title"), label="Function"),
+        fun=dx.Input(["sin", "cos", "exp"], label="Figure Title"),
+        phase=dx.Input((1, 10), label="Phase"),
+        amplitude=dx.Input((1, 10), label="Amplitude"),
     ),
     template=template,
 )

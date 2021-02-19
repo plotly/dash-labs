@@ -5,12 +5,8 @@ import dash_express as dx
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
-    inputs={
-        "input_text": dx.arg(
-            dcc.Textarea(value="## Heading\n"), label="Enter Markdown"
-        )
-    },
-    output=dx.arg(dcc.Markdown(), props="children"),
+    dx.Output(dcc.Markdown(), "children"),
+    dx.Input(dcc.Textarea(value="## Heading\n"), label="Enter Markdown")
 )
 def markdown_preview(input_text):
     return input_text

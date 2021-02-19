@@ -7,15 +7,19 @@ from dash import exceptions, Dash
 from dash.development.base_component import Component
 
 from dash_express import build_id
+
+from .dependency import DashExpressDependency, State, Input, Output
 from .templates.base import BaseTemplate
 from dash_express.grouping import (
     flatten_grouping, make_grouping_by_position, validate_grouping, grouping_len,
     make_grouping_by_attr
 )
-from dash.dependencies import Input, Output, State
+from dash.dependencies import (
+    Input as Input_dash, Output as Output_dash, State as State_dash,
+)
 import dash_html_components as html
 
-_ALL_DEPS = (Input, Output, State)
+_ALL_DEPS = (Input_dash, Output_dash, State_dash)
 
 
 class CallbackWrapper:
@@ -59,73 +63,6 @@ class CallbackWrapper:
         Register callbacks and return layout.
         """
         return self.template.layout(app, full=full)
-
-
-@dataclass
-class arg:
-    class auto:
-        pass
-
-    component: Any
-    props: Union[str, tuple, dict] = "value"
-    label: Union[str, int] = auto
-    kind: str = auto
-    role: str = auto
-
-    def __post_init__(self):
-        # Validate kind
-        valid_kinds = (arg.auto, "input", "state", "output")
-        if self.kind not in valid_kinds:
-            raise ValueError(
-                "Invalid argument kind {kind}\n"
-                "    Supported kinds: {valid_kinds}".format(
-                    kind=self.kind, valid_kinds=valid_kinds
-                )
-            )
-
-        # Validate and ini component and props
-        self.set_component_and_props(self.component, self.props)
-
-    def set_component_and_props(self, component, props):
-        if isinstance(component, Component):
-            _validate_prop_grouping(component, props)
-            self.component = component
-            self.props = props
-
-            if getattr(self.component, "id", None) is None:
-                self.component.id = build_id()
-        else:
-            self.component = component
-            self.props = props
-
-    @property
-    def id(self):
-        return self.component.id
-
-    @property
-    def dependency_class(self):
-        assert self.kind is not arg.auto
-        return {"input": Input, "output": Output, "state": State}[self.kind]
-
-    @property
-    def dependencies(self):
-        return self._make_dependency_grouping(self.dependency_class)
-
-    @property
-    def flat_dependencies(self):
-        return self._make_flat_dependencies(self.dependency_class)
-
-    @property
-    def flat_props(self):
-        return flatten_grouping(self.props)
-
-    def _make_flat_dependencies(self, dependency):
-        return [dependency(self.id, prop) for prop in self.flat_props]
-
-    def _make_dependency_grouping(self, dependency):
-        return make_grouping_by_position(
-            self.props, self._make_flat_dependencies(dependency)
-        )
 
 
 def _is_dependency_grouping(val):
@@ -179,35 +116,31 @@ def _normalize_inputs(inputs, state, template):
     combined_inputs_state = inputs.copy()
     combined_inputs_state.update(state)
     for name, pattern in combined_inputs_state.items():
-        default_kind = "state" if name in state else "input"
+        dep_class = State if name in state else Input
         if _is_dependency_grouping(pattern):
             pass
-        elif isinstance(pattern, arg):
-            # Check is arg is holding a patter
-            if not isinstance(pattern.component, Component):
+        elif isinstance(pattern, DashExpressDependency):
+            # Check is arg is holding a pattern
+            if not isinstance(pattern.component, (Component, str, dict)):
                 component, props = template.infer_component_and_props_from_pattern(
                     pattern.component
                 )
                 pattern.set_component_and_props(component, props)
 
-            # Set 'auto' kind to 'input' or 'state'
-            if pattern.kind is arg.auto:
-                pattern.kind = default_kind
-
-            if pattern.label is arg.auto:
+            if pattern.label is Component.UNDEFINED:
                 pattern.label = name
 
-            if pattern.role is arg.auto:
+            if pattern.role is Component.UNDEFINED:
                 pattern.role = "input"
 
         elif isinstance(pattern, Component):
-            pattern = arg(
-                component=pattern, label=name, kind=default_kind, role="input"
+            pattern = dep_class(
+                component_id=pattern, label=name, role="input"
             )
         else:
             component, props = template.infer_component_and_props_from_pattern(pattern)
-            pattern = arg(
-                component=component, label=name, kind=default_kind, role="input"
+            pattern = dep_class(
+                component_id=component, label=name, role="input"
             )
 
         all_inputs[name] = pattern
@@ -220,7 +153,7 @@ def _normalize_output(output):
     # scalar, list, or dict.
     output_form = None
     if output is None or isinstance(output, list) and len(output) == 0:
-        output = arg(html.Div(), props="children")
+        output = Output(html.Div(), component_property="children")
 
     if not isinstance(output, (list, dict)):
         output_form = "scalar"
@@ -238,18 +171,12 @@ def _normalize_output(output):
         if _is_dependency_grouping(pattern):
             # Nothing to do
             pass
-        elif isinstance(pattern, arg):
+        elif isinstance(pattern, DashExpressDependency):
             # Set 'auto' kind to 'output'
-            if pattern.kind is arg.auto:
-                pattern.kind = "output"
-            if pattern.label is arg.auto:
+            if pattern.label is Component.UNDEFINED:
                 pattern.label = None
-            if pattern.role is arg.auto:
+            if pattern.role is Component.UNDEFINED:
                 pattern.role = "output"
-        elif isinstance(pattern, Component):
-            pattern = arg(
-                component=pattern, label=name, kind="output", role="output"
-            )
         else:
             raise ValueError("Invalid type, must be dependency grouping or arg")
 
@@ -260,7 +187,8 @@ def _normalize_output(output):
 
 def _add_arg_components_to_template(vals, template):
     for name, val in vals.items():
-        if not isinstance(val, arg):
+        if (not isinstance(val, DashExpressDependency) or
+                not isinstance(val.component, Component)):
             continue
 
         opts = {}
@@ -269,7 +197,7 @@ def _add_arg_components_to_template(vals, template):
 
         template.add_component(
                 component=val.component,
-                value_property=val.props,
+                value_property=val.component_property,
                 role=val.role,
                 label=val.label,
                 **opts
@@ -282,12 +210,12 @@ def _get_arg_input_state_dependencies(all_inputs):
 
     # Collect input groupings
     for name, val in all_inputs.items():
-        if isinstance(val, arg) and val.kind == "input":
+        if isinstance(val, Input):
             grouping = val.dependencies
             flat_dependencies = val.flat_dependencies
         else:
             flat_dependencies = flatten_grouping(val)
-            if flat_dependencies and isinstance(flat_dependencies[0], Input):
+            if flat_dependencies and isinstance(flat_dependencies[0], Input_dash):
                 grouping = val
             else:
                 continue
@@ -298,12 +226,12 @@ def _get_arg_input_state_dependencies(all_inputs):
     # Process state
     num_inputs = len(input_deps)
     for name, val in all_inputs.items():
-        if isinstance(val, arg) and val.kind == "state":
+        if isinstance(val, State):
             grouping = val.dependencies
             flat_dependencies = val.flat_dependencies
         else:
             flat_dependencies = flatten_grouping(val)
-            if not flat_dependencies or isinstance(flat_dependencies[0], State):
+            if not flat_dependencies or isinstance(flat_dependencies[0], State_dash):
                 grouping = val
             else:
                 continue
@@ -324,7 +252,7 @@ def _get_arg_output_dependencies(all_outputs):
 
     # Collect input groupings
     for name, val in all_outputs.items():
-        if isinstance(val, arg):
+        if isinstance(val, Output):
             grouping = val.dependencies
             flat_dependencies = val.flat_dependencies
         else:
@@ -516,18 +444,25 @@ def _validate_prop_grouping(component, props):
 
 # Modified Dash Callback Validation logic
 # ---------------------------------------
-def extract_callback_args(args, kwargs, name, type_):
+def extract_callback_args(args, kwargs, names, type_):
     """Extract arguments for callback from a name and type"""
-    parameters = kwargs.get(name, [])
+    parameters = [kwargs[name] for name in names if name in kwargs]
+
     if parameters:
+        if len(parameters) > 1:
+            raise ValueError("Only one of input and args may be specified")
+        parameters = parameters[0]
         if not isinstance(parameters, (list, tuple, dict)):
             # accept a single item, not wrapped in a list, for any of the
             # categories as a named arg (even though previously only output
             # could be given unwrapped)
             return [parameters]
     else:
-        while args and isinstance(args[0], type_):
-            parameters.append(args.pop(0))
+        while args and isinstance(args[0], (type_, type_.dependency_class)):
+            arg = args.pop(0)
+            if isinstance(arg, type_.dependency_class):
+                arg = type_(arg.component_id, arg.component_property)
+            parameters.append(arg)
     return parameters
 
 
@@ -546,7 +481,7 @@ def handle_callback_args(args, kwargs):
     for arg in args:
         flat_args += arg if isinstance(arg, (list, tuple)) else [arg]
 
-    outputs = extract_callback_args(flat_args, kwargs, "output", Output)
+    outputs = extract_callback_args(flat_args, kwargs, ["output"], Output)
     validate_outputs = outputs
     if isinstance(outputs, (list, tuple)) and len(outputs) == 1:
         out0 = kwargs.get("output", args[0] if args else None)
@@ -556,8 +491,8 @@ def handle_callback_args(args, kwargs):
             # callback is also not expected to be wrapped in a list.
             outputs = outputs[0]
 
-    inputs = extract_callback_args(flat_args, kwargs, "inputs", Input)
-    states = extract_callback_args(flat_args, kwargs, "state", State)
+    inputs = extract_callback_args(flat_args, kwargs, ["inputs", "args"], Input)
+    states = extract_callback_args(flat_args, kwargs, ["state"], State)
 
     input_values = inputs.values() if isinstance(inputs, dict) else inputs
     state_values = states.values() if isinstance(states, dict) else states

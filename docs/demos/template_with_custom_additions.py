@@ -14,10 +14,10 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 # import dash_core_components as dcc
 @app.callback(
     inputs=dict(
-        fun=dx.arg(["sin", "cos", "exp"], label="Function"),
-        figure_title=dx.arg("Initial Title", label="Figure Title"),
-        phase=dx.arg((1, 10), label="Phase"),
-        amplitude=dx.arg((1, 10), label="Amplitude")
+        fun=dx.Input(["sin", "cos", "exp"], label="Function"),
+        figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
+        phase=dx.Input((1, 10), label="Phase"),
+        amplitude=dx.Input((1, 10), label="Amplitude")
     ),
     template=template,
 )

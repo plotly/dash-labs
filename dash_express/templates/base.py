@@ -157,7 +157,7 @@ class BaseTemplate:
                 "value",
             )
         else:
-            return None
+            raise ValueError("Invalid component pattern {}".format(pattern))
 
     @classmethod
     def infer_output_component_from_value(cls, v):

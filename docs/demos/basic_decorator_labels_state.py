@@ -8,13 +8,15 @@ import plotly.express as px
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
-    state=dict(
-        fun=dx.arg(["sin", "cos", "exp"], label="Function"),
-        figure_title=dx.arg("Initial Title", label="Figure Title"),
-        phase=dx.arg((1, 10), label="Phase"),
-        amplitude=dx.arg((1, 10), label="Amplitude"),
-        n_clicks=dx.arg(html.Button("Update"), props="n_clicks", kind="input")
-    ),
+    args=dict(
+        fun=dx.State(["sin", "cos", "exp"], label="Function"),
+        figure_title=dx.State(
+            dcc.Input(value="Initial Title"), label="Figure Title"
+        ),
+        phase=dx.State((1, 10), label="Phase"),
+        amplitude=dx.State((1, 10), label="Amplitude"),
+        n_clicks=dx.Input(html.Button("Update"), component_property="n_clicks", label=None)
+    )
 )
 def greet(fun, figure_title, phase, amplitude, n_clicks):
     xs = np.linspace(-10, 10, 100)

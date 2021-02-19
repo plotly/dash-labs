@@ -11,8 +11,8 @@ from ..fixtures import app, test_template
 
 
 def test_infer_output_components(app, test_template):
-    inputs = [dx.arg(dcc.Slider(), label="Slider")]
-    output = dx.arg(html.Div(), props="children")
+    inputs = [dx.Input(dcc.Slider(), label="Slider")]
+    output = dx.Output(html.Div(), "children")
 
     # Build mock function
     button = html.Button(id="test-button")

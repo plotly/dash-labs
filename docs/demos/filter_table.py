@@ -12,16 +12,12 @@ template = dx.templates.DbcCard(title="Scatter Selection")
 
 
 @app.callback(
-    inputs=dict(
-        selectedData=Input(graph_id, "selectedData"),
-    ),
-    output=[
-        dx.arg(dcc.Graph(id=graph_id), props="figure"),
-        dx.arg(template.DataTable(
-            columns=[{"name": i, "id": i} for i in tips.columns],
-            page_size=10,
-        ), props="data")
-    ],
+    dx.Output(dcc.Graph(id=graph_id), "figure"),
+    dx.Output(template.DataTable(
+        columns=[{"name": i, "id": i} for i in tips.columns],
+        page_size=10,
+    ), "data"),
+    Input(graph_id, "selectedData"),
     template=template,
 )
 def filter_table(selectedData):

@@ -6,15 +6,17 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
+
 @app.callback(
-    inputs=dict(
-        fun=dx.arg(["sin", "cos", "exp"]),
-        figure_title=dx.arg("Initial Title"),
-        phase=dx.arg((1, 10)),
-        amplitude=dx.arg((1, 10)),
+    args=dict(
+        fun=dx.Input(["sin", "cos", "exp"]),
+        figure_title=dx.Input(dcc.Input(value="Initial Title")),
+        phase=dx.Input((1, 10)),
+        amplitude=dx.Input((1, 10)),
     ),
 )
 def greet(fun, figure_title, phase, amplitude):
+    print(fun, figure_title, phase, amplitude)
     xs = np.linspace(-10, 10, 100)
     return dcc.Graph(figure=px.line(
         x=xs, y=getattr(np, fun)(xs + phase) * amplitude

@@ -91,9 +91,9 @@ def check_component_props_as_groupings(
     flat_output_deps = make_deps(Output, 1) + flat_deps(output_button, output_prop, "output")
 
     # Build grouped dependency lists
-    grouped_input_deps = [dx.arg(input_button, props=input_prop), flat_input_deps[-1]]
-    grouped_state_deps = [dx.arg(state_button, props=state_prop)]
-    grouped_output_deps = [flat_output_deps[0], dx.arg(output_button, output_prop)]
+    grouped_input_deps = [dx.Input(input_button, input_prop), flat_input_deps[-1]]
+    grouped_state_deps = [dx.State(state_button, state_prop)]
+    grouped_output_deps = [flat_output_deps[0], dx.Output(output_button, output_prop)]
 
     # Build flat input/output values (state is part of input now)
     flat_input_values = (

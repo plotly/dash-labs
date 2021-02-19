@@ -26,7 +26,7 @@ class Table(ComponentPlugin):
 
     @property
     def output(self):
-        return dx.arg(self._output_component, props=self._output_props)
+        return dx.Output(self._output_component, self._output_props)
 
     def build(self, inputs_value, df=None):
         if df is None:

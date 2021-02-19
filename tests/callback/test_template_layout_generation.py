@@ -12,8 +12,8 @@ def test_layout_from_pattern_keyword_args(app, test_template):
     inputs = {
         "test_slider": (0, 10),
     }
-    state = {"test_input": "Initial input"}
-    output = {"test_output_markdown": dx.arg(dcc.Markdown(), props="children")}
+    state = {"test_input": dx.State(dcc.Input(value="Initial input"))}
+    output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})

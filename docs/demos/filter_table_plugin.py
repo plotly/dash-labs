@@ -22,12 +22,12 @@ class FilterTable(ComponentPlugin):
         self.graph_id = dx.build_id(name="filter-table-graph")
         self.datatable_id = dx.build_id(name="filter-table-table")
         self._output = [
-            dx.arg(template.Graph(id=self.graph_id), props="figure"),
-            dx.arg(template.DataTable(
+            dx.Output(template.Graph(id=self.graph_id), "figure"),
+            dx.Output(template.DataTable(
                 id=self.datatable_id,
                 columns=[{"name": i, "id": i} for i in self.df.columns],
                 page_size=self.page_size
-            ), props="data"),
+            ), "data"),
         ]
 
         self._inputs = Input(self.graph_id, "selectedData")

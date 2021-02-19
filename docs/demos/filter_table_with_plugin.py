@@ -14,7 +14,7 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
 @app.callback(
     template=template,
-    inputs=[filter_table_plugin.inputs],
+    args=[filter_table_plugin.inputs],
     output=filter_table_plugin.output,
 )
 def filter_table(inputs_value):

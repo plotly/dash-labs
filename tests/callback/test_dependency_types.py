@@ -17,11 +17,11 @@ from ..helpers_for_testing import flat_deps
 @pytest.mark.parametrize("input_form", [list, tuple])
 def test_arg_dependencies(app, test_template, input_form):
     inputs = input_form([
-        dx.arg(dcc.Slider(), label="Slider"),
-        dx.arg(dcc.Dropdown(), label="Dropdown"),
+        dx.Input(dcc.Slider(), label="Slider"),
+        dx.Input(dcc.Dropdown(), label="Dropdown"),
     ])
-    state = dx.arg(dcc.Input(), label="State Input")
-    output = dx.arg(dcc.Markdown(), props="children", label="Markdown Output")
+    state = dx.State(dcc.Input(), label="State Input")
+    output = dx.Output(dcc.Markdown(), "children", label="Markdown Output")
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -44,9 +44,9 @@ def test_arg_dependencies(app, test_template, input_form):
 
 
 def test_scalar_input_arg_dependencies(app, test_template):
-    inputs = dx.arg(dcc.DatePickerRange(), props=("start_date", "end_date"))
-    state = dx.arg(dcc.Input())
-    output = dx.arg(dcc.Markdown(), props="children")
+    inputs = dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"))
+    state = dx.State(dcc.Input())
+    output = dx.Output(dcc.Markdown(), "children")
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -71,9 +71,9 @@ def test_scalar_input_arg_dependencies(app, test_template):
 
 
 def test_scalar_output_arg_dependencies(app, test_template):
-    inputs = dx.arg(html.Button(), props="n_clicks")
-    state = dx.arg(dcc.Input())
-    output = dx.arg(dcc.DatePickerRange(), props=("start_date", "end_date"))
+    inputs = dx.Input(html.Button(), "n_clicks")
+    state = dx.State(dcc.Input())
+    output = dx.Output(dcc.DatePickerRange(), ("start_date", "end_date"))
 
     # Build mock function
     fn = mock_fn_with_return((datetime.date(2010, 1, 1), datetime.date(2010, 1, 10)))
@@ -98,9 +98,9 @@ def test_scalar_output_arg_dependencies(app, test_template):
 
 
 def test_component_dependencies(app, test_template):
-    inputs = [dcc.Slider(), dx.arg(dcc.DatePickerRange(), props=("start_date", "end_date"))]
+    inputs = [dcc.Slider(), dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"))]
     state = [dcc.Input()]
-    output = dx.arg(dcc.Markdown(), props="children")
+    output = dx.Output(dcc.Markdown(), "children")
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -166,7 +166,7 @@ def test_component_dependencies(app, test_template):
 
 def test_pattern_dependencies(app, test_template):
     inputs = [(0, 10)]
-    state = ["Initial input"]
+    state = [dcc.Input("Initial input")]
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -220,8 +220,8 @@ def test_pattern_keyword_args(app, test_template):
     inputs = {
         "test_slider": (0, 10),
     }
-    state = {"test_input": "Initial input"}
-    output = {"test_output_markdown": dx.arg(dcc.Markdown(), props="children")}
+    state = {"test_input": dcc.Input("Initial input")}
+    output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})
@@ -274,7 +274,7 @@ def test_pattern_keyword_args_no_state(app, test_template):
     inputs = {
         "test_slider": (0, 10),
     }
-    output = {"test_output_markdown": dx.arg(dcc.Markdown(), props="children")}
+    output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})
@@ -314,10 +314,10 @@ def test_pattern_keyword_args_no_state(app, test_template):
 
 def test_state_kwarg_only(app, test_template):
     state = {
-        "test_input": dx.arg(dcc.Input()),
-        "test_slider": dx.arg(dcc.Slider(), kind="input"),
+        "test_input": dx.State(dcc.Input()),
+        "test_slider": dx.Input(dcc.Slider()),
     }
-    output = {"test_output_markdown": dx.arg(dcc.Markdown(), props="children")}
+    output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})
