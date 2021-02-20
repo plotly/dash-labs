@@ -93,9 +93,11 @@ class DataTablePlugin(ComponentPlugin):
         ))
         return result
 
-    def _build_serverside_result(self, inputs_value, df):
+    def _build_serverside_result(self, inputs_value, df, preprocessed=False):
         page_current = inputs_value["page_current"]
-        df = self.get_processed_dataframe(inputs_value, df)
+
+        if not preprocessed:
+            df = self.get_processed_dataframe(inputs_value, df)
 
         df_slice = self._compute_serverside_dataframe_slice(
             df, page_current=page_current
@@ -145,9 +147,18 @@ class DataTablePlugin(ComponentPlugin):
         else:
             return self._build_clientside_output()
 
-    def build(self, inputs_value, df=None):
+    def build(self, inputs_value, df=None, preprocessed=False):
+        """
+
+        :param inputs_value:
+        :param df:
+        :param preprocessed: Set to true if df was produced by get_processed_dataframe
+        :return:
+        """
         if self.serverside:
-            return self._build_serverside_result(inputs_value, df)
+            return self._build_serverside_result(
+                inputs_value, df, preprocessed=preprocessed
+            )
         else:
             return self._build_clientside_result(df)
 
