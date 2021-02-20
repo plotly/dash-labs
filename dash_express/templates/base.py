@@ -65,7 +65,7 @@ class BaseTemplate:
             )
         else:
             label_component, label_props = None, None
-            container_component, container_props = None, None
+            container_component, container_props = arg_component, arg_props
 
         # container_component = container_cp.component
         # container_props = container_cp.props

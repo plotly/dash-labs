@@ -7,6 +7,5 @@ class ComponentPlugin:
     def output(self):
         raise NotImplementedError
 
-    @property
-    def build(self, inputs_value, **kwargs):
+    def build(self, inputs_value):
         raise NotImplementedError

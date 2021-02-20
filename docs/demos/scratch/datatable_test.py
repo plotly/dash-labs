@@ -14,7 +14,7 @@ df = pd.DataFrame({
 
 
 @app.callback(
-    output=tp.datatable(df.iloc[:0], component_property=("data", "columns")),
+    output=tp.datatable_output(df.iloc[:0]),
     args=[
         tp.checklist(["foo", "bar", "baz"], label="Options"),
         tp.checklist(["Column 1", "Column 2"], value=["Column 1", "Column 2"], label="Columns"),
@@ -27,7 +27,7 @@ def callback(checked, columns):
 
     selected_df = df[df["Column 1"].isin(checked)][columns]
 
-    return tp.datatable(selected_df, component_property=("data", "columns"))
+    return tp.datatable_output(selected_df)
 
 
 app.layout = callback.layout(app)

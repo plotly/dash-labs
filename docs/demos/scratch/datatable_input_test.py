@@ -16,7 +16,7 @@ df = pd.DataFrame({
 
 @app.callback(
     output=tp.markdown(),
-    args=tp.datatable(df, kind=dx.Input, label="Data Entry"),
+    args=tp.datatable_input(df, label="Data Entry"),
     template=tp,
 )
 def callback(data):

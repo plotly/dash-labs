@@ -116,17 +116,30 @@ def _normalize_inputs(inputs, state):
     combined_inputs_state = inputs.copy()
     combined_inputs_state.update(state)
     for name, pattern in combined_inputs_state.items():
-        if _is_reference_dependency_grouping(pattern):
-            pass
-        elif isinstance(pattern, DashExpressDependency):
-            # Check is arg is holding a pattern
-            if pattern.label is Component.UNDEFINED:
-                pattern.label = name
+        flat_deps = flatten_grouping(pattern)
+        for dep in flat_deps:
+            if not isinstance(dep, DashExpressDependency):
+                raise ValueError("Invalid dependency: {}".format(dep))
 
-            if pattern.role is Component.UNDEFINED:
-                pattern.role = "input"
-        else:
-            raise ValueError("Invalid dependency object {}".format(pattern))
+            if dep.has_component:
+                # Check is arg is holding a pattern
+                if dep.label is Component.UNDEFINED:
+                    dep.label = name
+
+                if dep.role is Component.UNDEFINED:
+                    dep.role = "input"
+
+        # if _is_reference_dependency_grouping(pattern):
+        #     pass
+        # elif isinstance(pattern, DashExpressDependency):
+        #     # Check is arg is holding a pattern
+        #     if pattern.label is Component.UNDEFINED:
+        #         pattern.label = name
+        #
+        #     if pattern.role is Component.UNDEFINED:
+        #         pattern.role = "input"
+        # else:
+        #     raise ValueError("Invalid dependency object {}".format(pattern))
 
         all_inputs[name] = pattern
 
@@ -172,21 +185,25 @@ def _normalize_output(output):
 
 def _add_arg_components_to_template(vals, template):
     for name, val in vals.items():
-        if (not isinstance(val, DashExpressDependency) or
-                not isinstance(val.component, Component)):
-            continue
+        # if (not isinstance(val, DashExpressDependency) or
+        #         not isinstance(val.component, Component)):
+        #     continue
 
-        opts = {}
-        if isinstance(name, str):
-            opts["name"] = name
+        deps = flatten_grouping(val)
+        for dep in deps:
+            if dep.has_component:
+                opts = {}
+                if isinstance(name, str):
+                    opts["name"] = name
 
-        template.add_component(
-                component=val.component,
-                value_property=val.component_property,
-                role=val.role,
-                label=val.label,
-                **opts
-        )
+                template.add_component(
+                        component=dep.component,
+                        value_property=dep.component_property,
+                        role=dep.role,
+                        label=dep.label,
+                        containered=dep.containered,
+                        **opts
+                )
 
 def _get_arg_input_state_dependencies(all_inputs):
     input_groupings = OrderedDict()
