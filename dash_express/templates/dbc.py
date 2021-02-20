@@ -49,6 +49,39 @@ class BaseDbcTemplate(BaseTemplate):
         )
 
     @classmethod
+    def dropdown(
+            cls, options, value=Component.UNDEFINED,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        import dash_bootstrap_components as dbc
+
+        if isinstance(options, list) and options and not isinstance(options[0], dict):
+            options = [{"value": opt, "label": opt} for opt in options]
+
+        # Set starting value if not specified
+        if value is Component.UNDEFINED and options:
+            value = options[0]["value"]
+
+        return kind(
+            dbc.Select(options=options, **filter_kwargs(opts, value=value, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    @classmethod
+    def input(
+            cls, value=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        import dash_bootstrap_components as dbc
+
+        return kind(
+            dbc.Input(value=value, **filter_kwargs(opts, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    @classmethod
     def checklist(
             cls, options, value=None,
             label=Component.UNDEFINED, role=Component.UNDEFINED,
@@ -62,34 +95,6 @@ class BaseDbcTemplate(BaseTemplate):
         return kind(
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property, label=label, role=role
-        )
-
-    @classmethod
-    def Dropdown(cls, options, id=None, value=None, **kwargs):
-        import dash_bootstrap_components as dbc
-
-        if value is None:
-            value = options[0]["value"]
-
-        return dbc.Select(options=options, value=value, **filter_kwargs(id=id))
-
-    @classmethod
-    def Input(cls, value=None, id=None, **kwargs):
-        import dash_bootstrap_components as dbc
-
-        return dbc.Input(value=value, **filter_kwargs(id=id, **kwargs))
-
-    @classmethod
-    def Checkbox(cls, option, value=None, id=None, **kwargs):
-        import dash_bootstrap_components as dbc
-
-        if isinstance(option, str):
-            option = {"label": option, "value": option}
-
-        return dbc.Checklist(
-            options=[option],
-            value=value if value is not None else option["value"],
-            **filter_kwargs(id=id, **kwargs),
         )
 
     @classmethod
@@ -147,7 +152,6 @@ class BaseDbcTemplate(BaseTemplate):
                 app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
             else:
                 app.config.external_stylesheets.append(self.theme)
-
 
 
 class DbcCard(BaseDbcTemplate):

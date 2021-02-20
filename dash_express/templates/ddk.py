@@ -65,31 +65,10 @@ class BaseDDKTemplate(BaseTemplate):
         container = ddk.ControlItem(id=container_id, children=component)
         return container, "children"
 
-
     @classmethod
-    def Graph(cls, figure=None, id=None, **kwargs):
+    def _graph_class(cls):
         import dash_design_kit as ddk
-
-        return ddk.Graph(**filter_kwargs(figure=figure, id=id, **kwargs))
-
-    @classmethod
-    def graph(
-            cls, figure=None, config=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
-            component_property="figure", kind=Output, id=None, opts=None
-    ):
-        import dash_design_kit as ddk
-
-        return kind(
-            ddk.Graph(**filter_kwargs(opts, figure=figure, config=config, id=id)),
-            component_property=component_property, label=label, role=role
-        )
-
-    # @classmethod
-    # def DataTable(cls, *args, **kwargs):
-    #     import dash_design_kit as ddk
-    #
-    #     return ddk.DataTable(*args, **kwargs)
+        return ddk.Graph
 
     @classmethod
     def _datatable_class(cls):
