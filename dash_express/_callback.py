@@ -392,6 +392,10 @@ def map_output_arguments(fn, dep_groupings, output_form, template):
 def extract_and_infer_flat_outputs_values(
         res_grouping, dep_grouping, template
 ):
+    # Extracting property values from dependency components
+    if isinstance(res_grouping, DashExpressDependency):
+        res_grouping = res_grouping.property_value()
+
     # Check value against schema
     validate_grouping(res_grouping, dep_grouping)
     flat_results = flatten_grouping(res_grouping)

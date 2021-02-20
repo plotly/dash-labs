@@ -1,6 +1,9 @@
+from dash.development.base_component import Component
+
 from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 from dash_express.util import filter_kwargs, build_id
+from dash_express.dependency import Input, Output
 
 
 class BaseDbcTemplate(BaseTemplate):
@@ -34,10 +37,32 @@ class BaseDbcTemplate(BaseTemplate):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def Button(cls, children=None, id=None, **kwargs):
+    def button(
+            cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="n_clicks", kind=Input, id=None, opts=None
+    ):
         import dash_bootstrap_components as dbc
 
-        return dbc.Button(**filter_kwargs(children=children, id=id, **kwargs))
+        return kind(
+            dbc.Button(children=children, **filter_kwargs(opts, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    @classmethod
+    def checklist(
+            cls, options, value=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        import dash_bootstrap_components as dbc
+
+        if isinstance(options, list) and options and not isinstance(options[0], dict):
+            options = [{"value": opt, "label": opt} for opt in options]
+
+        return kind(
+            dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
+            component_property=component_property, label=label, role=role
+        )
 
     @classmethod
     def Dropdown(cls, options, id=None, value=None, **kwargs):

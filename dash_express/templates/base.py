@@ -10,6 +10,7 @@ import datetime
 from dash.development.base_component import Component
 
 from dash_express.util import filter_kwargs, build_id, insert_into_ordered_dict
+from dash_express.dependency import Input, Output, State
 from dataclasses import dataclass
 
 
@@ -240,55 +241,201 @@ class BaseTemplate:
     # Component constructors
     # These are uppercased class method to hopefully help communicate that they are
     # component constructors that don't modify the template
+    # @classmethod
+    # def Markdown(cls, children=None, id=None, **kwargs):
+    #     return dcc.Markdown(
+    #         # className="param-markdown",
+    #         **filter_kwargs(children=children, id=id, **kwargs)
+    #     )
+
     @classmethod
-    def Markdown(cls, children=None, id=None, **kwargs):
-        return dcc.Markdown(
-            # className="param-markdown",
-            **filter_kwargs(children=children, id=id, **kwargs)
+    def markdown(
+            cls, children=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="children", kind=Output, id=None, opts=None
+    ):
+        return kind(
+            dcc.Markdown(**filter_kwargs(opts, children=children, id=id)),
+            component_property=component_property, label=label, role=role
         )
 
     @classmethod
-    def Button(cls, children=None, id=None, **kwargs):
-        return html.Button(**filter_kwargs(children=children, id=id, **kwargs))
-
-    @classmethod
-    def Dropdown(cls, options, id=None, value=None, **kwargs):
-        return dcc.Dropdown(
-            options=options, **filter_kwargs(id=id, value=value, **kwargs)
+    def textarea(
+            cls, value=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        return kind(
+            dcc.Textarea(**filter_kwargs(opts, value=value, id=id)),
+            component_property=component_property, label=label, role=role
         )
 
-    @classmethod
-    def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
-        # Tooltip enabled by default to show slider value
-        tooltip = kwargs.pop("tooltip", {"placement": "bottom", "always_visible": True})
-        return dcc.Slider(
-            min=min,
-            max=max,
-            tooltip=tooltip,
-            **filter_kwargs(id=id, step=step, value=value, **kwargs),
-        )
 
-    @classmethod
-    def Input(cls, value=None, id=None, **kwargs):
-        return dcc.Input(value=value, **filter_kwargs(id=id, **kwargs))
-
+    # @classmethod
+    # def Button(cls, children=None, id=None, **kwargs):
+    #     return html.Button(**filter_kwargs(children=children, id=id, **kwargs))
     #
 
     @classmethod
-    def Checklist(cls, options, id=None, value=None, **kwargs):
-        return dcc.Checklist(
-            options=options, value=value, **filter_kwargs(id=id, **kwargs)
+    def button(
+            cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="n_clicks", kind=Input, id=None, opts=None
+    ):
+        return kind(
+            html.Button(children=children, **filter_kwargs(opts, id=id)),
+            component_property=component_property, label=label, role=role
         )
 
+
+
+    # @classmethod
+    # def Dropdown(cls, options, id=None, value=None, **kwargs):
+    #     return dcc.Dropdown(
+    #         options=options, **filter_kwargs(id=id, value=value, **kwargs)
+    #     )
+
     @classmethod
-    def Graph(cls, figure=None, id=None, **kwargs):
-        return dcc.Graph(**filter_kwargs(id=id, figure=figure, **kwargs))
+    def dropdown(
+            cls, options, value=Component.UNDEFINED,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        if isinstance(options, list) and options and not isinstance(options[0], dict):
+            options = [{"value": opt, "label": opt} for opt in options]
+
+        if value is Component.UNDEFINED and options:
+            value = options[0]["value"]
+
+        return kind(
+            dcc.Dropdown(options=options, **filter_kwargs(opts, value=value, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    # @classmethod
+    # def Slider(cls, min, max, id=None, step=None, value=None, **kwargs):
+    #     # Tooltip enabled by default to show slider value
+    #     tooltip = kwargs.pop("tooltip", {"placement": "bottom", "always_visible": True})
+    #     return dcc.Slider(
+    #         min=min,
+    #         max=max,
+    #         tooltip=tooltip,
+    #         **filter_kwargs(id=id, step=step, value=value, **kwargs),
+    #     )
+
+    @classmethod
+    def slider(
+            cls, min, max, value=Component.UNDEFINED, step=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        tooltip = (opts or {}).pop(
+            "tooltip", {"placement": "bottom", "always_visible": True}
+        )
+
+        if value is Component.UNDEFINED:
+            value = min
+
+        return kind(
+            dcc.Slider(
+                min=min, max=max,
+                **filter_kwargs(opts,  tooltip=tooltip, step=step, value=value, id=id)
+            ),
+            component_property=component_property, label=label, role=role
+        )
+
+    # @classmethod
+    # def Input(cls, value=None, id=None, **kwargs):
+    #     return dcc.Input(value=value, **filter_kwargs(id=id, **kwargs))
+
+
+    @classmethod
+    def input(
+            cls, value=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        return kind(
+            dcc.Input(value=value, **filter_kwargs(opts, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    # @classmethod
+    # def Checklist(cls, options, id=None, value=None, **kwargs):
+    #     return dcc.Checklist(
+    #         options=options, value=value, **filter_kwargs(id=id, **kwargs)
+    #     )
+
+    @classmethod
+    def checklist(
+            cls, options, value=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="value", kind=Input, id=None, opts=None
+    ):
+        if isinstance(options, list) and options and not isinstance(options[0], dict):
+            options = [{"value": opt, "label": opt} for opt in options]
+
+        return kind(
+            dcc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    # @classmethod
+    # def Graph(cls, figure=None, id=None, **kwargs):
+    #     return dcc.Graph(**filter_kwargs(id=id, figure=figure, **kwargs))
+
+    @classmethod
+    def graph(
+            cls, figure=None, config=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="figure", kind=Output, id=None, opts=None
+    ):
+        return kind(
+            dcc.Graph(**filter_kwargs(opts, figure=figure, config=config, id=id)),
+            component_property=component_property, label=label, role=role
+        )
 
     @classmethod
     def DataTable(cls, data=None, columns=None, id=None, **kwargs):
         from dash_table import DataTable
 
         return DataTable(**filter_kwargs(data=data, columns=columns, **kwargs))
+
+    @classmethod
+    def datatable(
+            cls, data=None, columns=None, editable=Component.UNDEFINED,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="data", kind=Output, id=None, opts=None
+    ):
+        # Handle DataFrame input
+        try:
+            import pandas as pd
+            if isinstance(data, pd.DataFrame):
+                if columns is None:
+                    columns = data.columns.tolist()
+                data = data.to_dict("records")
+        except ImportError:
+            pass
+
+        # Handle columns as list
+        if isinstance(columns, list) and columns and not isinstance(columns[0], dict):
+            columns = [{"name": col, "id": col} for col in columns]
+
+        # Infer editable
+        if editable is Component.UNDEFINED:
+            editable = kind in (Input, State)
+
+        return kind(
+            cls._datatable_class()(**filter_kwargs(
+                opts, data=data, columns=columns, editable=editable, id=id
+            )),
+            component_property=component_property, label=label, role=role
+        )
+
+    @classmethod
+    def _datatable_class(cls):
+        from dash_table import DataTable
+        return DataTable
+
 
     @classmethod
     def DatePickerSingle(cls, date=None, id=None, **kwargs):

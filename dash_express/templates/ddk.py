@@ -1,3 +1,6 @@
+from dash.development.base_component import Component
+
+from dash_express.dependency import Output
 from dash_express.templates.base import BaseTemplate
 import dash_html_components as html
 
@@ -70,10 +73,28 @@ class BaseDDKTemplate(BaseTemplate):
         return ddk.Graph(**filter_kwargs(figure=figure, id=id, **kwargs))
 
     @classmethod
-    def DataTable(cls, *args, **kwargs):
+    def graph(
+            cls, figure=None, config=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="figure", kind=Output, id=None, opts=None
+    ):
         import dash_design_kit as ddk
 
-        return ddk.DataTable(*args, **kwargs)
+        return kind(
+            ddk.Graph(**filter_kwargs(opts, figure=figure, config=config, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
+    # @classmethod
+    # def DataTable(cls, *args, **kwargs):
+    #     import dash_design_kit as ddk
+    #
+    #     return ddk.DataTable(*args, **kwargs)
+
+    @classmethod
+    def _datatable_class(cls):
+        from dash_table import DataTable
+        return DataTable
 
     def _wrap_layout(self, layout):
         import dash_design_kit as ddk

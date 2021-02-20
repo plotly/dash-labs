@@ -21,12 +21,16 @@ def build_id(name=None, **kwargs):
     )
 
 
-def filter_kwargs(**kwargs):
-    return {
-        k: v
-        for k, v in kwargs.items()
-        if v is not None and v is not Component.UNDEFINED
-    }
+def filter_kwargs(*args, **kwargs):
+    result = {}
+
+    for arg in list(args) + [kwargs]:
+        if isinstance(arg, dict):
+            for k, v in arg.items():
+                if v is not None and v is not Component.UNDEFINED:
+                    result[k] = v
+
+    return result
 
 
 def insert_into_ordered_dict(odict, value, key=None, before=None, after=None):
