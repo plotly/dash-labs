@@ -1,17 +1,32 @@
-def flatten_grouping(grouping):
-    if isinstance(grouping, tuple):
-        return [g for group_el in grouping for g in flatten_grouping(group_el)]
-    elif isinstance(grouping, dict):
+def flatten_grouping(grouping, schema=None):
+    if schema is None:
+        schema = grouping
+
+    if isinstance(schema, tuple):
+        return [
+            g for group_el, schema_el in zip(grouping, schema)
+            for g in flatten_grouping(group_el, schema_el)
+        ]
+    elif isinstance(schema, dict):
         return [g for group_el in grouping.values() for g in flatten_grouping(group_el)]
     else:
         return [grouping]
 
 
-def grouping_len(grouping):
-    if isinstance(grouping, tuple):
-        return sum([grouping_len(group_el) for group_el in grouping])
-    elif isinstance(grouping, dict):
-        return sum([grouping_len(group_el) for group_el in grouping.values()])
+def grouping_len(grouping, schema=None):
+    if schema is None:
+        schema = grouping
+
+    if isinstance(schema, tuple):
+        return sum([
+            grouping_len(group_el, schema_el)
+            for group_el, schema_el in zip(grouping, schema)
+        ])
+    elif isinstance(schema, dict):
+        return sum([
+            grouping_len(group_el, schema_el)
+            for group_el, schema_el in zip(grouping.values(), schema.values())
+        ])
     else:
         return 1
 
@@ -102,7 +117,7 @@ class SchemaValidationError(ValueError):
     pass
 
 
-def validate_grouping(grouping, schema):
+def validate_grouping(grouping, schema, allow_scalar_dict=False):
     def check(condition):
         if not condition:
             raise SchemaValidationError()
@@ -118,4 +133,5 @@ def validate_grouping(grouping, schema):
         for k in schema:
             validate_grouping(grouping[k], schema[k])
     else:
-        check(not isinstance(grouping, (tuple, dict)))
+        invalid = (tuple,) + (dict,) if not allow_scalar_dict else ()
+        check(not isinstance(grouping, invalid))

@@ -129,18 +129,6 @@ def _normalize_inputs(inputs, state):
                 if dep.role is Component.UNDEFINED:
                     dep.role = "input"
 
-        # if _is_reference_dependency_grouping(pattern):
-        #     pass
-        # elif isinstance(pattern, DashExpressDependency):
-        #     # Check is arg is holding a pattern
-        #     if pattern.label is Component.UNDEFINED:
-        #         pattern.label = name
-        #
-        #     if pattern.role is Component.UNDEFINED:
-        #         pattern.role = "input"
-        # else:
-        #     raise ValueError("Invalid dependency object {}".format(pattern))
-
         all_inputs[name] = pattern
 
     return all_inputs, input_form
@@ -166,17 +154,31 @@ def _normalize_output(output):
 
     all_output = OrderedDict()
     for name, pattern in output.items():
-        if _is_reference_dependency_grouping(pattern):
-            # Nothing to do
-            pass
-        elif isinstance(pattern, DashExpressDependency):
-            # Set 'auto' kind to 'output'
-            if pattern.label is Component.UNDEFINED:
-                pattern.label = None
-            if pattern.role is Component.UNDEFINED:
-                pattern.role = "output"
-        else:
-            raise ValueError("Invalid type, must be dependency grouping or arg")
+        flat_deps = flatten_grouping(pattern)
+        for dep in flat_deps:
+            if not isinstance(dep, DashExpressDependency):
+                raise ValueError("Invalid dependency: {}".format(dep))
+
+            if dep.has_component:
+                # Check is arg is holding a pattern
+                if dep.label is Component.UNDEFINED:
+                    dep.label = None
+
+                if dep.role is Component.UNDEFINED:
+                    dep.role = "output"
+        #
+        #
+        # if _is_reference_dependency_grouping(pattern):
+        #     # Nothing to do
+        #     pass
+        # elif isinstance(pattern, DashExpressDependency):
+        #     # Set 'auto' kind to 'output'
+        #     if pattern.label is Component.UNDEFINED:
+        #         pattern.label = None
+        #     if pattern.role is Component.UNDEFINED:
+        #         pattern.role = "output"
+        # else:
+        #     raise ValueError("Invalid type, must be dependency grouping or arg")
 
         all_output[name] = pattern
 
@@ -415,8 +417,8 @@ def extract_and_infer_flat_outputs_values(
         res_grouping = res_grouping.property_value()
 
     # Check value against schema
-    validate_grouping(res_grouping, dep_grouping)
-    flat_results = flatten_grouping(res_grouping)
+    validate_grouping(res_grouping, dep_grouping, allow_scalar_dict=True)
+    flat_results = flatten_grouping(res_grouping, dep_grouping)
     flat_deps = flatten_grouping(dep_grouping)
 
     for i, dep in enumerate(flat_deps):
