@@ -121,9 +121,12 @@ class BaseDbcTemplate(BaseTemplate):
         return container, "children", checkbox, checkbox_property
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value):
+    def build_labeled_component(cls, component, initial_value, label_id=None):
         import dash_bootstrap_components as dbc
-        label_id = build_id("label")
+
+        if not label_id:
+            label_id = build_id("label")
+
         label = dbc.Label(
             id=label_id, children=[initial_value], style={"display": "block"}
         )

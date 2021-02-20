@@ -46,11 +46,13 @@ class BaseDDKTemplate(BaseTemplate):
         self.use_mobile_viewport = use_mobile_viewport
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value):
+    def build_labeled_component(cls, component, initial_value, label_id=None):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
-        label_id = build_id("label")
+        if not label_id:
+            label_id = build_id("label")
+
         container = ddk.ControlItem(
             id=label_id, label=initial_value, children=component
         )

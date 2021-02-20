@@ -1,11 +1,6 @@
-import math
-
+from dash_express import build_id
 from dash_express.dependency import Output, Input
-from dash_express.util import build_id, filter_kwargs
 from .base import ComponentPlugin
-from dash_express.templates import FlatDiv
-import pandas as pd
-from dash_table import DataTable
 
 
 class DynamicInputPlugin(ComponentPlugin):
@@ -16,32 +11,27 @@ class DynamicInputPlugin(ComponentPlugin):
     def __init__(self, input_dependency, template):
         self.input_dependency = input_dependency
         self.label_string = self.input_dependency.label
+        self.label_id = build_id("label")
+        self.label_prop = template._label_value_prop
 
-        container_component, container_props, label, label_props = \
-            template.build_labeled_component(
-                self.input_dependency.component, initial_value=self.label_string
-            )
-
-        self.container_input = Input(container_component, container_props, label=None)
-        self.label_input = Input(label, label_props)
+        self.input_dependency.label = self.label_string
+        self.input_dependency.label_id = self.label_id
 
     @property
     def inputs(self):
-        return dict(
-            component=self.container_input,
-            value=self.input_dependency.dependencies,
-        )
+        return self.input_dependency
 
     @property
     def output(self):
         return dict(
-            label_value=Output(self.label_input.id, self.label_input.component_property),
+            label_value=Output(self.label_id, self.label_prop),
         )
 
     def build(self, inputs_value):
-        value = inputs_value["value"]
-        return dict(label_value=self.label_string.format(value))
+        return dict(label_value=self._format_label(inputs_value))
 
+    def _format_label(self, value):
+        return self.label_string.format(value)
 
     def get_value(self, inputs_value):
         return inputs_value["value"]

@@ -11,7 +11,7 @@ from dash_express import Plugin
 
 # Helpers
 from templates.base import BaseTemplate
-from util import add_css_class
+from util import add_css_class, build_id
 
 
 def all_component_props(component):
@@ -147,9 +147,11 @@ class TestTemplate(BaseTemplate):
          }\n"""
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value):
+    def build_labeled_component(cls, component, initial_value, label_id=None):
         # Subclass could use bootstrap or ddk
-        label = html.Label(id="label", children=initial_value)
+        if not label_id:
+            label_id = build_id("label")
+        label = html.Label(id=label_id, children=initial_value)
         container = html.Div(id="container", children=[label, component])
         return container, "children", label, "children"
 

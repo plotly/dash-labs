@@ -13,10 +13,12 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
 
     def __init__(
             self, component_id, component_property="value",
-            label=Component.UNDEFINED, role=Component.UNDEFINED, containered=True
+            label=Component.UNDEFINED, role=Component.UNDEFINED, containered=True,
+            label_id=None,
     ):
         self.set_component_and_props(component_id, component_property)
         self.label = label
+        self.label_id = label_id
         self.role = role
         self.containered = containered
 

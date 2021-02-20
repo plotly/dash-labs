@@ -43,7 +43,7 @@ class BaseTemplate:
 
     @classmethod
     def build_parameter_components(
-        cls, component, value_property=(), label=None, containered=True
+        cls, component, value_property=(), label=None, label_id=None, containered=True
     ):
         # Get reference to dependency class object for role
         arg_component = component
@@ -53,7 +53,7 @@ class BaseTemplate:
             initial_value = label
             container_component, container_props, label, label_props = \
                 cls.build_labeled_component(
-                    arg_component, initial_value=initial_value
+                    arg_component, initial_value=initial_value, label_id=label_id
                 )
             label_component = label
             label_props = label_props
@@ -84,6 +84,7 @@ class BaseTemplate:
         value_property=(),
         role="input",
         label=None,
+        label_id=None,
         containered=True,
         name=None,
         before=None,
@@ -106,6 +107,7 @@ class BaseTemplate:
             component,
             value_property=value_property,
             label=label,
+            label_id=label_id,
             containered=containered,
         )
 
@@ -207,9 +209,10 @@ class BaseTemplate:
             app.index_string = app.index_string.replace("{%css%}", "{%css%}" + new_css)
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value):
+    def build_labeled_component(cls, component, initial_value, label_id=None):
         # Subclass could use bootstrap or ddk
-        label_id = build_id("label")
+        if not label_id:
+            label_id = build_id("label")
         label = html.Label(id=label_id, children=initial_value)
         container_id = build_id("container")
         container = html.Div(

@@ -201,6 +201,7 @@ def _add_arg_components_to_template(vals, template):
                         value_property=dep.component_property,
                         role=dep.role,
                         label=dep.label,
+                        label_id=dep.label_id,
                         containered=dep.containered,
                         **opts
                 )
