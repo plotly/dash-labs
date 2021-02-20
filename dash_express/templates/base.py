@@ -143,9 +143,9 @@ class BaseTemplate:
 
         component_id = build_id(name=name)
         if isinstance(v, Figure):
-            return cls._graph_class(v, id=component_id)
+            return cls._graph_class()(figure=v, id=component_id)
         elif pd is not None and isinstance(v, pd.DataFrame):
-            return cls._datatable_class(
+            return cls._datatable_class()(
                 id=component_id,
                 columns=[{"name": i, "id": i} for i in v.columns],
                 data=v.to_dict('records'),

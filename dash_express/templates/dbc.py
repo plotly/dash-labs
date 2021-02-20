@@ -50,7 +50,7 @@ class BaseDbcTemplate(BaseTemplate):
 
     @classmethod
     def dropdown(
-            cls, options, value=Component.UNDEFINED,
+            cls, options, value=Component.UNDEFINED, clearable=False,
             label=Component.UNDEFINED, role=Component.UNDEFINED,
             component_property="value", kind=Input, id=None, opts=None
     ):
@@ -58,6 +58,9 @@ class BaseDbcTemplate(BaseTemplate):
 
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
+
+        if clearable:
+            options.insert(0, {"value": "", "label": "<Clear>"})
 
         # Set starting value if not specified
         if value is Component.UNDEFINED and options:
