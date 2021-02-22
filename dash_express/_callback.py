@@ -23,22 +23,19 @@ _ALL_DEPS = (Input, Output, State)
 
 
 class CallbackWrapper:
-    """
-    Class that stands in place of a decorated function and contains references to
-    a template
-    """
-
     def __init__(
             self,
             fn,
-            template,
+            args_dependencies,
+            output_dependencies,
             flat_fn=None,
             flat_output_deps=None,
             flat_input_deps=None,
             flat_state_deps=None
     ):
         self.fn = fn
-        self._template = template
+        self.args_dependencies = args_dependencies
+        self.output_dependencies = output_dependencies
         self._flat_fn = flat_fn
         self._flat_output_deps = flat_output_deps
         self._flat_input_deps = flat_input_deps
@@ -46,9 +43,48 @@ class CallbackWrapper:
         update_wrapper(self, self.fn)
 
     def __call__(self, *args, **kwargs):
-        if self.fn is None:
-            raise ValueError("CallbackComponents instance does not wrap a function")
         return self.fn(*args, **kwargs)
+
+    def _raise_no_template_error(self, name):
+        raise ValueError(
+            "To use {}, you must provide a template to @app.callback".format(name)
+        )
+
+    @property
+    def template(self):
+        self._raise_no_template_error("template")
+
+    @property
+    def roles(self):
+        self._raise_no_template_error("roles")
+
+    def layout(self, app, full=True):
+        self._raise_no_template_error("layout")
+
+
+class TemplateCallbackWrapper(CallbackWrapper):
+    """
+    Class that stands in place of a decorated function and contains references to
+    a template
+    """
+
+    def __init__(
+            self,
+            template,
+            fn,
+            args_dependencies,
+            output_dependencies,
+            flat_fn=None,
+            flat_output_deps=None,
+            flat_input_deps=None,
+            flat_state_deps=None
+    ):
+        super().__init__(
+            fn, args_dependencies, output_dependencies, flat_fn,
+            flat_output_deps, flat_input_deps, flat_state_deps
+        )
+        self._template = template
+        update_wrapper(self, self.fn)
 
     @property
     def template(self):
@@ -166,19 +202,6 @@ def _normalize_output(output):
 
                 if dep.role is Component.UNDEFINED:
                     dep.role = "output"
-        #
-        #
-        # if _is_reference_dependency_grouping(pattern):
-        #     # Nothing to do
-        #     pass
-        # elif isinstance(pattern, DashExpressDependency):
-        #     # Set 'auto' kind to 'output'
-        #     if pattern.label is Component.UNDEFINED:
-        #         pattern.label = None
-        #     if pattern.role is Component.UNDEFINED:
-        #         pattern.role = "output"
-        # else:
-        #     raise ValueError("Invalid type, must be dependency grouping or arg")
 
         all_output[name] = pattern
 
@@ -285,16 +308,17 @@ def _callback(
         handle_callback_args(_args, _kwargs)
 
     from dash_express.templates import FlatDiv
-    if template is None:
-        template = FlatDiv()
+    # if template is None:
+    #     template = FlatDiv()
 
     # Preprocess non-dependency outputs into ComponentPatterns
     all_inputs, input_form = _normalize_inputs(inputs, state)
     all_outputs, output_form = _normalize_output(output)
 
     # Add constructed/literal components to template
-    _add_arg_components_to_template(all_inputs, template)
-    _add_arg_components_to_template(all_outputs, template)
+    if template is not None:
+        _add_arg_components_to_template(all_inputs, template)
+        _add_arg_components_to_template(all_outputs, template)
 
     # Compute Input/State dependency lists and argument groupings
     input_groupings, input_deps, state_deps = _get_arg_input_state_dependencies(
@@ -308,7 +332,7 @@ def _callback(
         # Register callback with output component inference
         callback_fn = map_input_arguments(fn, input_groupings, input_form)
         callback_fn = map_output_arguments(
-            callback_fn, output_groupings, output_form, template
+            callback_fn, output_groupings, output_form,
         )
 
         # Register wrapped function with app.callback
@@ -322,9 +346,16 @@ def _callback(
             prevent_initial_call=prevent_initial_callbacks
         )(callback_fn)
 
-        return CallbackWrapper(
-            fn, template, callback_fn, output_deps, input_deps, state_deps
-        )
+        if template is None:
+            return CallbackWrapper(
+                fn, input_groupings, output_groupings, callback_fn,
+                output_deps, input_deps, state_deps
+            )
+        else:
+            return TemplateCallbackWrapper(
+                template, fn, input_groupings, output_groupings,
+                callback_fn, output_deps, input_deps, state_deps
+            )
 
     return wrapped
 
@@ -363,7 +394,7 @@ def map_input_arguments(fn, input_groupings, input_form):
     return wrapper
 
 
-def map_output_arguments(fn, dep_groupings, output_form, template):
+def map_output_arguments(fn, dep_groupings, output_form):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         res = fn(*args, **kwargs)
@@ -375,9 +406,7 @@ def map_output_arguments(fn, dep_groupings, output_form, template):
                 # Accept list when expecting a tuple
                 res = tuple(res)
 
-            flat_res = extract_and_infer_flat_outputs_values(
-                res, dep_grouping, template
-            )
+            flat_res = extract_and_infer_flat_outputs_values(res, dep_grouping)
             output.extend(flat_res)
         elif output_form == "list":
             if isinstance(res, tuple):
@@ -389,7 +418,7 @@ def map_output_arguments(fn, dep_groupings, output_form, template):
 
             for i in range(len(dep_groupings)):
                 flat_res = extract_and_infer_flat_outputs_values(
-                    res[i], dep_groupings[i], template
+                    res[i], dep_groupings[i]
                 )
                 output.extend(flat_res)
         else:  # form == "dict"
@@ -398,7 +427,7 @@ def map_output_arguments(fn, dep_groupings, output_form, template):
 
             for name, grouping in dep_groupings.items():
                 flat_res = extract_and_infer_flat_outputs_values(
-                    res[name], dep_groupings[name], template
+                    res[name], dep_groupings[name]
                 )
                 output.extend(flat_res)
 
@@ -409,9 +438,7 @@ def map_output_arguments(fn, dep_groupings, output_form, template):
     return wrapper
 
 
-def extract_and_infer_flat_outputs_values(
-        res_grouping, dep_grouping, template
-):
+def extract_and_infer_flat_outputs_values(res_grouping, dep_grouping):
     # Extracting property values from dependency components
     if isinstance(res_grouping, DashExpressDependency):
         res_grouping = res_grouping.property_value()
@@ -420,12 +447,6 @@ def extract_and_infer_flat_outputs_values(
     validate_grouping(res_grouping, dep_grouping, allow_scalar_dict=True)
     flat_results = flatten_grouping(res_grouping, dep_grouping)
     flat_deps = flatten_grouping(dep_grouping)
-
-    for i, dep in enumerate(flat_deps):
-        if dep.component_property == "children":
-            flat_results[i] = template.infer_output_component_from_value(
-                flat_results[i]
-            )
 
     return flat_results
 

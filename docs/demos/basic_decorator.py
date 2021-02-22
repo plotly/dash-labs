@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-
+tp = dx.templates.FlatDiv()
 
 @app.callback(
     args=dict(
@@ -17,6 +17,7 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
         phase=dx.Input(dcc.Slider(min=1, max=10, value=4)),
         amplitude=dx.Input(dcc.Slider(min=1, max=10, value=3)),
     ),
+    template=tp,
 )
 def greet(fun, figure_title, phase, amplitude):
     print(fun, figure_title, phase, amplitude)
