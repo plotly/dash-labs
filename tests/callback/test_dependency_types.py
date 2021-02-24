@@ -123,7 +123,7 @@ def test_state_kwarg_only(app, test_template):
 
     # Check dependencies
     # Input
-    input_param_components = fn_wrapper.roles["input"]
+    input_param_components = test_template.roles["input"]
     arg_component = input_param_components["test_input"].arg_component
     arg_props = input_param_components["test_input"].arg_props
     expected_deps = flat_deps(arg_component, arg_props, "state")
@@ -132,7 +132,7 @@ def test_state_kwarg_only(app, test_template):
     assert fn_wrapper._flat_state_deps[0] == expected_deps[0]
 
     # Slider
-    input_param_components = fn_wrapper.roles["input"]
+    input_param_components = test_template.roles["input"]
     arg_component = input_param_components["test_slider"].arg_component
     arg_props = input_param_components["test_slider"].arg_props
     expected_deps = flat_deps(arg_component, arg_props, "input")
@@ -141,7 +141,7 @@ def test_state_kwarg_only(app, test_template):
     assert fn_wrapper._flat_input_deps[0] == expected_deps[0]
 
     # Markdown Output
-    output_param_components = fn_wrapper.roles["output"]
+    output_param_components = test_template.roles["output"]
     arg_component = output_param_components["test_output_markdown"].arg_component
     arg_props = output_param_components["test_output_markdown"].arg_props
     expected_deps = flat_deps(arg_component, arg_props, "output")

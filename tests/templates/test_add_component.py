@@ -17,7 +17,7 @@ def test_add_single_component_defaults(test_template):
     # Check ParameterComponent properties
     assert arg_comps.arg_component is button
     assert arg_comps.arg_component.id == "button"
-    assert arg_comps.arg_props == ()
+    assert arg_comps.arg_props is None
 
     # Check container
     assert arg_comps.container_component.id == "container"
@@ -36,8 +36,9 @@ def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
     # Add with containered false
-    arg_comps1 = test_template.add_component(button1, component_property="n_clicks",
-                                             containered=False)
+    arg_comps1 = test_template.add_component(
+        button1, component_property="n_clicks", containered=False
+    )
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 1
@@ -50,16 +51,18 @@ def test_add_component_options(test_template):
     assert arg_comps1.arg_props == "n_clicks"
 
     # Check that container and label are None
-    assert arg_comps1.container_component is None
-    assert arg_comps1.container_props is None
+    assert arg_comps1.container_component is button1
+    assert arg_comps1.container_props is "n_clicks"
     assert arg_comps1.label_component is None
     assert arg_comps1.label_props is None
 
     # With label and name
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
-    arg_comps2 = test_template.add_component(button2, component_property="n_clicks",
-                                             label="Button 2", name="button2_arg")
+    arg_comps2 = test_template.add_component(
+        button2, component_property="n_clicks", label="Button 2",  name="button2_arg",
+        label_id="label"
+    )
     assert arg_comps2.arg_component.id == "button2"
     assert arg_comps2.arg_props == "n_clicks"
     assert arg_comps2.label_component.children == "Button 2"
@@ -73,8 +76,9 @@ def test_add_component_options(test_template):
         arg_comps2.arg_component,
     ]
 
-    arg_comps3 = test_template.add_component(button3, component_property="title",
-                                             label="Button 3")
+    arg_comps3 = test_template.add_component(
+        button3, component_property="title", label="Button 3", label_id="label"
+    )
     assert arg_comps3.arg_component.id == "button3"
     assert arg_comps3.arg_props == "title"
     assert arg_comps3.label_component.children == "Button 3"
