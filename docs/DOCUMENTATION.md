@@ -252,7 +252,7 @@ Dash Express introduces a template system that makes it possible to quickly add 
 
 Templates that are included with Dash Express are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tp`. Components can then be added to the template with `tp.add_component` 
 
-[docs/template_system1.py](docs/template_system1.py)
+[demos/template_system1.py](demos/template_system1.py)
 
 ```python
 import dash_express as dx
@@ -260,7 +260,7 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard()
+tp = dx.templates.DbcCard(title="Simple App", columns=6)
 
 div = html.Div()
 button = html.Button(children="Click Me")
@@ -278,10 +278,14 @@ if __name__ == "__main__":
     app.run_server()
 ```
 
+![](https://i.imgur.com/sZ5HUrO.gif)
+
 Templates provide a `.layout(app)` method that will construct a container of components that can be assigned to `app.layout`, or combined with other components to build `app.layout`.  
 
 ## template and app.callback integration
 For convenience, `@app.callback` accepts an optional `template` argument. When provided, `app.callback` will automatically add the provided input and output components to the template. Because of the information that `app.callback` already has access to, it can choose reasonable defaults for the component's role and label.  Because the components will be added to the template, it becomes possible to construct the component inline in the `app.callback` definition (rather than constructing them above and assigning them to local variables).  With these conveniences, the example above becomes:
+
+[demos/template_system2.py](demos/template_system2.py)
 
 ```python
 import dash_express as dx
@@ -289,7 +293,7 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard()
+tp = dx.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
    dx.Output(html.Div(), "children"),
@@ -308,13 +312,15 @@ if __name__ == "__main__":
 ## Default output
 When a template is provided, and no output is provided, the template will provide a default output container for the result of the function (usually an `html.Div` component).
 
+[demos/template_system3.py](demos/template_system3.py)
+
 ```python
 import dash_express as dx
 import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard()
+tp = dx.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
    dx.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
@@ -426,9 +432,13 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
+![](https://i.imgur.com/MX4WaGS.gif)
+
 ## Adding additional components to a template
 
 Additional components can be added to a template after the initial components are added by `@app.callback`.
+
+[demos/template_with_custom_additions.py](demos/template_with_custom_additions.py)
 
 ```python
 import dash
@@ -481,11 +491,13 @@ template.add_component(
     component_property="children", role="output"
 )
 
-app.layout = function_browser.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
 ```
+
+![](https://i.imgur.com/VX6E6kD.png)
 
 ## Creating custom templates
 Custom templates can be created by subclassing the `dx.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dx.templates.ddk.BaseDdkTemplate`.
@@ -508,7 +520,7 @@ tp.dropdown(["A", "B", "C"], label="My Dropdown")
 evaluates to... 
 
 ```python
-hv.Input(
+dx.Input(
     dcc.Dropdown(
       id={'uid': 'd4713d60-c8a7-0639-eb11-67b367a9c378'},
       options=[{'value': 'A', 'label': 'A'}, {'value': 'B', 'label': 'B'}, {'value': 'C', 'label': 'C'}],
@@ -533,11 +545,12 @@ In addition to these standard keyword arguments, conponent dependency builders a
 
 These component dependency builders can significantly shorten many app.callback specifications.
 
+[demos/basic_decorator.py](./demos/basic_decorator.py)
+
 ```python
 import dash
 import dash_express as dx
 import numpy as np
-import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
@@ -566,19 +579,21 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
  
+![](https://i.imgur.com/wqeZY0B.png)
+
 ## Component constructor specialization
 Another advantage to the component constructor paradigm is that templates can specialize the representation of the difference components. For example, Dash Bootstrap templates can use `dbc.Select` in place of `dcc.Dropdown` for `tp.dropdown()`. And DDK templates can use `ddk.Graph` in place of `dcc.Graph` for `tp.graph()`.
-
 
 ## Predefined templates
 
 Here is a full example, specifying the `FlatDiv` template.  The following examples will only contain code for the template declaration line.
 
+[demos/all_templates.py](./demos/all_templates.py)
+
 ```python
 import dash
 import dash_express as dx
 import numpy as np
-import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
@@ -727,7 +742,7 @@ In this example, the default value of the `component_properties` argument to `tp
 
 Note: The explicit declarations of the two input arguments (without component dependency builders) are included in comments. 
 
-[demos/multi_input_component.py](./demos/multi_input_component.py)
+[demos/multiple_component_props.py](./demos/multiple_component_props.py)
 
 ```python
 import dash
@@ -785,7 +800,7 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.dbc.DbcSidebar(title="Sample App")
+tp = dx.templates.FlatDiv()
 
 @app.callback(
     args=dict(
@@ -825,15 +840,17 @@ Note that the default value of `kind` for `tp.markdown` is `dx.Output`, which is
 
 ```python
 import dash
-import dash_core_components as dcc
 import dash_express as dx
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar("App Title")
+tp = dx.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 @app.callback(
     output=tp.markdown(),
-    inputs=tp.textarea("## Heading\n", opts=dict(style={"width": "100%", "height": 400})),
+    inputs=tp.textarea(
+        "## Heading\n", 
+        opts=dict(style={"width": "100%", "height": 400})
+    ),
     template=tp
 )
 def markdown_preview(input_text):
@@ -846,8 +863,7 @@ if __name__ == "__main__":
 
 ```
 
-![](https://i.imgur.com/9PEuHcg.gif)
-
+![](https://i.imgur.com/vLbBF2R.gif)
 
 
 # Chapter 5: The Component Plugin design pattern
@@ -1148,6 +1164,8 @@ Here is an example of an app that uses this plugin to create a DataTable that su
 
 Note that the DataFrame that is input to the DataTable is first filtered using a Dropdown on the `sex` colulumn of the dataset. This is an example of how plugins can support integration with the external logic of a callback. 
 
+[demos/datatable_component_plugin.py](./demos/datatable_component_plugin.py)
+
 ```python
 import plotly.express as px
 import dash_express as dx
@@ -1185,8 +1203,11 @@ app.layout = tp.layout(app)
 if __name__ == "__main__":
     app.run_server(debug=True)
 ```
+![](https://i.imgur.com/2gsF4rC.gif)
 
 And here is an example of using the same plugin to display the contents of the table (post filtering) in a plotly express figure:
+
+[demos/datatable_component_plugin_and_graph.py](./demos/datatable_component_plugin_and_graph.py)
 
 ```python
 import plotly.express as px
@@ -1232,6 +1253,8 @@ app.layout = tp.layout(app)
 if __name__ == "__main__":
     app.run_server(debug=True)
 ```
+
+![](https://i.imgur.com/12burki.gif)
 
 ## Component plugin example: Image shape drawing
 Here is a ComponentPlugin implementation of the shape drawing app similar to that described in https://dash.plotly.com/annotations.  This plugin displays two graphs, a greyscale image and a histogram of pixel intensities. The image graph is configured to draw a shape on the canvas on drag. The drawing of a shape causes the histogram to be updated to include only the pixels within the shape's.  
@@ -1368,6 +1391,8 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
 
 Here is an example of using the plugin
 
+[demos/image_roi_histogram.py](./demos/image_roi_histogram.py)
+
 ```python
 import dash
 import dash_express as dx
@@ -1395,6 +1420,8 @@ app.layout = tp.layout(app)
 if __name__ == "__main__":
     app.run_server(debug=True)
 ```
+
+![](https://i.imgur.com/sjNCesU.gif)
 
 ## Component Plugin Example: Dynamic Label
 Here is a component plugin that can be used to display a dynamic label for a component based on its value
@@ -1441,6 +1468,8 @@ class DynamicInputPlugin(ComponentPlugin):
 
 And usage
 
+[demos/dynamic_input_plugin.py](./demos/dynamic_input_plugin.py)
+
 ```python
 import dash
 import dash_express as dx
@@ -1482,3 +1511,5 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 
 ```
+
+![](https://i.imgur.com/pbHCvtV.gif)

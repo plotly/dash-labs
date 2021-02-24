@@ -6,7 +6,7 @@ import pandas as pd
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Clientside Table Component Plugin")
+tp = dx.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
