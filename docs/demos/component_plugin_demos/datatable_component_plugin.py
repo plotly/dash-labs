@@ -5,7 +5,7 @@ import dash
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Clientside Table Component Plugin")
+tp = dx.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
@@ -14,13 +14,13 @@ table_plugin = dx.component_plugins.DataTablePlugin(
     serverside=serverside, template=tp
 )
 
-
 @app.callback(
     args=[
         tp.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
-        table_plugin.inputs
+        table_plugin.args
     ],
-    output=table_plugin.output
+    output=table_plugin.output,
+    template=tp,
 )
 def callback(gender, plugin_input):
     if gender:
@@ -29,7 +29,7 @@ def callback(gender, plugin_input):
         filtered_df = df
     return table_plugin.build(plugin_input, filtered_df)
 
-app.layout = callback.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

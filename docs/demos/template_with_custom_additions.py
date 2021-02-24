@@ -3,57 +3,52 @@ import dash_express as dx
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
-from ddk_theme import theme
-import dash_html_components as html
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-# template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme, sidebar_width="450px", show_editor=True)
-template = dx.templates.DbcSidebar(title="Dash Express App")
-# template = dx.templates.DccCard(title="Dash Express App")
+tp = dx.templates.DbcSidebar(title="Dash Express App")
 
 # import dash_core_components as dcc
 @app.callback(
     inputs=dict(
-        fun=dx.Input(["sin", "cos", "exp"], label="Function"),
+        fun=dx.Input(dcc.Dropdown(
+            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
+            value="sin",
+        ), label="Function"),
         figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
-        phase=dx.Input((1, 10), label="Phase"),
-        amplitude=dx.Input((1, 10), label="Amplitude")
+        phase=dx.Input(dcc.Slider(min=1, max=10, value=3), label="Phase"),
+        amplitude=dx.Input(dcc.Slider(min=1, max=10, value=4), label="Amplitude")
     ),
-    template=template,
+    template=tp,
 )
 def function_browser(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return template.Graph(figure=px.line(
+    return dcc.Graph(figure=px.line(
         x=xs, y=getattr(np, fun)(xs + phase) * amplitude
     ).update_layout(title_text=figure_title))
 
 
 # Add extra component to template
-template.add_component(
-    template.Markdown("# First Group"),
-    role="input", before="fun"
+tp.add_component(
+    dcc.Markdown(children="# First Group"), role="input", before="fun"
 )
 
-template.add_component(
-    template.Markdown([
-        "# Second Group\n"
-        "Specify the Phase and Amplitudue for the chosen function"
-    ]),
-    role="input", before="phase")
+tp.add_component(dcc.Markdown(children=[
+    "# Second Group\n"
+    "Specify the Phase and Amplitudue for the chosen function"
+]), role="input", before="phase")
 
-template.add_component(
-    template.Markdown([
-        "# H2 Title\n",
-        "Here is the *main* plot"
-    ]),
-    role="output", before=0)
 
-template.add_component(
+tp.add_component(dcc.Markdown(children=[
+    "# H2 Title\n",
+    "Here is the *main* plot"
+]), role="output", before=0)
+
+tp.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
-    role="output", value_property="children"
+    component_property="children", role="output"
 )
 
-app.layout = function_browser.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -1,6 +1,6 @@
 class ComponentPlugin:
     @property
-    def inputs(self):
+    def args(self):
         raise NotImplementedError
 
     @property

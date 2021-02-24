@@ -134,7 +134,7 @@ class DataTablePlugin(ComponentPlugin):
         return dict(data=data, columns=columns)
 
     @property
-    def inputs(self):
+    def args(self):
         if self.serverside:
             return self._build_serverside_input()
         else:

@@ -18,7 +18,7 @@ class DynamicInputPlugin(ComponentPlugin):
         self.input_dependency.label_id = self.label_id
 
     @property
-    def inputs(self):
+    def args(self):
         return self.input_dependency
 
     @property

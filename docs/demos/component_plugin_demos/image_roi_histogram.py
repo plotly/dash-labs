@@ -10,7 +10,7 @@ img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tp)
 
 
 @app.callback(
-    args=img_plugin.inputs,
+    args=img_plugin.args,
     output=img_plugin.output,
     template=tp
 )
@@ -18,7 +18,7 @@ def callback(plugin_inputs):
     return img_plugin.build(plugin_inputs)
 
 
-app.layout = callback.layout(app)
+app.layout = tp.layout(app)
 
 
 if __name__ == "__main__":

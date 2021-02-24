@@ -10,7 +10,7 @@ import datetime
 from dash.development.base_component import Component
 
 from dash_express.util import filter_kwargs, build_id, insert_into_ordered_dict
-from dash_express.dependency import Input, Output, State
+from dash_express.dependency import Input, Output, State, DashExpressDependency
 from dataclasses import dataclass
 
 
@@ -78,18 +78,9 @@ class BaseTemplate:
             container_props=container_props,
         )
 
-    def add_component(
-        self,
-        component,
-        value_property=(),
-        role="input",
-        label=None,
-        label_id=None,
-        containered=True,
-        name=None,
-        before=None,
-        after=None,
-    ):
+    def add_component(self, component, component_property=None, role="input",
+                      label=None, label_id=None, containered=True, name=None,
+                      before=None, after=None):
         """
         component id should have been created with build_component_id
         """
@@ -105,7 +96,7 @@ class BaseTemplate:
 
         param_components = self.build_parameter_components(
             component,
-            value_property=value_property,
+            value_property=component_property,
             label=label,
             label_id=label_id,
             containered=containered,

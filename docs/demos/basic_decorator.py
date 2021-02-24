@@ -5,19 +5,16 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.FlatDiv()
+tp = dx.templates.dbc.DbcSidebar(title="Sample App")
 
 @app.callback(
     args=dict(
-        fun=dx.Input(dcc.Dropdown(
-            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
-            value="sin"
-        )),
-        figure_title=dx.Input(dcc.Input(value="Initial Title")),
-        phase=dx.Input(dcc.Slider(min=1, max=10, value=4)),
-        amplitude=dx.Input(dcc.Slider(min=1, max=10, value=3)),
+        fun=tp.dropdown(["sin", "cos", "exp"], label="Function"),
+        figure_title=tp.input("Initial Title", label="Figure Title"),
+        phase=tp.slider(1, 10, label="Phase"),
+        amplitude=tp.slider(1, 10, value=3, label="Amplitude"),
     ),
-    template=tp,
+    template=tp
 )
 def greet(fun, figure_title, phase, amplitude):
     print(fun, figure_title, phase, amplitude)
@@ -27,7 +24,7 @@ def greet(fun, figure_title, phase, amplitude):
     ).update_layout(title_text=figure_title))
 
 
-app.layout = greet.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

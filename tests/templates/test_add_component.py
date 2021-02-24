@@ -36,9 +36,8 @@ def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
     # Add with containered false
-    arg_comps1 = test_template.add_component(
-        button1, containered=False, value_property="n_clicks"
-    )
+    arg_comps1 = test_template.add_component(button1, component_property="n_clicks",
+                                             containered=False)
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 1
@@ -59,9 +58,8 @@ def test_add_component_options(test_template):
     # With label and name
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
-    arg_comps2 = test_template.add_component(
-        button2, label="Button 2", value_property="n_clicks", name="button2_arg"
-    )
+    arg_comps2 = test_template.add_component(button2, component_property="n_clicks",
+                                             label="Button 2", name="button2_arg")
     assert arg_comps2.arg_component.id == "button2"
     assert arg_comps2.arg_props == "n_clicks"
     assert arg_comps2.label_component.children == "Button 2"
@@ -75,11 +73,8 @@ def test_add_component_options(test_template):
         arg_comps2.arg_component,
     ]
 
-    arg_comps3 = test_template.add_component(
-        button3,
-        label="Button 3",
-        value_property="title",
-    )
+    arg_comps3 = test_template.add_component(button3, component_property="title",
+                                             label="Button 3")
     assert arg_comps3.arg_component.id == "button3"
     assert arg_comps3.arg_props == "title"
     assert arg_comps3.label_component.children == "Button 3"
@@ -156,9 +151,9 @@ def test_add_by_index_position(test_template):
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
 
-    pc1 = test_template.add_component(button1, name="arg1", role="output")
+    pc1 = test_template.add_component(button1, role="output", name="arg1")
     pc3 = test_template.add_component(button3, role="output")
-    pc2 = test_template.add_component(button2, name="arg2", role="output", before=1)
+    pc2 = test_template.add_component(button2, role="output", name="arg2", before=1)
     assert list(test_template.roles["output"].values()) == [pc1, pc2, pc3]
 
     # Check layout generation
@@ -170,9 +165,9 @@ def test_add_by_name_position(test_template):
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
 
-    pc1 = test_template.add_component(button1, name="arg1", role="output")
+    pc1 = test_template.add_component(button1, role="output", name="arg1")
     pc3 = test_template.add_component(button3, role="output")
-    pc2 = test_template.add_component(button2, name="arg2", role="output", after="arg1")
+    pc2 = test_template.add_component(button2, role="output", name="arg2", after="arg1")
     assert list(test_template.roles["output"].values()) == [pc1, pc2, pc3]
 
     # Check layout generation

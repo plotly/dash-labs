@@ -16,24 +16,22 @@ phase_plugin = dx.component_plugins.DynamicInputPlugin(
         fun=dx.Input(dcc.Dropdown(
             options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
             value="sin"
-        )),
-        figure_title=dx.Input(dcc.Input(value="Initial Title")),
-        phase=phase_plugin.inputs,
-        amplitude=tp.slider(1, 10, value=4, label="Amplitude"),
+        ), label="Function"),
+        phase=phase_plugin.args,
     ),
     output=[tp.graph(), phase_plugin.output],
     template=tp,
 )
-def callback(fun, figure_title, phase, amplitude):
+def callback(fun, phase):
     xs = np.linspace(-10, 10, 100)
     fig = px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title)
+        x=xs, y=getattr(np, fun)(xs + phase)
+    ).update_layout()
 
     return [fig, phase_plugin.build(phase)]
 
 
-app.layout = callback.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

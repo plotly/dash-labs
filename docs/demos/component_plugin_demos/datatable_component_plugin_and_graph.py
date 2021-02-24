@@ -15,13 +15,13 @@ table_plugin = dx.component_plugins.DataTablePlugin(
     serverside=serverside
 )
 
-
 @app.callback(
     args=[
         tp.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
-        table_plugin.inputs
+        table_plugin.args
     ],
-    output=[table_plugin.output, tp.graph()]
+    output=[table_plugin.output, tp.graph()],
+    template=tp,
 )
 def callback(gender, table_input):
     if gender:
@@ -37,7 +37,7 @@ def callback(gender, table_input):
 
     return [table_plugin.build(table_input, dff, preprocessed=True), fig]
 
-app.layout = callback.layout(app)
+app.layout = tp.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

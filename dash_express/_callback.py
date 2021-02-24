@@ -34,8 +34,8 @@ class CallbackWrapper:
             flat_state_deps=None
     ):
         self.fn = fn
-        self.args_dependencies = args_dependencies
-        self.output_dependencies = output_dependencies
+        self.args = args_dependencies
+        self.output = output_dependencies
         self._flat_fn = flat_fn
         self._flat_output_deps = flat_output_deps
         self._flat_input_deps = flat_input_deps
@@ -44,61 +44,6 @@ class CallbackWrapper:
 
     def __call__(self, *args, **kwargs):
         return self.fn(*args, **kwargs)
-
-    def _raise_no_template_error(self, name):
-        raise ValueError(
-            "To use {}, you must provide a template to @app.callback".format(name)
-        )
-
-    @property
-    def template(self):
-        self._raise_no_template_error("template")
-
-    @property
-    def roles(self):
-        self._raise_no_template_error("roles")
-
-    def layout(self, app, full=True):
-        self._raise_no_template_error("layout")
-
-
-class TemplateCallbackWrapper(CallbackWrapper):
-    """
-    Class that stands in place of a decorated function and contains references to
-    a template
-    """
-
-    def __init__(
-            self,
-            template,
-            fn,
-            args_dependencies,
-            output_dependencies,
-            flat_fn=None,
-            flat_output_deps=None,
-            flat_input_deps=None,
-            flat_state_deps=None
-    ):
-        super().__init__(
-            fn, args_dependencies, output_dependencies, flat_fn,
-            flat_output_deps, flat_input_deps, flat_state_deps
-        )
-        self._template = template
-        update_wrapper(self, self.fn)
-
-    @property
-    def template(self):
-        return self._template
-
-    @property
-    def roles(self):
-        return self.template.roles
-
-    def layout(self, app, full=True):
-        """
-        Register callbacks and return layout.
-        """
-        return self.template.layout(app, full=full)
 
 
 def _is_reference_dependency_grouping(val):
@@ -221,15 +166,11 @@ def _add_arg_components_to_template(vals, template):
                 if isinstance(name, str):
                     opts["name"] = name
 
-                template.add_component(
-                        component=dep.component,
-                        value_property=dep.component_property,
-                        role=dep.role,
-                        label=dep.label,
-                        label_id=dep.label_id,
-                        containered=dep.containered,
-                        **opts
-                )
+                template.add_component(component=dep.component,
+                                       component_property=dep.component_property,
+                                       role=dep.role, label=dep.label,
+                                       label_id=dep.label_id,
+                                       containered=dep.containered, **opts)
 
 def _get_arg_input_state_dependencies(all_inputs):
     input_groupings = OrderedDict()
@@ -346,16 +287,10 @@ def _callback(
             prevent_initial_call=prevent_initial_callbacks
         )(callback_fn)
 
-        if template is None:
-            return CallbackWrapper(
-                fn, input_groupings, output_groupings, callback_fn,
-                output_deps, input_deps, state_deps
-            )
-        else:
-            return TemplateCallbackWrapper(
-                template, fn, input_groupings, output_groupings,
-                callback_fn, output_deps, input_deps, state_deps
-            )
+        return CallbackWrapper(
+            fn, all_inputs, all_outputs, callback_fn,
+            output_deps, input_deps, state_deps
+        )
 
     return wrapped
 
