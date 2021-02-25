@@ -18,7 +18,7 @@ def test_dropdown_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Dropdown)
     assert component.id == "test-dropdown"
@@ -35,7 +35,7 @@ def test_slider_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Slider)
     assert component.id == "test-slider"
@@ -54,7 +54,7 @@ def test_slider_builder(test_template):
 
     assert isinstance(component_dep, State)
     assert component_dep.component_property == "value"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert getattr(component, "tooltip", None) is None
 
@@ -64,7 +64,7 @@ def test_input_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Input)
     assert component.id == "test-input"
@@ -85,7 +85,7 @@ def test_checklist_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Checklist)
     assert component.id == "test-checklist"
@@ -101,7 +101,7 @@ def test_button_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "n_clicks"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, html.Button)
     assert component.id == "test-button"
@@ -116,7 +116,7 @@ def test_markdown_builder(test_template):
 
     assert isinstance(component_dep, Output)
     assert component_dep.component_property == "children"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Markdown)
     assert component.id == "test-markdown"
@@ -133,7 +133,7 @@ def test_graph_builder(test_template):
 
     assert isinstance(component_dep, Output)
     assert component_dep.component_property == "figure"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.Graph)
     assert component.figure == figure
@@ -148,7 +148,7 @@ def test_date_picker_single_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "date"
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.DatePickerSingle)
     assert component.date == today.isoformat()
@@ -168,7 +168,7 @@ def test_date_picker_range_builder(test_template):
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == ("start_date", "end_date")
-    component = component_dep.component
+    component = component_dep.component_id
 
     assert isinstance(component, dcc.DatePickerRange)
     assert component.start_date == start_date.isoformat()

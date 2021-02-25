@@ -24,23 +24,23 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
 
     @property
     def id(self):
-        if isinstance(self.component, (str, dict)):
-            return self.component
+        if isinstance(self.component_id, (str, dict)):
+            return self.component_id
         else:
-            return self.component.id
+            return self.component_id.id
 
     @property
     def has_component(self):
-        return isinstance(self.component, Component)
+        return isinstance(self.component_id, Component)
 
     def set_component_and_props(self, component_id, component_property):
         if isinstance(component_id, Component):
             _validate_prop_grouping(component_id, component_property)
-            self.component = component_id
+            self.component_id = component_id
             self.component_property = component_property
 
-            if getattr(self.component, "id", None) is None:
-                self.component.id = build_id()
+            if getattr(self.component_id, "id", None) is None:
+                self.component_id.id = build_id()
         else:
             if not isinstance(component_id, (str, dict)):
                 raise ValueError("Invalid component_id value: {}".format(component_id))
@@ -49,7 +49,7 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
                     "Dependencies that don't reference a component must specify single "
                     "property as a string"
                 )
-            self.component = component_id
+            self.component_id = component_id
             self.component_property = component_property
 
     @property
@@ -75,7 +75,7 @@ class DashExpressDependency:  # pylint: disable=too-few-public-methods
     def property_value(self):
         assert self.has_component
         return map_grouping(
-            lambda p: getattr(self.component, p, None), self.component_property
+            lambda p: getattr(self.component_id, p, None), self.component_property
         )
 
 

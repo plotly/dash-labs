@@ -17,11 +17,11 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class ArgumentComponents:
     arg_component: Component
-    arg_props: Union[str, tuple, dict]
+    arg_property: Union[str, tuple, dict]
     label_component: Component
-    label_props: Union[str, tuple, dict]
+    label_property: Union[str, tuple, dict]
     container_component: Component
-    container_props: Union[str, tuple, dict]
+    container_property: Union[str, tuple, dict]
 
 
 class BaseTemplate:
@@ -71,11 +71,11 @@ class BaseTemplate:
         # container_props = container_cp.props
         return ArgumentComponents(
             arg_component=arg_component,
-            arg_props=arg_props,
+            arg_property=arg_props,
             label_component=label_component,
-            label_props=label_props,
+            label_property=label_props,
             container_component=container_component,
-            container_props=container_props,
+            container_property=container_props,
         )
 
     def add_component(self, component, component_property=None, role="input",
@@ -233,6 +233,17 @@ class BaseTemplate:
         return container, "children"
 
     # Component dependency constructors
+    @classmethod
+    def div(
+            cls, children=None,
+            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            component_property="children", kind=Output, id=None, opts=None
+    ):
+        return kind(
+            html.Div(**filter_kwargs(opts, children=children, id=id)),
+            component_property=component_property, label=label, role=role
+        )
+
     @classmethod
     def markdown(
             cls, children=None,

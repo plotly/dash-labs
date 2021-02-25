@@ -17,16 +17,16 @@ def test_add_single_component_defaults(test_template):
     # Check ParameterComponent properties
     assert arg_comps.arg_component is button
     assert arg_comps.arg_component.id == "button"
-    assert arg_comps.arg_props is None
+    assert arg_comps.arg_property is None
 
     # Check container
     assert arg_comps.container_component.id == "container"
-    assert arg_comps.container_props == "children"
+    assert arg_comps.container_property == "children"
     assert arg_comps.container_component.children is button
 
     # Check label
     assert arg_comps.label_component is None
-    assert arg_comps.label_props is None
+    assert arg_comps.label_property is None
 
     # Check layout generation
     check_layout(test_template)
@@ -48,13 +48,13 @@ def test_add_component_options(test_template):
     # Check ParameterComponent properties
     assert arg_comps1.arg_component is button1
     assert arg_comps1.arg_component.id == "button1"
-    assert arg_comps1.arg_props == "n_clicks"
+    assert arg_comps1.arg_property == "n_clicks"
 
     # Check that container and label are None
     assert arg_comps1.container_component is button1
-    assert arg_comps1.container_props is "n_clicks"
+    assert arg_comps1.container_property is "n_clicks"
     assert arg_comps1.label_component is None
-    assert arg_comps1.label_props is None
+    assert arg_comps1.label_property is None
 
     # With label and name
     button2 = html.Button(id="button2")
@@ -64,13 +64,13 @@ def test_add_component_options(test_template):
         label_id="label"
     )
     assert arg_comps2.arg_component.id == "button2"
-    assert arg_comps2.arg_props == "n_clicks"
+    assert arg_comps2.arg_property == "n_clicks"
     assert arg_comps2.label_component.children == "Button 2"
     assert arg_comps2.label_component.id == "label"
     assert isinstance(arg_comps2.label_component, html.Label)
 
     assert arg_comps2.container_component.id == "container"
-    assert arg_comps2.container_props == "children"
+    assert arg_comps2.container_property == "children"
     assert arg_comps2.container_component.children == [
         arg_comps2.label_component,
         arg_comps2.arg_component,
@@ -80,12 +80,12 @@ def test_add_component_options(test_template):
         button3, component_property="title", label="Button 3", label_id="label"
     )
     assert arg_comps3.arg_component.id == "button3"
-    assert arg_comps3.arg_props == "title"
+    assert arg_comps3.arg_property == "title"
     assert arg_comps3.label_component.children == "Button 3"
     assert arg_comps3.label_component.id == "label"
     assert isinstance(arg_comps3.label_component, html.Label)
     assert arg_comps3.container_component.id == "container"
-    assert arg_comps3.container_props == "children"
+    assert arg_comps3.container_property == "children"
     assert arg_comps3.container_component.children == [
         arg_comps3.label_component,
         arg_comps3.arg_component,

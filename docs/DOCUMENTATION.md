@@ -14,9 +14,7 @@ The Dash Express design centers on enhancements to the `@app.callback` decorator
 
 > it is recommended to import `dash_express` as `dx`, and this is the convention that will be used throughout this document.
  
-As described below, the updated decorator retains all of the functionality of the existing (Dash 1) `@app.callback` decorator, but it also includes the ability to optionally generate components and lay them out according to predefined templates.
-
-This document will start with the Dash 1 feature set, and then progressively describe the extensions provided by Dash Express.  This is intended to be how an experienced Dash 1 user would learn about Dash Express. An alternative introduction should later be developed for new users learning Dash for the first time in the context of Dash Express. 
+This document will start with the Dash 1 feature set, and then progressively describe the extensions provided by Dash Express.  This is how an experienced Dash 1 user might learn about Dash Express. An alternative introduction should later be developed for new users learning Dash for the first time in the context of Dash Express. 
 
 This document is organized into the following chapters:
  - Chapter 1: A more flexible `@app.callback`:
@@ -31,12 +29,14 @@ This document is organized into the following chapters:
  - Chapter 3: Template component constructors
     - Concise convenience functions for building component dependencies to pass to app.callback
 
- - Chapter 4: The Component Plugin design pattern
+ - Chapter 4: More examples
+
+ - Chapter 5: The Component Plugin design pattern
     - Design pattern that can be used to bundle components and behavior into reusable plugins
 
 
 # Chapter 1: A more flexible `@app.callback`
-This chapter covers the core enhancements to `@app.callback` that are introduced by Dash Express
+This chapter covers the core enhancements to `@app.callback` that are introduced by Dash Express.
 
 ## Enabling the Dash Express plugin
 The Dash Express features are enabled by specifying an instance of dx.Plugin when instantiating a Dash app. 
@@ -112,7 +112,7 @@ def callback(b, c, a):
 ```
 
 ## Interchangeable Input and State
-Because it is never ambiguous, Dash Express supports freely mixing `Input` and `State` dependencies objects. This means that `State` dependencies can be included in the `inputs` argument, and `Input` dependencies can be included in the `state` argument.  To simplify things going forward, a new `args` keyword argument has been added that may contain a mix of `Input` and `State` dependencies. The recommended style going forward is to put everything in `args` rather than using both `inputs` and `state.
+Because it is never ambiguous, Dash Express supports freely mixing `Input` and `State` dependencies objects. This means that `State` dependencies can be included in the `inputs` argument, and `Input` dependencies can be included in the `state` argument.  To simplify things going forward, a new `args` keyword argument has been added that may contain a mix of `Input` and `State` dependencies. The recommended style going forward is to put both `Input` and `State` dependencies in `args` rather than using both `inputs` and `state`.
 
 For example:
 
@@ -126,12 +126,12 @@ def callback(b, c, a):
 ```
 
 ## Tuple and Dictionary argument grouping
-The Dash Express `@app.callback` makes it possible to combine multiple `Input`/`State` dependency values to a single function argument. As we'll see in Chapter 4, this opens up powerful component+behavior encapsulation workflows.
+The Dash Express `@app.callback` makes it possible to combine multiple `Input`/`State` dependency values to a single function argument. As we'll see in Chapter 5, this opens up powerful component+behavior encapsulation workflows.
 
-In other contexts, unpacking grouped values like this is sometimes referred to as destructuring
+In other contexts, unpacking grouped values like this is sometimes referred to as destructuring.
 
 ### Tuple grouping
-Dependency values can be grouped in a tuple. Here the `ab` function argument is a tuple consisting of the values of two `Input` dependency values
+Dependency values can be grouped in a tuple. Here the `ab` keyword function argument is a tuple consisting of the values of two `Input` dependency values
 
 ```python
 @app.callback(
@@ -233,7 +233,7 @@ def callback(n_clicks):
 # Include div and button in app.layout below
 ```
 
-When a dependency wraps a component, the property specification in the dependency object can be a single property as a string (as in Dash 1), or it can be a tuple or dictionary grouping of multiple properties of the component.  Here is an example with the `DatePickerRange` component:
+When a dependency wraps a component, the `component_property` specification in the dependency object can be a single property as a string (as in Dash 1), or it can be a tuple or dictionary grouping of multiple properties of the component.  Here is an example with the `DatePickerRange` component:
 
 ```python
 div = html.Div()
@@ -245,10 +245,10 @@ def callback(date_range):
 ```
 
 ## Component id's
-If a component does not have an id when it is wrapped in a dependency, a unique id is created and assigned to the component automatically.
+If a component does not have an id when it is wrapped in a dependency, a unique id is created and assigned to the component automatically. These unique IDs are generated deterministically (no randomly) in order to be consistent across processes.
 
-# Chapter 2: Template system
-Dash Express introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of app.callback.
+# Chapter 2: The template layout system
+Dash Express introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of `@app.callback`.
 
 Templates that are included with Dash Express are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tp`. Components can then be added to the template with `tp.add_component` 
 
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 Templates provide a `.layout(app)` method that will construct a container of components that can be assigned to `app.layout`, or combined with other components to build `app.layout`.  
 
 ## template and app.callback integration
-For convenience, `@app.callback` accepts an optional `template` argument. When provided, `app.callback` will automatically add the provided input and output components to the template. Because of the information that `app.callback` already has access to, it can choose reasonable defaults for the component's role and label.  Because the components will be added to the template, it becomes possible to construct the component inline in the `app.callback` definition (rather than constructing them above and assigning them to local variables).  With these conveniences, the example above becomes:
+For convenience, `@app.callback` accepts an optional `template` argument. When provided, `@app.callback` will automatically add the provided input and output components to the template. Because of the information that `@app.callback` already has access to, it can choose reasonable defaults for the component's role and label.  Because the components will be added to the template, it becomes possible to construct the component inline in the `@app.callback` definition (rather than constructing them above and assigning them to local variables).  With these conveniences, the example above becomes:
 
 [demos/template_system2.py](demos/template_system2.py)
 
@@ -308,6 +308,9 @@ app.layout = tp.layout(app)
 if __name__ == "__main__":
     app.run_server()
 ```
+
+## Component labels
+When a template is populated using `@app.callback`, the label string for a component can be overridden using the `label` keyword argument to `dx.Input`/`dx.State`/`dx.Output`.  See the "Button to click" label added above. 
 
 ## Default output
 When a template is provided, and no output is provided, the template will provide a default output container for the result of the function (usually an `html.Div` component).
@@ -340,14 +343,14 @@ if __name__ == "__main__":
 ### `CallbackWrapper`
 The components added to a template are stored in the `.roles` property.  
 
-This is a dictionary from template "roles" to `OrderedDict`s of `ArgumentComponents` (described below). All templates define at least two roles: `"input"` and `"output"`. By default, all components corresponding to the `@app.callback` `inputs` and `state` arguments are assigned the `"input"` role and therefore are included in the `.roles["input"]` `OrderedDict`. Similarly, all components corresponding to the `@app.callback` `output` argument are assigned the "output" role and therefore are included in the `.roles["output"]` `OrderedDict`.  Templates may define additional roles, and dependency values can be assigned to these roles using the `role` argument (e.g. `dx.Input(..., role="footer")).
+This is a dictionary from template "roles" to `OrderedDict`s of `ArgumentComponents` (described below). All templates define at least two roles: `"input"` and `"output"`. By default, all components corresponding to the `@app.callback` `inputs` and `state` arguments are assigned the `"input"` role and therefore are included in the `.roles["input"]` `OrderedDict`. Similarly, all components corresponding to the `@app.callback` `output` argument are assigned the "output" role and therefore are included in the `.roles["output"]` `OrderedDict`.  Templates may define additional roles, and dependency values can be assigned to these roles using the `role` argument (e.g. `dx.Input(..., role="footer")`).
 
 ### ArgumentComponents
 You might think that the values of the `.roles["inputs"]` and `.roles["output"]` dictionaries described above would simply be the components added to the template.  The reason it's not quite that simple is that for a single component added to a template, the template may create multiple components: There is the original input component, one for the label, and both of these may be wrapped in a container component.  Because the caller may want access to any, or all, of these components individually, references to all of these components, and their associated props, are stored in a `ArgumentComponents` instance.  Here are the attributes of `ArgumentComponents`, and an example of why a caller may want to access them.
 
- - `.arg_component`: This a reference to the innermost component that actually provides the callback function with an input value, which corresponds to the properties stored in `.arg_props` attribute. A caller would want to access this component in order to register additional callback functions to execute when the callback function is updated.
- - `.label_component`: This is the component that displays the label string for the component, where the label text is stored in the `.label_props` property of the component. A caller may want to access this component to customize the label styling, or access the current value of the label string.
- - `.container_component`: This is the outer-most component that contains all the other components described above, where the contained components are stored in the `.container_props` property of the container. This is generally the component that a caller should incorporate when building a custom layout.
+ - `.arg_component`: This a reference to the innermost component that actually provides the callback function with an input value, which corresponds to the properties stored in `.arg_property` attribute. A caller would want to access this component in order to register additional callback functions to execute when the callback function is updated.
+ - `.label_component`: This is the component that displays the label string for the component, where the label text is stored in the `.label_property` property of the component. A caller may want to access this component to customize the label styling, or access the current value of the label string.
+ - `.container_component`: This is the outer-most component that contains all the other components described above, where the contained components are stored in the `.container_property` property of the container. This is generally the component that a caller should incorporate when building a custom layout.
 
 This example uses `@app.callback` to add components to a template, constructs a fully custom layout, and defines custom callbacks on the components returned by `@app.callback`. This is loosely based on the Dash Bootstrap Components example at https://dash-bootstrap-components.opensource.faculty.ai/examples/iris/. 
 
@@ -438,6 +441,8 @@ if __name__ == "__main__":
 
 Additional components can be added to a template after the initial components are added by `@app.callback`.
 
+Note how the `add_component` method supports `before` and `after` keyword arguments that can be used to insert new components at specific locations between components added by `app.callback`.
+
 [demos/template_with_custom_additions.py](demos/template_with_custom_additions.py)
 
 ```python
@@ -499,17 +504,6 @@ if __name__ == "__main__":
 
 ![](https://i.imgur.com/VX6E6kD.png)
 
-## Creating custom templates
-Custom templates can be created by subclassing the `dx.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dx.templates.ddk.BaseDdkTemplate`.
-
-Overriding a template may involve:
- 1. Customizing what component class is meant by "Dropdown", "Graph", etc.
- 2. Specifying the representation of component labels.
- 3. How component and label are group together into a container.
- 4. How the input and output containers created in (3) are combined into a single layout container.
- 5. Providing custom inline CSS which gets inserted into `index.html`.
- 6. Customize input and output compo
-
 # Chapter 3: Template component constructors
 To reduce the amount of boilerplate required to construct the dependency components to pass to `@app.callback`, template classes provide a variety of helper functions. A few examples are `tp.div()`, `tp.button()`, `tp.dropdown()`, etc.  These are relatively simple functions that return a dependency object. For example:
 
@@ -543,7 +537,7 @@ All of these functions provide the following keyword arguments:
 
 In addition to these standard keyword arguments, conponent dependency builders also provide args to make the configuration of the components as concise as possible. e.g. `dx.dropdown(["A", "B", "C])`, `dx.slider(0, 10)`. 
 
-These component dependency builders can significantly shorten many app.callback specifications.
+These component dependency builders can significantly shorten many `@app.callback` specifications.
 
 [demos/basic_decorator.py](./demos/basic_decorator.py)
 
@@ -582,7 +576,7 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/wqeZY0B.png)
 
 ## Component constructor specialization
-Another advantage to the component constructor paradigm is that templates can specialize the representation of the difference components. For example, Dash Bootstrap templates can use `dbc.Select` in place of `dcc.Dropdown` for `tp.dropdown()`. And DDK templates can use `ddk.Graph` in place of `dcc.Graph` for `tp.graph()`.
+Another advantage to the component constructor paradigm is that templates can specialize the representation of the different components. For example, Dash Bootstrap templates can use `dbc.Select` in place of `dcc.Dropdown` for `tp.dropdown()`. And DDK templates can use `ddk.Graph` in place of `dcc.Graph` for `tp.graph()`.
 
 ## Predefined templates
 
@@ -732,11 +726,22 @@ template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
 
 ![](https://i.imgur.com/pcmRf1k.png)
 
+## Creating custom templates
+Custom templates can be created by subclassing the `dx.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dx.templates.ddk.BaseDdkTemplate`.
 
-# Chapter 4: More Examples
+Overriding a template may involve:
+ 1. Customizing the components that are constructed by "tp.dropdown", "tp.graph", etc.
+ 2. Specifying the representation of component labels.
+ 3. How component and label are group together into a container.
+ 4. How the input and output containers created in (3) are combined into a single layout container
+ 5. Providing custom inline CSS which gets inserted into `index.html`.
+ 6. Providing custom roles (in addition to "input" and "output").
 
-## Input components with multiple values
-Some components have multiple properties that could be considered the "value" of the component for the purpose of decorated function. One common example is the `DatePickerRange` component.  For this component, the start date is stored in the `start_date` prop and the end date in the `end_date` prop.  To make it possible to pass both of these values to the function, the `component_properties` argument to `dx.Input` may be a tuple (or dict) of multiple properties.
+# Chapter 4: More examples
+Here are a few more examples of apps that make use of the templates and component dependency builders.
+
+## Input components with multiple valuesk
+Some components have multiple properties that could be considered the "value" of the component for the purpose of decorated  callback function. One common example is the `DatePickerRange` component.  For this component, the start date is stored in the `start_date` prop and the end date in the `end_date` prop.  To make it possible to pass both of these values to the function, the `component_properties` argument to `dx.Input` may be a tuple (or dict) of multiple properties.
 
 In this example, the default value of the `component_properties` argument to `tp.date_picker_range` is the tuple `("start_date", "end_date")`, which results in a tuple of the corresponding component property values being passed to the decorated callback function.
 
@@ -834,7 +839,7 @@ When a template is provided, the new `@app.callback` decorator no longer require
 
 Here is an example that outputs a string to the `children` property of a `dcc.Markdown` component.
 
-Note that the default value of `kind` for `tp.markdown` is `dx.Output`, which is why it's not neccesary to override the `kind` argument. 
+Note that the default value of `kind` for `tp.markdown` is `dx.Output`, which is why it's not necessary to override the `kind` argument. 
 
 [demos/output_markdown.py](./demos/output_markdown.py)
 
@@ -865,13 +870,12 @@ if __name__ == "__main__":
 
 ![](https://i.imgur.com/vLbBF2R.gif)
 
-
 # Chapter 5: The Component Plugin design pattern
 Here is a proposed architecture that can be used to extract component creation and behavior into a separate class.  The `ComponentPlugin` class encapsulates the creation of inputs, output, and building (output value creation) functionality.
 
 ```python
 class ComponentPlugin:
-    def __init__(config, ...):
+    def __init__(self, config, ...):
         pass
 
     @property
@@ -916,9 +920,11 @@ The ability to pass components to `@app.callback` allows plugins to define their
 The tuple/dict grouping feature of `@app.callback` allow plugins to store any number of input and output components and make them look like a single value to the user. e.g. `plugin.inputs` and `plugin_values` above can be dictionaries with any number of keys, but the user can treat them as a single scalar value, so that they can always follow the same usage pattern.
 
 ## Component plugin example: DataTablePlugin
-Here is an example of a fairly sophisticated plugin for displaying a DataTable. This plugin supports DataTable paging, sorting, and filtering, and can be configured to operate in either clientside or serverside configurations.  While the clientside and serverside configuration logic is very different, involving the different callback properties, the user can switch between these modes using a single constructor argument.  
+Here is an example of a fairly sophisticated plugin for displaying a `DataTable`. This plugin supports table paging, sorting, and filtering, and can be configured to operate in either clientside or serverside configurations.  While the clientside and serverside configuration logic is very different, involving the different callback properties, the user can switch between these modes using a single constructor argument.  
 
 The clientside functionality is taken from https://dash.plotly.com/datatable/interactivity, and the serverside functionality is taken from https://dash.plotly.com/datatable/callbacks. 
+
+Here is the full plugin definition (this is what would be defined in a reusable library)
 
 ```python
 import math
@@ -1160,9 +1166,9 @@ def _filter_serverside(df, filter_query):
     return dff
 ```
 
-Here is an example of an app that uses this plugin to create a DataTable that supports serverside paging, sorting, and filtering.
+Here is an example of an app that uses this plugin to create a `DataTable` that supports serverside paging, sorting, and filtering.
 
-Note that the DataFrame that is input to the DataTable is first filtered using a Dropdown on the `sex` colulumn of the dataset. This is an example of how plugins can support integration with the external logic of a callback. 
+Note that the DataFrame that is input to the DataTable is first filtered using a Dropdown on the `sex` column of the dataset. This is an example of how plugins can support integration with the external logic of a callback. 
 
 [demos/datatable_component_plugin.py](./demos/datatable_component_plugin.py)
 
@@ -1257,7 +1263,7 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/12burki.gif)
 
 ## Component plugin example: Image shape drawing
-Here is a ComponentPlugin implementation of the shape drawing app similar to that described in https://dash.plotly.com/annotations.  This plugin displays two graphs, a greyscale image and a histogram of pixel intensities. The image graph is configured to draw a shape on the canvas on drag. The drawing of a shape causes the histogram to be updated to include only the pixels within the shape's.  
+Here is a ComponentPlugin implementation of a shape drawing app similar to that described in https://dash.plotly.com/annotations.  This plugin displays two graphs, a greyscale image and a histogram of pixel intensities. The image graph is configured to draw a shape on the canvas on drag. The drawing of a shape causes the histogram to be updated to include only the pixels within the shape's.  
 
 ```python
 from dash_express import build_id

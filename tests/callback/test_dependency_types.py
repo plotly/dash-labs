@@ -125,7 +125,7 @@ def test_state_kwarg_only(app, test_template):
     # Input
     input_param_components = test_template.roles["input"]
     arg_component = input_param_components["test_input"].arg_component
-    arg_props = input_param_components["test_input"].arg_props
+    arg_props = input_param_components["test_input"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "state")
     assert isinstance(arg_component, dcc.Input)
     assert arg_props == "value"
@@ -134,7 +134,7 @@ def test_state_kwarg_only(app, test_template):
     # Slider
     input_param_components = test_template.roles["input"]
     arg_component = input_param_components["test_slider"].arg_component
-    arg_props = input_param_components["test_slider"].arg_props
+    arg_props = input_param_components["test_slider"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "input")
     assert isinstance(arg_component, dcc.Slider)
     assert arg_props == "value"
@@ -143,7 +143,7 @@ def test_state_kwarg_only(app, test_template):
     # Markdown Output
     output_param_components = test_template.roles["output"]
     arg_component = output_param_components["test_output_markdown"].arg_component
-    arg_props = output_param_components["test_output_markdown"].arg_props
+    arg_props = output_param_components["test_output_markdown"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "output")
     assert isinstance(arg_component, dcc.Markdown)
     assert arg_props == "children"

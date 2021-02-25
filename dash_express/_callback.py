@@ -166,7 +166,7 @@ def _add_arg_components_to_template(vals, template):
                 if isinstance(name, str):
                     opts["name"] = name
 
-                template.add_component(component=dep.component,
+                template.add_component(component=dep.component_id,
                                        component_property=dep.component_property,
                                        role=dep.role, label=dep.label,
                                        label_id=dep.label_id,
