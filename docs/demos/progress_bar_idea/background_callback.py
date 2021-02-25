@@ -7,9 +7,10 @@ from dash.dependencies import Output
 
 
 # User defined
-def background_callback(app, cache, inputs, interval=1000):
+def background_callback(app, cache, args, output=None, interval=1000, template=None):
     progress_id = dx.build_id("progress")
     progress_style = {"width": "100%"}
+
     def wrapper(fn):
         def callback(__n_intervals__, *args, **kwargs):
             result_key = json.dumps({"args": list(args), "kwargs": kwargs})
@@ -36,25 +37,27 @@ def background_callback(app, cache, inputs, interval=1000):
                     result=html.Progress(id=progress_id, style=progress_style),
                     interval_disabled=False
                 )
-        interval_component = dx.arg(
+        interval_component = dx.Input(
             dcc.Interval(interval=interval, id=dx.build_id("interval")),
-            props="n_intervals", label=None,
+            "n_intervals", label=None,
         )
 
         # Add interval component to inputs
-        all_inputs = inputs
-        if isinstance(all_inputs, dict):
-            all_inputs = dict(all_inputs, __n_intervals__=interval_component)
+        all_args = args
+        if isinstance(all_args, dict):
+            all_args = dict(all_args, __n_intervals__=interval_component)
         else:
-            if not isinstance(all_inputs, (list, tuple)):
-                all_inputs = [all_inputs]
-            all_inputs = [interval_component] + all_inputs
+            if not isinstance(all_args, (list, tuple)):
+                all_args = [all_args]
+            all_args = [interval_component] + all_args
 
         all_output = dict(
-            result=dx.arg(html.Div(), props="children"),
+            result=dx.Output(html.Div(), "children"),
             interval_disabled=Output(interval_component.id, "disabled")
         )
-        return app.callback(inputs=all_inputs, output=all_output)(callback)
+        return app.callback(
+            args=all_args, output=all_output, template=template
+        )(callback)
 
     return wrapper
 
