@@ -4,7 +4,7 @@ from dash.dependencies import (
 from dash.development.base_component import Component
 
 from dash_express import build_id
-from grouping import make_grouping_by_position, flatten_grouping, map_grouping
+from dash_express.grouping import make_grouping_by_position, flatten_grouping, map_grouping
 
 
 class DashExpressDependency:  # pylint: disable=too-few-public-methods
