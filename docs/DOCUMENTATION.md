@@ -1,8 +1,8 @@
 # Overview
-Dash Express is a project to significantly expand the capabilities of the Dash `@app.callback` decorator. This project is beginning its life as a separate package that depends on Dash, but the goal is that the successful ideas from this project will migrate into future versions of Dash itself.
+Dash Labs is a project to significantly expand the capabilities of Dash. This project is beginning its life as a separate package that depends on Dash, but the goal is that the successful ideas from this project will migrate into future versions of Dash itself.
 
 ## Design Goals
-Dash Express began with several interdependent design goals:
+Dash Labs began with several interdependent design goals:
  - Provide a more concise syntax for generating simple Dash apps that follow a variety of nice looking predefined templates.
  - Make it possible for third-party developers to develop and distribute custom templates
  - Ensure that there is a smooth continuum between concision, and the flexibility of "full Dash". The concise syntax should not be a dead-end, requiring the developer to rewrite the app in order to reach a certain level of sophistication.
@@ -10,11 +10,11 @@ Dash Express began with several interdependent design goals:
 
 
 # Design
-The Dash Express design centers on enhancements to the `@app.callback` decorator, enabled through the application of the `dl.Plugin()` Dash plugin.
+The Dash Labs design centers on enhancements to the `@app.callback` decorator, enabled through the application of the `dl.Plugin()` Dash plugin.
 
 > it is recommended to import `dash_express` as `dx`, and this is the convention that will be used throughout this document.
  
-This document will start with the Dash 1 feature set, and then progressively describe the extensions provided by Dash Express.  This is how an experienced Dash 1 user might learn about Dash Express. An alternative introduction should later be developed for new users learning Dash for the first time in the context of Dash Express. 
+This document will start with the Dash 1 feature set, and then progressively describe the extensions provided by Dash Labs.  This is how an experienced Dash 1 user might learn about Dash Labs. An alternative introduction should later be developed for new users learning Dash for the first time in the context of Dash Labs. 
 
 This document is organized into the following chapters:
  - Chapter 1: A more flexible `@app.callback`:
@@ -36,10 +36,10 @@ This document is organized into the following chapters:
 
 
 # Chapter 1: A more flexible `@app.callback`
-This chapter covers the core enhancements to `@app.callback` that are introduced by Dash Express.
+This chapter covers the core enhancements to `@app.callback` that are introduced by Dash Labs.
 
-## Enabling the Dash Express plugin
-The Dash Express features are enabled by specifying an instance of dx.Plugin when instantiating a Dash app.
+## Enabling the Dash Labs plugin
+The Dash Labs features are enabled by specifying an instance of dx.Plugin when instantiating a Dash app.
 
 ```python
 import dash
@@ -84,7 +84,7 @@ def callback(a, b, c):
 ```
 
 ### Keyword arguments
-In Dash Express, callback functions can register to be called with named keyword arguments.  This is done by passing dictionaries to the `inputs` and `state` arguments of `@app.callback`. In this case, the order of the callback's function arguments doesn't matter. All that matters is that the keys of the dependency dictionary match the function argument names.
+In Dash Labs, callback functions can register to be called with named keyword arguments.  This is done by passing dictionaries to the `inputs` and `state` arguments of `@app.callback`. In this case, the order of the callback's function arguments doesn't matter. All that matters is that the keys of the dependency dictionary match the function argument names.
 
 Here is an example of using keyword input and state arguments:
 
@@ -113,7 +113,7 @@ def callback(b, c, a):
 ```
 
 ## Interchangeable Input and State
-Because it is never ambiguous, Dash Express supports freely mixing `Input` and `State` dependencies objects. This means that `State` dependencies can be included in the `inputs` argument, and `Input` dependencies can be included in the `state` argument.  To simplify things going forward, a new `args` keyword argument has been added that may contain a mix of `Input` and `State` dependencies. The recommended style going forward is to put both `Input` and `State` dependencies in `args` rather than using both `inputs` and `state`.
+Because it is never ambiguous, Dash Labs supports freely mixing `Input` and `State` dependencies objects. This means that `State` dependencies can be included in the `inputs` argument, and `Input` dependencies can be included in the `state` argument.  To simplify things going forward, a new `args` keyword argument has been added that may contain a mix of `Input` and `State` dependencies. The recommended style going forward is to put both `Input` and `State` dependencies in `args` rather than using both `inputs` and `state`.
 
 For example:
 
@@ -127,7 +127,7 @@ def callback(b, c, a):
 ```
 
 ## Tuple and Dictionary argument grouping
-The Dash Express `@app.callback` makes it possible to combine multiple `Input`/`State` dependency values to a single function argument. As we'll see in Chapter 5, this opens up powerful component+behavior encapsulation workflows.
+The Dash Labs `@app.callback` makes it possible to combine multiple `Input`/`State` dependency values to a single function argument. As we'll see in Chapter 5, this opens up powerful component+behavior encapsulation workflows.
 
 In other contexts, unpacking grouped values like this is sometimes referred to as destructuring.
 
@@ -221,7 +221,7 @@ def param_fn(a, b, c):
 ```
 
 ## Support for passing components in place of id's
-dash-labs makes it possible to include a component instance in place of a component id in the `Input`, `State`, and `Output` dependency objects.  This feature is currently provided by the special `dx.Input`, `dx.State`, `dx.Output` classes. Dash Express apps should use these classes in place of the Dash 1 `dash.dependency.Input`, `State`, and `Output` classes.  
+dash-labs makes it possible to include a component instance in place of a component id in the `Input`, `State`, and `Output` dependency objects.  This feature is currently provided by the special `dx.Input`, `dx.State`, `dx.Output` classes. Dash Labs apps should use these classes in place of the Dash 1 `dash.dependency.Input`, `State`, and `Output` classes.  
 
 ```python
 div = html.Div()
@@ -249,9 +249,9 @@ def callback(date_range):
 If a component does not have an id when it is wrapped in a dependency, a unique id is created and assigned to the component automatically. These unique IDs are generated deterministically (no randomly) in order to be consistent across processes.
 
 # Chapter 2: The template layout system
-Dash Express introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of `@app.callback`.
+Dash Labs introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of `@app.callback`.
 
-Templates that are included with Dash Express are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tpl`. Components can then be added to the template with `tpl.add_component` 
+Templates that are included with Dash Labs are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tpl`. Components can then be added to the template with `tpl.add_component` 
 
 [demos/template_system1.py](demos/template_system1.py)
 
@@ -462,7 +462,7 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-template = dx.templates.DbcSidebar(title="Dash Express App")
+template = dx.templates.DbcSidebar(title="Dash Labs App")
 
 
 # import dash_core_components as dcc
@@ -645,7 +645,7 @@ template = dx.templates.FlatDiv()
 The `DccCard` template has no external dependencies and uses some basic inline CSS to place the input and output in a card with a title on top.  It currently puts very little effort into making the result look nice (although this could change).
 
 ```python=
-template = dx.templates.DccCard(title="Dash Express App", width="500px")
+template = dx.templates.DccCard(title="Dash Labs App", width="500px")
 ```
 
 ![](https://i.imgur.com/387ygkJ.png)
@@ -655,7 +655,7 @@ template = dx.templates.DccCard(title="Dash Express App", width="500px")
 The `DbcCard` template introduces a dependency on the open source Dash Bootstrap Components library (https://dash-bootstrap-components.opensource.faculty.ai/).  It places all contents in a single bootstrap card, with a card title.
 
 ```python=
-template = dx.templates.DbcCard(title="Dash Express App", columns=6)
+template = dx.templates.DbcCard(title="Dash Labs App", columns=6)
 ```
 
 ![](https://i.imgur.com/q6k008w.png)
@@ -665,7 +665,7 @@ template = dx.templates.DbcCard(title="Dash Express App", columns=6)
 The `DbcRow` template places the inputs and outputs in separate cards and then arranges them in a Bootstrap row. This template is a great choice when integrating the components generated by `@app.callback` into a larger app made with Dash Bootstrap Components.
 
 ```python=
-template = dx.templates.DbcRow(title="Dash Express App")
+template = dx.templates.DbcRow(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/sLaDDdS.png)
@@ -675,7 +675,7 @@ template = dx.templates.DbcRow(title="Dash Express App")
 The `DbcSidebar` template creates an app title bar and then includes the inputs in a sidebar on the left of the app, and the outputs in a card in the main app area.  This template is a great choice when using `@app.callback` to build an entire app.
 
 ```python=
-template = dx.templates.DbcSidebar(title="Dash Express App")
+template = dx.templates.DbcSidebar(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/wqeZY0B.png)
@@ -685,7 +685,7 @@ template = dx.templates.DbcSidebar(title="Dash Express App")
 The `DdkCard` template introduces a dependency on the proprietary Dash Design Kit library that is included with Dash Enterprise.  Like `DbcCard`, in places all the outputs and inputs in a single card, along with a card title.
 
 ```python=
-template = dx.templates.DdkCard(title="Dash Express App", width=50)
+template = dx.templates.DdkCard(title="Dash Labs App", width=50)
 ```
 
 ![](https://i.imgur.com/kmX6fuP.png)
@@ -696,7 +696,7 @@ Like the `DbcRow` template, `DdkRow` places the input and output components in s
 
 
 ```python=
-template = dx.templates.DdkRow(title="Dash Express App")
+template = dx.templates.DdkRow(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/s29txGA.png)
@@ -706,7 +706,7 @@ template = dx.templates.DdkRow(title="Dash Express App")
 The `DdkSidebar` template creates a full app experience with an app header, a sidebar for the input controls, and a large main area for the output components.
 
 ```python=
-template = dx.templates.DdkSidebar(title="Dash Express App")
+template = dx.templates.DdkSidebar(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/db8a8eo.png)
@@ -717,7 +717,7 @@ All of the `Dbc*` components can be themed using the Bootstrap themeing system. 
 
 ```python=
 template = dx.templates.DbcSidebar(
-    title="Dash Express App", 
+    title="Dash Labs App", 
     theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css"
 )
 ```
@@ -732,7 +732,7 @@ Theme in [demos/ddk_theme.py](./demos/ddk_theme.py)
 
 ```python=
 from my_theme import theme
-template = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
+template = dx.templates.DdkSidebar(title="Dash Labs App", theme=theme)
 ```
 
 ![](https://i.imgur.com/pcmRf1k.png)

@@ -7,21 +7,21 @@ import plotly.express as px
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 tpl = dl.templates.FlatDiv()
-# tpl = dl.templates.DccCard(title="Dash Express App", width="500px")
-# tpl = dl.templates.DbcCard(title="Dash Express App", columns=6)
-# tpl = dl.templates.DbcRow(title="Dash Express App")
-# tpl = dl.templates.DbcSidebar(title="Dash Express App")
-# tpl = dl.templates.DdkCard(title="Dash Express App", width=50)
-# tpl = dl.templates.DdkRow(title="Dash Express App")
-# tpl = dl.templates.DdkSidebar(title="Dash Express App")
+# tpl = dl.templates.DccCard(title="Dash Labs App", width="500px")
+# tpl = dl.templates.DbcCard(title="Dash Labs App", columns=6)
+# tpl = dl.templates.DbcRow(title="Dash Labs App")
+# tpl = dl.templates.DbcSidebar(title="Dash Labs App")
+# tpl = dl.templates.DdkCard(title="Dash Labs App", width=50)
+# tpl = dl.templates.DdkRow(title="Dash Labs App")
+# tpl = dl.templates.DdkSidebar(title="Dash Labs App")
 
 # tpl = dx.templates.DbcSidebar(
-#     title="Dash Express App",
+#     title="Dash Labs App",
 #     theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css"
 # )
 
 # from my_theme import theme
-# tpl = dx.templates.DdkSidebar(title="Dash Express App", theme=theme)
+# tpl = dx.templates.DdkSidebar(title="Dash Labs App", theme=theme)
 
 
 @app.callback(

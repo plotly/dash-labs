@@ -1,8 +1,8 @@
-## Dash Express tech preview
-This repository contains a work-in-progress technical preview of Dash Express. Dash Express is a project to significantly expand the capabilities of the Dash callback decorator. This project is beginning it's life as a separate package that depends on Dash, but the goal is that the successful ideas from this project will migrate into Dash as part of Dash 2.0.
+## Dash Labs tech preview
+This repository contains a work-in-progress technical preview of potential future Dash features.
 
 ## Documentation
-The documentation for Dash Express can be found in [DOCUMENTATION.md](./docs/DOCUMENTATION.md).
+The documentation for Dash Labs can be found in [DOCUMENTATION.md](./docs/DOCUMENTATION.md).
 
 Demos are located in the [docs/demos](./docs/demos) directory.
 
@@ -10,9 +10,7 @@ Demos are located in the [docs/demos](./docs/demos) directory.
 To install the tech preview, first clone this repository
 
 ```
-$ git clone https://github.com/plotly/dash_express.git
-$ cd dash_express
+$ git clone git@github.com:plotly/dash-labs.git
+$ cd dash-labs
 $ pip install -e .
 ```
-
-
