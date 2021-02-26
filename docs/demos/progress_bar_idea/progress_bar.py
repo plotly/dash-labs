@@ -10,7 +10,7 @@ app = dash.Dash(__name__, plugins=[dx.Plugin()])
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem', 'CACHE_DIR': './cache'
 })
-tp = dx.templates.FlatDiv()
+tpl = dx.templates.FlatDiv()
 
 iris = px.data.iris()
 features = ["sepal_length",  "sepal_width",  "petal_length",  "petal_width"]
@@ -24,8 +24,8 @@ features = ["sepal_length",  "sepal_width",  "petal_length",  "petal_width"]
             clearable=False,
         ), label="Iris Feature"
     )],
-    output=tp.graph(),
-    template=tp,
+    output=tpl.graph(),
+    template=tpl,
 )
 def background_callback(set_progress, feature):
     print("start calculation")
@@ -39,7 +39,7 @@ def background_callback(set_progress, feature):
     ).update_layout(title_text=f"Histogram of {feature}"))
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 
 if __name__ == "__main__":

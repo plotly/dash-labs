@@ -5,20 +5,20 @@ from skimage import data
 img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar(title="Image Intensity Explorer")
-img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tp)
+tpl = dx.templates.DbcSidebar(title="Image Intensity Explorer")
+img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
 
 
 @app.callback(
     args=img_plugin.args,
     output=img_plugin.output,
-    template=tp
+    template=tpl
 )
 def callback(plugin_inputs):
     return img_plugin.build(plugin_inputs)
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 
 if __name__ == "__main__":

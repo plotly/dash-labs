@@ -18,7 +18,7 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar(title="Iris Dataset")
+tpl = dx.templates.DbcSidebar(title="Iris Dataset")
 
 # Use parameterize to create components
 @app.callback(
@@ -26,7 +26,7 @@ tp = dx.templates.DbcSidebar(title="Iris Dataset")
         x=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
         y=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
     ),
-    template=tp
+    template=tpl
 )
 def iris(x, y):
     return dcc.Graph(
@@ -37,8 +37,8 @@ def iris(x, y):
 # from setting x and y to the same variable
 
 # Get the dropdown components that were created by parameterize
-x_component = tp.roles["input"]["x"].arg_component
-y_component = tp.roles["input"]["y"].arg_component
+x_component = tpl.roles["input"]["x"].arg_component
+y_component = tpl.roles["input"]["y"].arg_component
 
 
 # Define standalone function that computes what values to enable, reuse for both
@@ -58,9 +58,9 @@ app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")]
     filter_options
 )
 
-x_container = tp.roles["input"]["x"].container_component
-y_container = tp.roles["input"]["y"].container_component
-output_component = tp.roles["output"][0].container_component
+x_container = tpl.roles["input"]["x"].container_component
+y_container = tpl.roles["input"]["y"].container_component
+output_component = tpl.roles["output"][0].container_component
 
 app.layout = html.Div([
     html.H1("Iris Feature Explorer"),

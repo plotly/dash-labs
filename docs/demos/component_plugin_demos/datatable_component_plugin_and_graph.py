@@ -6,22 +6,22 @@ import pandas as pd
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Table Component Plugin")
+tpl = dx.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
 table_plugin = dx.component_plugins.DataTablePlugin(
-    df=df, page_size=10, template=tp, sort_mode="single", filterable=True,
+    df=df, page_size=10, template=tpl, sort_mode="single", filterable=True,
     serverside=serverside
 )
 
 @app.callback(
     args=[
-        tp.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
+        tpl.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
         table_plugin.args
     ],
-    output=[table_plugin.output, tp.graph()],
-    template=tp,
+    output=[table_plugin.output, tpl.graph()],
+    template=tpl,
 )
 def callback(gender, table_input):
     if gender:
@@ -37,7 +37,7 @@ def callback(gender, table_input):
 
     return [table_plugin.build(table_input, dff, preprocessed=True), fig]
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

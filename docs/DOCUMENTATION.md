@@ -250,7 +250,7 @@ If a component does not have an id when it is wrapped in a dependency, a unique 
 # Chapter 2: The template layout system
 Dash Express introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of `@app.callback`.
 
-Templates that are included with Dash Express are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tp`. Components can then be added to the template with `tp.add_component` 
+Templates that are included with Dash Express are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tpl`. Components can then be added to the template with `tpl.add_component` 
 
 [demos/template_system1.py](demos/template_system1.py)
 
@@ -260,7 +260,7 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Simple App", columns=6)
+tpl = dx.templates.DbcCard(title="Simple App", columns=6)
 
 div = html.Div()
 button = html.Button(children="Click Me")
@@ -269,10 +269,10 @@ button = html.Button(children="Click Me")
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-tp.add_component(button, label="Button to click", role="input")
-tp.add_component(div, role="output")
+tpl.add_component(button, label="Button to click", role="input")
+tpl.add_component(div, role="output")
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
     app.run_server()
@@ -293,17 +293,17 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Simple App", columns=6)
+tpl = dx.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
    dx.Output(html.Div(), "children"),
    dx.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tp
+   template=tpl
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
     app.run_server()
@@ -323,16 +323,16 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Simple App", columns=6)
+tpl = dx.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
    dx.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tp
+   template=tpl
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
     app.run_server()
@@ -377,7 +377,7 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar(title="Iris Dataset")
+tpl = dx.templates.DbcSidebar(title="Iris Dataset")
 
 # Use parameterize to create components
 @app.callback(

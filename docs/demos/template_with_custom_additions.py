@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar(title="Dash Express App")
+tpl = dx.templates.DbcSidebar(title="Dash Express App")
 
 # import dash_core_components as dcc
 @app.callback(
@@ -18,7 +18,7 @@ tp = dx.templates.DbcSidebar(title="Dash Express App")
         phase=dx.Input(dcc.Slider(min=1, max=10, value=3), label="Phase"),
         amplitude=dx.Input(dcc.Slider(min=1, max=10, value=4), label="Amplitude")
     ),
-    template=tp,
+    template=tpl,
 )
 def function_browser(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
@@ -28,27 +28,27 @@ def function_browser(fun, figure_title, phase, amplitude):
 
 
 # Add extra component to template
-tp.add_component(
+tpl.add_component(
     dcc.Markdown(children="# First Group"), role="input", before="fun"
 )
 
-tp.add_component(dcc.Markdown(children=[
+tpl.add_component(dcc.Markdown(children=[
     "# Second Group\n"
     "Specify the Phase and Amplitudue for the chosen function"
 ]), role="input", before="phase")
 
 
-tp.add_component(dcc.Markdown(children=[
+tpl.add_component(dcc.Markdown(children=[
     "# H2 Title\n",
     "Here is the *main* plot"
 ]), role="output", before=0)
 
-tp.add_component(
+tpl.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
     component_property="children", role="output"
 )
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
