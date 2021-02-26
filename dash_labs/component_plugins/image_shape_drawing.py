@@ -1,4 +1,4 @@
-from dash_labs import build_id
+from dash_labs import build_id, templates
 from dash_labs.dependency import Output, Input
 from .base import ComponentPlugin
 import plotly.express as px
@@ -6,14 +6,18 @@ import plotly.graph_objects as go
 import dash
 
 
-class GreyscaleImageHistogramROI(ComponentPlugin):
+class GreyscaleImageROI(ComponentPlugin):
     """
     Support dynamic labels and checkbox to disable input component
     """
     def __init__(
-            self, img, template, image_label=None, histogram_label=None, newshape=None
+            self, img, template=None, image_label=None, newshape=None, title=None,
+            fig_update_callback=None,
     ):
         self.img = img
+
+        if template is None:
+            template = templates.FlatDiv()
 
         if newshape is None:
             newshape = dict(
@@ -21,32 +25,33 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
             )
 
         self.newshape = newshape
+        self.fig_update_callback=fig_update_callback
+
+        top_margin = 60 if title is not None else 20
 
         self.image_fig = px.imshow(
             img, binary_string=True
         ).update_layout(
             dragmode="drawrect",
-            margin=dict(l=20, b=20, r=20, t=20),
-            newshape=self.newshape
+            margin=dict(l=20, b=20, r=20, t=top_margin),
+            newshape=self.newshape,
+            title_text=title,
         )
 
         self.image_graph_id = build_id("image-graph")
         self.histogram_graph_id = build_id("histogram-graph")
         self.template = template
         self.image_label = image_label
-        self.histogram_label = histogram_label
 
-    def _make_histrogram(self, x0, y0, x1, y1):
-        if not all((x0, y0, x1, y1)):
-            return {}
+        # Initialize args component dependencies
+        self._args = self.template.graph_output(
+            self.image_fig, component_property="relayoutData", kind=Input, role="input",
+            id=self.image_graph_id, label=self.image_label
+        )
 
-        roi_image = self.img[int(y0):int(y1), int(x0):int(x1)]
-
-        return px.histogram(
-            roi_image.ravel()
-        ).update_layout(
-            title_text="Intensity", showlegend=False
-        ).update_xaxes(range=[0, 255])
+        self._output = {
+            "image_figure": Output(self.image_graph_id, "figure")
+        }
 
     def _make_rect(self, x0, y0, x1, y1):
         if all(( x0, y0, x1, y1)):
@@ -87,41 +92,50 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
 
         return x0, y0, x1, y1
 
-    @property
-    def args(self):
-        return self.template.graph_output(
-            self.image_fig, kind=Input, component_property="relayoutData",
-            id=self.image_graph_id, label=self.image_label
-        )
-
-    @property
-    def output(self):
-        return {
-            "histogram_figure":
-                self.template.graph_output(
-                    id=self.histogram_graph_id, label=self.histogram_label
-                ),
-            "image_figure": Output(self.image_graph_id, "figure")
-        }
-
-    def build(self, inputs_value):
+    def get_output_values(self, inputs_value, title=None):
         relayout_data = inputs_value
         if relayout_data:
             # shape coordinates are floats, we need to convert to ints for slicing
             x0, y0, x1, y1 = self._extract_pixel_bounds_from_shape(relayout_data)
             shapes = self._make_rect(x0, y0, x1, y1)
 
+            top_margin = 60 if title is not None else 20
+
             new_image_fig = go.Figure(
                 self.image_fig
             )
-            new_image_fig.update_layout(shapes=shapes)
+            new_image_fig.update_layout(
+                shapes=shapes, margin_t=top_margin,
+            )
+
+            if title is not None:
+                new_image_fig.update_layout(title_text=title)
 
             return {
-                "histogram_figure": self._make_histrogram(x0, y0, x1, y1),
                 "image_figure": new_image_fig,
             }
         else:
             return {
-                "histogram_figure": dash.no_update,
                 "image_figure": dash.no_update,
             }
+
+    def get_rect_bounds(self, inputs_value, integer=True):
+        relayout_data = inputs_value
+        if relayout_data:
+            bounds = self._extract_pixel_bounds_from_shape(relayout_data)
+            if integer:
+                bounds = tuple([int(b) if b is not None else None for b in bounds])
+            return bounds
+        else:
+            return None
+
+    def get_image_slice(self, inputs_value):
+        relayout_data = inputs_value
+        if relayout_data:
+            x0, y0, x1, y1 = self._extract_pixel_bounds_from_shape(relayout_data)
+            if all(b is not None for b in [x0, y0, x1, y1]):
+                return self.img[int(y0):int(y1), int(x0):int(x1)]
+            else:
+                return None
+        else:
+            return None

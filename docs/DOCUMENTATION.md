@@ -915,20 +915,25 @@ To make use of a `ComponentPlugin` subclass as a part of a callback, users would
 
 plugin = FancyPlugin(**plugin_config)
 
+
 @app.callback(
-    inputs={
-        input1=...,
-        input2=...,
-        plugin_values=plugin.inputs
-    },
-    outputs=[output1, plugin.output],
-    template=tpl,
+   inputs={
+      input1
+
+=...,
+ input2 = ...,
+          plugin_values = plugin.inputs
+},
+outputs = [output1, plugin.output],
+          template = tpl,
 )
+
 def hello_plugin(input1, input2, plugin_values):
-    # Do stuff with input1 and inputs2 to build result1 and, optionally,
-    # build_config
-    return result, plugin.build(plugin_values, **build_config)
-    
+   # Do stuff with input1 and inputs2 to build result1 and, optionally,
+   # build_config
+   return result, plugin.get_output_values(plugin_values, **build_config)
+
+
 ...
 ```
 
@@ -940,250 +945,6 @@ The tuple/dict grouping feature of `@app.callback` allow plugins to store any nu
 Here is an example of a fairly sophisticated plugin for displaying a `DataTable`. This plugin supports table paging, sorting, and filtering, and can be configured to operate in either clientside or serverside configurations.  While the clientside and serverside configuration logic is very different, involving the different callback properties, the user can switch between these modes using a single constructor argument.  
 
 The clientside functionality is taken from https://dash.plotly.com/datatable/interactivity, and the serverside functionality is taken from https://dash.plotly.com/datatable/callbacks. 
-
-Here is the full plugin definition (this is what would be defined in a reusable library)
-
-```python
-import math
-
-from dash_labs.dependency import Output, Input
-from dash_labs.util import build_id, filter_kwargs
-from dash_labs.component_plugins.base import ComponentPlugin
-from dash_labs.templates import FlatDiv
-import pandas as pd
-from dash_table import DataTable
-
-
-class DataTablePlugin(ComponentPlugin):
-   def __init__(
-           self, df, columns=None, page_size=5, sort_mode=None, filterable=False,
-           serverside=False, template=None
-   ):
-      if template is None:
-         template = FlatDiv()
-
-      if columns is None:
-         columns = list(df.columns)
-
-      self.page_size = page_size
-      self.sort_mode = sort_mode
-      self.filterable = filterable
-
-      self.serverside = serverside
-      self.page_count = self._compute_page_count(df)
-
-      if self.serverside:
-         self.full_df = df
-         self.df = self._compute_serverside_dataframe_slice(df)
-      else:
-         self.full_df = df
-         self.df = df
-
-      self.data, self.columns = self.convert_data_columns(self.df, columns)
-
-      self.template = template
-      self.datatable_id = build_id()
-
-      self._output = template._datatable_class()(
-         id=self.datatable_id,
-      )
-
-   def _compute_serverside_dataframe_slice(self, full_df, page_current=None):
-      if page_current is None:
-         page_current = 0
-
-      start_ind = page_current * self.page_size
-      end_ind = start_ind + self.page_size
-      return full_df.iloc[start_ind:end_ind]
-
-   def _compute_page_count(self, full_df):
-      return math.ceil(len(full_df) / self.page_size)
-
-   def convert_data_columns(self, df, columns=None):
-      # Handle DataFrame input
-      if isinstance(df, pd.DataFrame):
-         if columns is None:
-            columns = df.columns.tolist()
-         df = df.to_dict("records")
-
-      # Handle columns as list
-      if isinstance(columns, list) and columns and not isinstance(columns[0], dict):
-         columns = [{"name": col, "id": col} for col in columns]
-
-      return df, columns
-
-   # Serverside helpers
-   def _build_serverside_input(self):
-      return {
-         "page_current": Input(self.datatable_id, "page_current"),
-         "sort_by": Input(self.datatable_id, "sort_by"),
-         "filter_query": Input(self.datatable_id, "filter_query"),
-      }
-
-   def _build_serverside_output(self):
-      data, columns = self.convert_data_columns(self.df, self.columns)
-      result = Output(DataTable(
-         data=data, columns=columns, id=self.datatable_id,
-         page_current=0,
-         page_size=self.page_size,
-         page_action="custom",
-         page_count=self._compute_page_count(self.full_df),
-         **filter_kwargs(
-            sort_action=None if self.sort_mode is None else "custom",
-            sort_mode=self.sort_mode,
-            filter_action="custom" if self.filterable else None,
-            filter_query="" if self.filterable else None,
-         )
-      ), component_property=dict(
-         data="data", columns="columns", page_count="page_count",
-      ))
-      return result
-
-   def _build_serverside_result(self, inputs_value, df, preprocessed=False):
-      page_current = inputs_value["page_current"]
-
-      if not preprocessed:
-         df = self.get_processed_dataframe(inputs_value, df)
-
-      df_slice = self._compute_serverside_dataframe_slice(
-         df, page_current=page_current
-      )
-
-      data, columns = self.convert_data_columns(df_slice)
-      page_count = self._compute_page_count(df)
-      return dict(data=data, columns=columns, page_count=page_count)
-
-   # Clientside helpers
-   def _build_clientside_input(self):
-      return ()
-
-   def _build_clientside_output(self):
-      data, columns = self.convert_data_columns(self.df, self.columns)
-      return Output(DataTable(
-         data=data, columns=columns, id=self.datatable_id,
-         page_size=self.page_size,
-         **filter_kwargs(
-            sort_action=None if self.sort_mode is None else "native",
-            sort_mode=self.sort_mode,
-            filter_action="native" if self.filterable else None
-         )
-      ), component_property=dict(
-         data="data", columns="columns"
-      ))
-
-   def _build_clientside_result(self, df):
-      if df is not None:
-         data, columns = self.convert_data_columns(df)
-      else:
-         data, columns = self.data, self.columns
-
-      return dict(data=data, columns=columns)
-
-   @property
-   def args(self):
-      if self.serverside:
-         return self._build_serverside_input()
-      else:
-         return self._build_clientside_input()
-
-   @property
-   def output(self):
-      if self.serverside:
-         return self._build_serverside_output()
-      else:
-         return self._build_clientside_output()
-
-   def build(self, inputs_value, df=None, preprocessed=False):
-      """
-
-      :param inputs_value:
-      :param df:
-      :param preprocessed: Set to true if df was produced by get_processed_dataframe
-      :return:
-      """
-      if self.serverside:
-         return self._build_serverside_result(
-            inputs_value, df, preprocessed=preprocessed
-         )
-      else:
-         return self._build_clientside_result(df)
-
-   def get_processed_dataframe(self, inputs_value, df):
-      sort_by = inputs_value["sort_by"]
-      # Get active dataframe
-      if df is None:
-         df = self.df
-      # Perform filtering
-      print("update serverside")
-      if self.filterable and "filter_query" in inputs_value:
-         filter_query = inputs_value["filter_query"]
-         print(filter_query)
-         df = _filter_serverside(df, filter_query)
-      # Perform sorting
-      if sort_by and len(sort_by):
-         df = df.sort_values(
-            [col['column_id'] for col in sort_by],
-            ascending=[
-               col['direction'] == 'asc'
-               for col in sort_by
-            ],
-         )
-      return df
-
-
-operators = [['ge ', '>='],
-             ['le ', '<='],
-             ['lt ', '<'],
-             ['gt ', '>'],
-             ['ne ', '!='],
-             ['eq ', '='],
-             ['contains '],
-             ['datestartswith ']]
-
-
-def _split_filter_part(filter_part):
-   for operator_type in operators:
-      for operator in operator_type:
-         if operator in filter_part:
-            name_part, value_part = filter_part.split(operator, 1)
-            name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
-
-            value_part = value_part.strip()
-            v0 = value_part[0]
-            if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
-               value = value_part[1: -1].replace('\\' + v0, v0)
-            else:
-               try:
-                  value = float(value_part)
-               except ValueError:
-                  value = value_part
-
-            # word operators need spaces after them in the filter string,
-            # but we don't want these later
-            return name, operator_type[0].strip(), value
-
-   return [None] * 3
-
-
-def _filter_serverside(df, filter_query):
-   filtering_expressions = filter_query.split(' && ')
-   dff = df
-
-   for filter_part in filtering_expressions:
-      col_name, operator, filter_value = _split_filter_part(filter_part)
-
-      if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
-         # these operators match pandas series operator method names
-         dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
-      elif operator == 'contains':
-         dff = dff.loc[dff[col_name].str.contains(filter_value)]
-      elif operator == 'datestartswith':
-         # this is a simplification of the front-end filtering logic,
-         # only works with complete fields in standard format
-         dff = dff.loc[dff[col_name].str.startswith(filter_value)]
-
-   return dff
-```
 
 Here is an example of an app that uses this plugin to create a `DataTable` that supports serverside paging, sorting, and filtering.
 
@@ -1222,7 +983,7 @@ def callback(gender, plugin_input):
       filtered_df = df.query(f"sex == {repr(gender)}")
    else:
       filtered_df = df
-   return table_plugin.build(plugin_input, filtered_df)
+   return table_plugin.get_output_values(plugin_input, filtered_df)
 
 
 app.layout = tpl.layout(app)
@@ -1275,7 +1036,7 @@ def callback(gender, table_input):
       color_discrete_map={"Male": "green", "Female": "orange"},
    )
 
-   return [table_plugin.build(table_input, dff, preprocessed=True), fig]
+   return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
 
 
 app.layout = tpl.layout(app)
@@ -1288,137 +1049,6 @@ if __name__ == "__main__":
 
 ## Component plugin example: Image shape drawing
 Here is a ComponentPlugin implementation of a shape drawing app similar to that described in https://dash.plotly.com/annotations.  This plugin displays two graphs, a greyscale image and a histogram of pixel intensities. The image graph is configured to draw a shape on the canvas on drag. The drawing of a shape causes the histogram to be updated to include only the pixels within the shape's.
-
-```python
-from dash_labs import build_id
-from dash_labs.dependency import Output, Input
-from .base import ComponentPlugin
-import plotly.express as px
-import plotly.graph_objects as go
-import dash
-
-
-class GreyscaleImageHistogramROI(ComponentPlugin):
-   """
-   Support dynamic labels and checkbox to disable input component
-   """
-
-   def __init__(
-           self, img, template, image_label=None, histogram_label=None, newshape=None
-   ):
-      self.img = img
-
-      if newshape is None:
-         newshape = dict(
-            fillcolor="lightgray", opacity=0.2, line=dict(color="black", width=8)
-         )
-
-      self.newshape = newshape
-
-      self.image_fig = px.imshow(
-         img, binary_string=True
-      ).update_layout(
-         dragmode="drawrect",
-         margin=dict(l=20, b=20, r=20, t=20),
-         newshape=self.newshape
-      )
-
-      self.image_graph_id = build_id("image-graph")
-      self.histogram_graph_id = build_id("histogram-graph")
-      self.template = template
-      self.image_label = image_label
-      self.histogram_label = histogram_label
-
-   def _make_histrogram(self, x0, y0, x1, y1):
-      if not all((x0, y0, x1, y1)):
-         return {}
-
-      roi_image = self.img[int(y0):int(y1), int(x0):int(x1)]
-
-      return px.histogram(
-         roi_image.ravel()
-      ).update_layout(
-         title_text="Intensity", showlegend=False
-      ).update_xaxes(range=[0, 255])
-
-   def _make_rect(self, x0, y0, x1, y1):
-      if all((x0, y0, x1, y1)):
-         return [dict({
-            "editable": True,
-            "type": "rect",
-            "x0": x0,
-            "y0": y0,
-            "x1": x1,
-            "y1": y1
-         }, **self.newshape)]
-      else:
-         return []
-
-   def _extract_pixel_bounds_from_shape(self, relayout_data):
-      x0, y0, x1, y1 = (None,) * 4
-      if "shapes" in relayout_data:
-         shape = relayout_data["shapes"][-1]
-         x0, y0 = shape["x0"], shape["y0"]
-         x1, y1 = shape["x1"], shape["y1"]
-      elif any(["shapes" in key for key in relayout_data]):
-         x0 = [relayout_data[key] for key in relayout_data if "x0" in key][0]
-         x1 = [relayout_data[key] for key in relayout_data if "x1" in key][0]
-         y0 = [relayout_data[key] for key in relayout_data if "y0" in key][0]
-         y1 = [relayout_data[key] for key in relayout_data if "y1" in key][0]
-
-      # normalize coordinates and clamp to valid image boundaries
-      if x0 and x1:
-         if x0 > x1:
-            x0, x1 = x1, x0
-         x0 = 0 if x0 < 0 else x0
-         x1 = self.img.shape[1] if x1 > self.img.shape[1] else x1
-      if y0 and y1:
-         if y0 > y1:
-            y0, y1 = y1, y0
-         y0 = 0 if y0 < 0 else y0
-         y1 = self.img.shape[0] if y1 > self.img.shape[0] else y1
-
-      return x0, y0, x1, y1
-
-   @property
-   def args(self):
-      return self.template.graph_output(
-         self.image_fig, kind=Input, component_property="relayoutData",
-         id=self.image_graph_id, label=self.image_label
-      )
-
-   @property
-   def output(self):
-      return {
-         "histogram_figure":
-            self.template.graph_output(
-               id=self.histogram_graph_id, label=self.histogram_label
-            ),
-         "image_figure": Output(self.image_graph_id, "figure")
-      }
-
-   def build(self, inputs_value):
-      relayout_data = inputs_value
-      if relayout_data:
-         # shape coordinates are floats, we need to convert to ints for slicing
-         x0, y0, x1, y1 = self._extract_pixel_bounds_from_shape(relayout_data)
-         shapes = self._make_rect(x0, y0, x1, y1)
-
-         new_image_fig = go.Figure(
-            self.image_fig
-         )
-         new_image_fig.update_layout(shapes=shapes)
-
-         return {
-            "histogram_figure": self._make_histrogram(x0, y0, x1, y1),
-            "image_figure": new_image_fig,
-         }
-      else:
-         return {
-            "histogram_figure": dash.no_update,
-            "image_figure": dash.no_update,
-         }
-```
 
 Here is an example of using the plugin
 
@@ -1442,7 +1072,7 @@ img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
    template=tpl
 )
 def callback(plugin_inputs):
-   return img_plugin.build(plugin_inputs)
+   return img_plugin.get_output_values(plugin_inputs)
 
 
 app.layout = tpl.layout(app)
@@ -1455,46 +1085,6 @@ if __name__ == "__main__":
 
 ## Component Plugin Example: Dynamic Label
 Here is a component plugin that can be used to display a dynamic label for a component based on its value
-
-```python
-from dash_labs import build_id
-from dash_labs.dependency import Output, Input
-from .base import ComponentPlugin
-
-
-class DynamicInputPlugin(ComponentPlugin):
-   """
-   Support dynamic labels and checkbox to disable input component
-   """
-
-   def __init__(self, input_dependency, template):
-      self.input_dependency = input_dependency
-      self.label_string = self.input_dependency.label
-      self.label_id = build_id("label")
-      self.label_prop = template._label_value_prop
-
-      self.input_dependency.label = self.label_string
-      self.input_dependency.label_id = self.label_id
-
-   @property
-   def args(self):
-      return self.input_dependency
-
-   @property
-   def output(self):
-      return dict(
-         label_value=Output(self.label_id, self.label_prop),
-      )
-
-   def build(self, inputs_value):
-      return dict(label_value=self._format_label(inputs_value))
-
-   def _format_label(self, value):
-      return self.label_string.format(value)
-
-   def get_value(self, inputs_value):
-      return inputs_value["value"]
-```
 
 And usage
 
@@ -1533,7 +1123,7 @@ def callback(fun, phase):
       x=xs, y=getattr(np, fun)(xs + phase)
    ).update_layout()
 
-   return [fig, phase_plugin.build(phase)]
+   return [fig, phase_plugin.get_output_values(phase)]
 
 
 app.layout = tpl.layout(app)

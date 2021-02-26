@@ -42,6 +42,14 @@ class DataTablePlugin(ComponentPlugin):
             id=self.datatable_id,
         )
 
+        # Initialize args
+        if self.serverside:
+            self._args = self._build_serverside_input()
+            self._output = self._build_serverside_output()
+        else:
+            self._args = self._build_clientside_input()
+            self._output = self._build_clientside_output()
+
     def _compute_serverside_dataframe_slice(self, full_df, page_current=None):
         if page_current is None:
             page_current = 0
@@ -133,21 +141,7 @@ class DataTablePlugin(ComponentPlugin):
 
         return dict(data=data, columns=columns)
 
-    @property
-    def args(self):
-        if self.serverside:
-            return self._build_serverside_input()
-        else:
-            return self._build_clientside_input()
-
-    @property
-    def output(self):
-        if self.serverside:
-            return self._build_serverside_output()
-        else:
-            return self._build_clientside_output()
-
-    def build(self, inputs_value, df=None, preprocessed=False):
+    def get_output_values(self, inputs_value, df=None, preprocessed=False):
         """
 
         :param inputs_value:
@@ -166,7 +160,7 @@ class DataTablePlugin(ComponentPlugin):
         sort_by = inputs_value["sort_by"]
         # Get active dataframe
         if df is None:
-            df = self.df
+            df = self.full_df
         # Perform filtering
         print("update serverside")
         if self.filterable and "filter_query" in inputs_value:

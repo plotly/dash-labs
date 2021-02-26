@@ -8,7 +8,10 @@ def flatten_grouping(grouping, schema=None):
             for g in flatten_grouping(group_el, schema_el)
         ]
     elif isinstance(schema, dict):
-        return [g for group_el in grouping.values() for g in flatten_grouping(group_el)]
+        return [
+            g for group_el, schema_el in zip(grouping.values(), schema.values())
+            for g in flatten_grouping(group_el, schema_el)
+        ]
     else:
         return [grouping]
 
@@ -126,12 +129,14 @@ def validate_grouping(grouping, schema, allow_scalar_dict=False):
         check(isinstance(grouping, tuple))
         check(len(grouping) == len(schema))
         for g, s in zip(grouping, schema):
-            validate_grouping(g, s)
+            validate_grouping(g, s, allow_scalar_dict=allow_scalar_dict)
     elif isinstance(schema, dict):
         check(isinstance(grouping, dict))
         check(set(grouping) == set(schema))
         for k in schema:
-            validate_grouping(grouping[k], schema[k])
+            validate_grouping(
+                grouping[k], schema[k], allow_scalar_dict=allow_scalar_dict
+            )
     else:
         invalid = (tuple,) + (dict,) if not allow_scalar_dict else ()
         check(not isinstance(grouping, invalid))

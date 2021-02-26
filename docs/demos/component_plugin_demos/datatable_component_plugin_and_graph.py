@@ -35,7 +35,7 @@ def callback(gender, table_input):
         dff, x="total_bill", y="tip", color="sex", color_discrete_map={"Male": "green", "Female": "orange"},
     )
 
-    return [table_plugin.build(table_input, dff, preprocessed=True), fig]
+    return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
 
 app.layout = tpl.layout(app)
 

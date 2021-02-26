@@ -180,8 +180,10 @@ class DbcCard(BaseDbcTemplate):
             card_children.append(dbc.CardHeader(self.title))
 
         card_body_children = []
-        card_body_children.extend(self.get_containers("output"))
-        card_body_children.append(html.Hr())
+        output_containers = self.get_containers("output")
+        if output_containers:
+            card_body_children.extend(output_containers)
+            card_body_children.append(html.Hr())
         card_body_children.extend(self.get_containers("input"))
 
         card_children.append(dbc.CardBody(children=card_body_children))
