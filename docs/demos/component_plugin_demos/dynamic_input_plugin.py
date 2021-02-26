@@ -8,7 +8,7 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
 phase_plugin = dl.component_plugins.DynamicInputPlugin(
-    tpl.slider(1, 10, value=4, label="Phase: {}"), template=tpl
+    tpl.slider_input(1, 10, value=4, label="Phase: {}"), template=tpl
 )
 
 @app.callback(
@@ -19,7 +19,7 @@ phase_plugin = dl.component_plugins.DynamicInputPlugin(
         ), label="Function"),
         phase=phase_plugin.args,
     ),
-    output=[tpl.graph(), phase_plugin.output],
+    output=[tpl.graph_output(), phase_plugin.output],
     template=tpl,
 )
 def callback(fun, phase):

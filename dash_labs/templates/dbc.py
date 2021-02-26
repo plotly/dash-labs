@@ -37,7 +37,7 @@ class BaseDbcTemplate(BaseTemplate):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def button(
+    def button_input(
             cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
             component_property="n_clicks", kind=Input, id=None, opts=None
     ):
@@ -49,7 +49,7 @@ class BaseDbcTemplate(BaseTemplate):
         )
 
     @classmethod
-    def dropdown(
+    def dropdown_input(
             cls, options, value=Component.UNDEFINED, clearable=False,
             label=Component.UNDEFINED, role=Component.UNDEFINED,
             component_property="value", kind=Input, id=None, opts=None
@@ -72,7 +72,7 @@ class BaseDbcTemplate(BaseTemplate):
         )
 
     @classmethod
-    def input(
+    def textbox_input(
             cls, value=None,
             label=Component.UNDEFINED, role=Component.UNDEFINED,
             component_property="value", kind=Input, id=None, opts=None
@@ -85,7 +85,7 @@ class BaseDbcTemplate(BaseTemplate):
         )
 
     @classmethod
-    def checklist(
+    def checklist_input(
             cls, options, value=None,
             label=Component.UNDEFINED, role=Component.UNDEFINED,
             component_property="value", kind=Input, id=None, opts=None

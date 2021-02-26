@@ -517,7 +517,7 @@ if __name__ == "__main__":
 To reduce the amount of boilerplate required to construct the dependency components to pass to `@app.callback`, template classes provide a variety of helper functions. A few examples are `tp.div()`, `tp.button()`, `tp.dropdown()`, etc.  These are relatively simple functions that return a dependency object. For example:
 
 ```python
-tp.dropdown(["A", "B", "C"], label="My Dropdown")
+tp.dropdown_input(["A", "B", "C"], label="My Dropdown")
 ```
 
 evaluates to... 
@@ -562,17 +562,17 @@ tp = dx.templates.dbc.DbcSidebar(title="Sample App")
 
 @app.callback(
    args=dict(
-      fun=tp.dropdown(["sin", "cos", "exp"], label="Function"),
-      figure_title=tp.input("Initial Title", label="Figure Title"),
-      phase=tp.slider(1, 10, label="Phase"),
-      amplitude=tp.slider(1, 10, value=3, label="Amplitude"),
+      fun=tp.dropdown_input(["sin", "cos", "exp"], label="Function"),
+      figure_title=tp.textbox_input("Initial Title", label="Figure Title"),
+      phase=tp.slider_input(1, 10, label="Phase"),
+      amplitude=tp.slider_input(1, 10, value=3, label="Amplitude"),
    ),
    template=tp
 )
 def greet(fun, figure_title, phase, amplitude):
    print(fun, figure_title, phase, amplitude)
    xs = np.linspace(-10, 10, 100)
-   return tp.graph(figure=px.line(
+   return tp.graph_output(figure=px.line(
       x=xs, y=getattr(np, fun)(xs + phase) * amplitude
    ).update_layout(title_text=figure_title))
 
@@ -606,12 +606,12 @@ tp = dx.templates.FlatDiv()
 
 @app.callback(
    args=dict(
-      fun=tp.dropdown(["sin", "cos", "exp"], label="Function"),
-      figure_title=tp.input("Initial Title", label="Figure Title"),
-      phase=tp.slider(1, 10, label="Phase"),
-      amplitude=tp.slider(1, 10, value=3, label="Amplitude"),
+      fun=tp.dropdown_input(["sin", "cos", "exp"], label="Function"),
+      figure_title=tp.textbox_input("Initial Title", label="Figure Title"),
+      phase=tp.slider_input(1, 10, label="Phase"),
+      amplitude=tp.slider_input(1, 10, value=3, label="Amplitude"),
    ),
-   output=tp.graph(),
+   output=tp.graph_output(),
    template=tp
 )
 def callback(fun, figure_title, phase, amplitude):
@@ -772,9 +772,9 @@ tp = dx.templates.FlatDiv()
 
 @app.callback(
    args=dict(
-      figure_title=tp.input("Figure Title", label="Graph Title"),
+      figure_title=tp.textbox_input("Figure Title", label="Graph Title"),
       # figure_title=dx.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
-      date_range=tp.date_picker_range(label="Date"),
+      date_range=tp.date_picker_range_input(label="Date"),
       # date_range=dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
    ),
    template=tp
@@ -818,18 +818,19 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.FlatDiv()
+tpl = dx.templates.FlatDiv()
 
 
 @app.callback(
    args=dict(
-      fun=tp.dropdown(["sin", "cos", "exp"], label="Function", kind=dx.State),
-      figure_title=tp.input("Initial Title", label="Figure Title", kind=dx.State),
-      phase=tp.slider(1, 10, label="Phase", kind=dx.State),
-      amplitude=tp.slider(1, 10, value=3, label="Amplitude", kind=dx.State),
-      n_clicks=tp.button("Update", label=None)
+      fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dx.State),
+      figure_title=tpl.textbox_input("Initial Title", label="Figure Title",
+                                     kind=dx.State),
+      phase=tpl.slider_input(1, 10, label="Phase", kind=dx.State),
+      amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dx.State),
+      n_clicks=tpl.button_input("Update", label=None)
    ),
-   template=tp
+   template=tpl
 )
 def greet(fun, figure_title, phase, amplitude, n_clicks):
    print(fun, figure_title, phase, amplitude)
@@ -839,7 +840,7 @@ def greet(fun, figure_title, phase, amplitude, n_clicks):
    ).update_layout(title_text=figure_title))
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)
@@ -853,7 +854,7 @@ When a template is provided, the new `@app.callback` decorator no longer require
 
 Here is an example that outputs a string to the `children` property of a `dcc.Markdown` component.
 
-Note that the default value of `kind` for `tp.markdown` is `dx.Output`, which is why it's not necessary to override the `kind` argument. 
+Note that the default value of `kind` for `tpl.markdown` is `dx.Output`, which is why it's not necessary to override the `kind` argument. 
 
 [demos/output_markdown.py](./demos/output_markdown.py)
 
@@ -862,22 +863,22 @@ import dash
 import dash_labs as dx
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar("App Title", sidebar_columns=6)
+tpl = dx.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 
 @app.callback(
-   output=tp.markdown(),
-   inputs=tp.textarea(
+   output=tpl.markdown_output(),
+   inputs=tpl.textarea_input(
       "## Heading\n",
       opts=dict(style={"width": "100%", "height": 400})
    ),
-   template=tp
+   template=tpl
 )
 def markdown_preview(input_text):
    return input_text
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)
@@ -921,7 +922,7 @@ plugin = FancyPlugin(**plugin_config)
         plugin_values=plugin.inputs
     },
     outputs=[output1, plugin.output],
-    template=tp,
+    template=tpl,
 )
 def hello_plugin(input1, input2, plugin_values):
     # Do stuff with input1 and inputs2 to build result1 and, optionally,
@@ -1198,23 +1199,23 @@ import dash
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Table Component Plugin")
+tpl = dx.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
 table_plugin = dx.component_plugins.DataTablePlugin(
    df=df, page_size=10, sort_mode="single", filterable=True,
-   serverside=serverside, template=tp
+   serverside=serverside, template=tpl
 )
 
 
 @app.callback(
    args=[
-      tp.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
+      tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
       table_plugin.args
    ],
    output=table_plugin.output,
-   template=tp,
+   template=tpl,
 )
 def callback(gender, plugin_input):
    if gender:
@@ -1224,7 +1225,7 @@ def callback(gender, plugin_input):
    return table_plugin.build(plugin_input, filtered_df)
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)
@@ -1243,23 +1244,23 @@ import dash
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcCard(title="Clientside Table Component Plugin")
+tpl = dx.templates.DbcCard(title="Clientside Table Component Plugin")
 
 # serverside = False
 serverside = True
 table_plugin = dx.component_plugins.DataTablePlugin(
-   df=df, page_size=10, template=tp, sort_mode="single", filterable=True,
+   df=df, page_size=10, template=tpl, sort_mode="single", filterable=True,
    serverside=serverside
 )
 
 
 @app.callback(
    args=[
-      tp.dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
+      tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
       table_plugin.args
    ],
-   output=[table_plugin.output, tp.graph()],
-   template=tp,
+   output=[table_plugin.output, tpl.graph_output()],
+   template=tpl,
 )
 def callback(gender, table_input):
    if gender:
@@ -1277,7 +1278,7 @@ def callback(gender, table_input):
    return [table_plugin.build(table_input, dff, preprocessed=True), fig]
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)
@@ -1381,7 +1382,7 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
 
    @property
    def args(self):
-      return self.template.graph(
+      return self.template.graph_output(
          self.image_fig, kind=Input, component_property="relayoutData",
          id=self.image_graph_id, label=self.image_label
       )
@@ -1390,7 +1391,7 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
    def output(self):
       return {
          "histogram_figure":
-            self.template.graph(
+            self.template.graph_output(
                id=self.histogram_graph_id, label=self.histogram_label
             ),
          "image_figure": Output(self.image_graph_id, "figure")
@@ -1431,20 +1432,20 @@ from skimage import data
 img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.DbcSidebar(title="Image Intensity Explorer")
-img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tp)
+tpl = dx.templates.DbcSidebar(title="Image Intensity Explorer")
+img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
 
 
 @app.callback(
    args=img_plugin.args,
    output=img_plugin.output,
-   template=tp
+   template=tpl
 )
 def callback(plugin_inputs):
    return img_plugin.build(plugin_inputs)
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)
@@ -1508,10 +1509,10 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dx.Plugin()])
 
-tp = dx.templates.DbcSidebar(title="Dynamic Label Plugin")
+tpl = dx.templates.DbcSidebar(title="Dynamic Label Plugin")
 
 phase_plugin = dx.component_plugins.DynamicInputPlugin(
-   tp.slider(1, 10, value=4, label="Phase: {}"), template=tp
+   tpl.slider_input(1, 10, value=4, label="Phase: {}"), template=tpl
 )
 
 
@@ -1523,8 +1524,8 @@ phase_plugin = dx.component_plugins.DynamicInputPlugin(
       ), label="Function"),
       phase=phase_plugin.args,
    ),
-   output=[tp.graph(), phase_plugin.output],
-   template=tp,
+   output=[tpl.graph_output(), phase_plugin.output],
+   template=tpl,
 )
 def callback(fun, phase):
    xs = np.linspace(-10, 10, 100)
@@ -1535,7 +1536,7 @@ def callback(fun, phase):
    return [fig, phase_plugin.build(phase)]
 
 
-app.layout = tp.layout(app)
+app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
    app.run_server(debug=True)

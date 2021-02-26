@@ -8,9 +8,9 @@ tpl = dl.templates.FlatDiv()
 
 @app.callback(
     args=dict(
-        figure_title=tpl.input("Figure Title", label="Graph Title"),
+        figure_title=tpl.textbox_input("Figure Title", label="Graph Title"),
         # figure_title=dl.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
-        date_range=tpl.date_picker_range(label="Date"),
+        date_range=tpl.date_picker_range_input(label="Date"),
         # date_range=dl.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
     ),
     template=tpl

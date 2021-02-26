@@ -234,9 +234,9 @@ class BaseTemplate:
 
     # Component dependency constructors
     @classmethod
-    def div(
+    def div_output(
             cls, children=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="output",
             component_property="children", kind=Output, id=None, opts=None
     ):
         return kind(
@@ -245,9 +245,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def markdown(
+    def markdown_output(
             cls, children=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="output",
             component_property="children", kind=Output, id=None, opts=None
     ):
         return kind(
@@ -256,9 +256,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def textarea(
+    def textarea_input(
             cls, value=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="value", kind=Input, id=None, opts=None
     ):
         return kind(
@@ -267,8 +267,8 @@ class BaseTemplate:
         )
 
     @classmethod
-    def button(
-            cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
+    def button_input(
+            cls, children, label=Component.UNDEFINED, role="input",
             component_property="n_clicks", kind=Input, id=None, opts=None
     ):
         return kind(
@@ -277,9 +277,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def dropdown(
+    def dropdown_input(
             cls, options, value=Component.UNDEFINED, clearable=False,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="value", kind=Input, id=None, opts=None
     ):
         if isinstance(options, list) and options and not isinstance(options[0], dict):
@@ -296,9 +296,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def slider(
+    def slider_input(
             cls, min, max, value=Component.UNDEFINED, step=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="value", kind=Input, id=None, opts=None
     ):
         tooltip = (opts or {}).pop(
@@ -317,9 +317,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def input(
+    def textbox_input(
             cls, value=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="value", kind=Input, id=None, opts=None
     ):
         return kind(
@@ -328,9 +328,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def checklist(
+    def checklist_input(
             cls, options, value=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="value", kind=Input, id=None, opts=None
     ):
         if isinstance(options, list) and options and not isinstance(options[0], dict):
@@ -346,9 +346,9 @@ class BaseTemplate:
         return dcc.Graph
 
     @classmethod
-    def graph(
+    def graph_output(
             cls, figure=None, config=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="output",
             component_property="figure", kind=Output, id=None, opts=None
     ):
         return kind(
@@ -362,9 +362,9 @@ class BaseTemplate:
         return DataTable
 
     @classmethod
-    def date_picker_single(
+    def date_picker_single_input(
             cls, date=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property="date", kind=Input, id=None, opts=None
     ):
         if isinstance(date, datetime.date):
@@ -378,9 +378,9 @@ class BaseTemplate:
         )
 
     @classmethod
-    def date_picker_range(
+    def date_picker_range_input(
             cls, start_date=None, end_date=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
+            label=Component.UNDEFINED, role="input",
             component_property=("start_date", "end_date"), kind=Input, id=None, opts=None
     ):
 

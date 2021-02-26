@@ -89,7 +89,7 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
 
     @property
     def args(self):
-        return self.template.graph(
+        return self.template.graph_output(
             self.image_fig, kind=Input, component_property="relayoutData",
             id=self.image_graph_id, label=self.image_label
         )
@@ -98,7 +98,7 @@ class GreyscaleImageHistogramROI(ComponentPlugin):
     def output(self):
         return {
             "histogram_figure":
-                self.template.graph(
+                self.template.graph_output(
                     id=self.histogram_graph_id, label=self.histogram_label
                 ),
             "image_figure": Output(self.image_graph_id, "figure")

@@ -6,8 +6,8 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 @app.callback(
-    output=tpl.markdown(),
-    inputs=tpl.textarea(
+    output=tpl.markdown_output(),
+    inputs=tpl.textarea_input(
         "## Heading\n",
         opts=dict(style={"width": "100%", "height": 400})
     ),

@@ -9,11 +9,11 @@ tpl = dl.templates.FlatDiv()
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown(["sin", "cos", "exp"], label="Function", kind=dl.State),
-        figure_title=tpl.input("Initial Title", label="Figure Title", kind=dl.State),
-        phase=tpl.slider(1, 10, label="Phase", kind=dl.State),
-        amplitude=tpl.slider(1, 10, value=3, label="Amplitude", kind=dx.State),
-        n_clicks=tpl.button("Update", label=None)
+        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
+        figure_title=tpl.textbox_input("Initial Title", label="Figure Title", kind=dl.State),
+        phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
+        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dx.State),
+        n_clicks=tpl.button_input("Update", label=None)
     ),
     template=tpl
 )

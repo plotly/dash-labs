@@ -24,7 +24,7 @@ features = ["sepal_length",  "sepal_width",  "petal_length",  "petal_width"]
             clearable=False,
         ), label="Iris Feature"
     )],
-    output=tpl.graph(),
+    output=tpl.graph_output(),
     template=tpl,
 )
 def background_callback(set_progress, feature):

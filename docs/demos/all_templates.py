@@ -26,12 +26,12 @@ tpl = dl.templates.FlatDiv()
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown(["sin", "cos", "exp"], label="Function"),
-        figure_title=tpl.input("Initial Title", label="Figure Title"),
-        phase=tpl.slider(1, 10, label="Phase"),
-        amplitude=tpl.slider(1, 10, value=3, label="Amplitude"),
+        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
+        figure_title=tpl.textbox_input("Initial Title", label="Figure Title"),
+        phase=tpl.slider_input(1, 10, label="Phase"),
+        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude"),
     ),
-    output=tpl.graph(),
+    output=tpl.graph_output(),
     template=tpl
 )
 def callback(fun, figure_title, phase, amplitude):

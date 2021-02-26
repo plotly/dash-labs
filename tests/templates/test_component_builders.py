@@ -9,7 +9,7 @@ from ..fixtures import test_template
 
 def test_dropdown_builder(test_template):
     options = [{"label": s.upper(), "value": s} for s in ["a", "b", "c"]]
-    component_dep = test_template.dropdown(
+    component_dep = test_template.dropdown_input(
         id="test-dropdown",
         options=options,
         value="b",
@@ -29,7 +29,7 @@ def test_dropdown_builder(test_template):
 
 def test_slider_builder(test_template):
     min, max, step, val, id = 1, 10, 0.5, 5, "test-slider"
-    component_dep = test_template.slider(
+    component_dep = test_template.slider_input(
         min, max, id=id, value=val, opts=dict(disabled=True)
     )
 
@@ -48,7 +48,7 @@ def test_slider_builder(test_template):
     assert isinstance(component.tooltip, dict)
 
     # But can be overridden with tooltip argument, and can override kind to State
-    component_dep = test_template.slider(
+    component_dep = test_template.slider_input(
         min, max, id=id, value=val, kind=State, opts=dict(tooltip=None),
     )
 
@@ -60,7 +60,7 @@ def test_slider_builder(test_template):
 
 
 def test_input_builder(test_template):
-    component_dep = test_template.input("Starting", id="test-input", opts=dict(disabled=True))
+    component_dep = test_template.textbox_input("Starting", id="test-input", opts=dict(disabled=True))
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
@@ -76,7 +76,7 @@ def test_checklist_builder(test_template):
     options = ["a", "b", "c"]
     expected_options = [{"label": s, "value": s} for s in options]
 
-    component_dep = test_template.checklist(
+    component_dep = test_template.checklist_input(
         options,
         value=["b", "c"],
         id="test-checklist",
@@ -95,7 +95,7 @@ def test_checklist_builder(test_template):
 
 
 def test_button_builder(test_template):
-    component_dep = test_template.button(
+    component_dep = test_template.button_input(
         "Hello, world", id="test-button", opts=dict(disabled=True)
     )
 
@@ -110,7 +110,7 @@ def test_button_builder(test_template):
 
 
 def test_markdown_builder(test_template):
-    component_dep = test_template.markdown(
+    component_dep = test_template.markdown_output(
         "Hello, world", id="test-markdown", opts=dict(dedent=False)
     )
 
@@ -129,7 +129,7 @@ def test_graph_builder(test_template):
         data=[dict(y=[1, 3, 2])], layout=dict(title=dict(text="Figure Title"))
     )
     config = dict(config_prop="config-val")
-    component_dep = test_template.graph(figure=figure, id="test-graph", config=config)
+    component_dep = test_template.graph_output(figure=figure, id="test-graph", config=config)
 
     assert isinstance(component_dep, Output)
     assert component_dep.component_property == "figure"
@@ -142,7 +142,7 @@ def test_graph_builder(test_template):
 
 def test_date_picker_single_builder(test_template):
     today = datetime.date.today()
-    component_dep = test_template.date_picker_single(
+    component_dep = test_template.date_picker_single_input(
         today, id="test-datepicker", opts=dict(month_format="MM YY")
     )
 
@@ -160,7 +160,7 @@ def test_date_picker_range_builder(test_template):
     start_date = datetime.date(2000, 1, 1)
     end_date = datetime.date(200, 1, 15)
 
-    component_dep = test_template.date_picker_range(
+    component_dep = test_template.date_picker_range_input(
         start_date, end_date,
         id="test-daterangepicker",
         opts=dict(month_format="MM YY"),
