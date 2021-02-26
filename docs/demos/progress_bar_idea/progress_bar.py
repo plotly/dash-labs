@@ -2,22 +2,22 @@ import time
 import plotly.express as px
 import dash
 import dash_core_components as dcc
-import dash_express as dx
+import dash_labs as dl
 from docs.demos.progress_bar_idea.background_callback import background_callback
 from flask_caching import Cache
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem', 'CACHE_DIR': './cache'
 })
-tpl = dx.templates.FlatDiv()
+tpl = dl.templates.FlatDiv()
 
 iris = px.data.iris()
 features = ["sepal_length",  "sepal_width",  "petal_length",  "petal_width"]
 
 @background_callback(
     app, cache,
-    args=[dx.Input(
+    args=[dl.Input(
         dcc.Dropdown(
             options=[{"value": i, "label": i} for i in features],
             value=features[0],

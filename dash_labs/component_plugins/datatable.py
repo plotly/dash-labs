@@ -1,9 +1,9 @@
 import math
 
-from dash_express.dependency import Output, Input
-from dash_express.util import build_id, filter_kwargs
+from dash_labs.dependency import Output, Input
+from dash_labs.util import build_id, filter_kwargs
 from .base import ComponentPlugin
-from dash_express.templates import FlatDiv
+from dash_labs.templates import FlatDiv
 import pandas as pd
 from dash_table import DataTable
 

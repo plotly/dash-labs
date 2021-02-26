@@ -1,6 +1,6 @@
 # Based on https://dash-bootstrap-components.opensource.faculty.ai/examples/iris/
 
-import dash_express as dx
+import dash_labs as dl
 import plotly.express as px
 import dash_core_components as dcc
 import dash_html_components as html
@@ -17,8 +17,8 @@ feature_options = [
 ]
 
 # Build app and template
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcSidebar(title="Iris Dataset")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcSidebar(title="Iris Dataset")
 
 # Use parameterize to create components
 @app.callback(

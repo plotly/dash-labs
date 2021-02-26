@@ -1,7 +1,7 @@
 import string
 from unittest.mock import MagicMock
 
-from dash_express import build_id
+from dash_labs import build_id
 from grouping import make_grouping_by_position, grouping_len
 
 

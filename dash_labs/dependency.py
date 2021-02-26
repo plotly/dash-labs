@@ -3,7 +3,7 @@ from dash.dependencies import (
 )
 from dash.development.base_component import Component
 
-from dash_express import build_id
+from dash_labs import build_id
 from grouping import make_grouping_by_position, flatten_grouping, map_grouping
 
 

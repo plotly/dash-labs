@@ -1,15 +1,15 @@
 import plotly.express as px
-import dash_express as dx
+import dash_labs as dl
 import dash
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Table Component Plugin")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
-table_plugin = dx.component_plugins.DataTablePlugin(
+table_plugin = dl.component_plugins.DataTablePlugin(
     df=df, page_size=10, sort_mode="single", filterable=True,
     serverside=serverside, template=tpl
 )

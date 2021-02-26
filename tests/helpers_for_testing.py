@@ -1,6 +1,6 @@
-import dash_express as dx
+import dash_labs as dl
 
 
 def flat_deps(component, props, kind):
-    dep = {"input": dx.Input, "state": dx.State, "output": dx.Output}[kind]
+    dep = {"input": dl.Input, "state": dl.State, "output": dl.Output}[kind]
     return dep(component, props).flat_dependencies

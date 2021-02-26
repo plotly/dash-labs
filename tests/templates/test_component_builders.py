@@ -3,7 +3,7 @@ import datetime
 import dash_html_components as html
 import dash_core_components as dcc
 
-from dash_express import Input, State, Output
+from dash_labs import Input, State, Output
 from ..fixtures import test_template
 
 

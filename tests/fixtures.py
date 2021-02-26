@@ -6,8 +6,8 @@ import dash_html_components as html
 
 import pytest
 from dash.dependencies import Input, Output, State
-from dash_express.grouping import make_grouping_by_position
-from dash_express import Plugin
+from dash_labs.grouping import make_grouping_by_position
+from dash_labs import Plugin
 
 # Helpers
 from templates.base import BaseTemplate

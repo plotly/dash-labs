@@ -1,9 +1,9 @@
 import dash
 import dash_core_components as dcc
-import dash_express as dx
+import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcSidebar("App Title", sidebar_columns=6)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 @app.callback(
     output=tpl.markdown(),

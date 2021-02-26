@@ -1,4 +1,4 @@
-import dash_express as dx
+import dash_labs as dx
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 

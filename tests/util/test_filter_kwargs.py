@@ -1,9 +1,9 @@
-import dash_express as dx
+import dash_labs as dl
 from dash.development.base_component import Component
 
 
 def test_filter_nones_and_undefined():
-    result = dx.util.filter_kwargs(
+    result = dl.util.filter_kwargs(
         a=12,
         b="Foo",
         c=None,
@@ -16,7 +16,7 @@ def test_filter_nones_and_undefined():
 
 
 def test_filter_args_and_kwargs():
-    result = dx.util.filter_kwargs(
+    result = dl.util.filter_kwargs(
         dict(a=12, b="Foo", c=None),
         None,
         d=["A", "B"],

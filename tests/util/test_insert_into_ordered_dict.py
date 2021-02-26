@@ -1,7 +1,7 @@
 import pytest
 from collections import OrderedDict
 
-from dash_express.util import insert_into_ordered_dict
+from dash_labs.util import insert_into_ordered_dict
 
 
 @pytest.fixture

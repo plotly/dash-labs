@@ -1,19 +1,19 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
-tpl = dx.templates.DbcSidebar(title="Dynamic Label Plugin")
-phase_plugin = dx.component_plugins.DynamicInputPlugin(
+tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
+phase_plugin = dl.component_plugins.DynamicInputPlugin(
     tpl.slider(1, 10, value=4, label="Phase: {}"), template=tpl
 )
 
 @app.callback(
     args=dict(
-        fun=dx.Input(dcc.Dropdown(
+        fun=dl.Input(dcc.Dropdown(
             options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
             value="sin"
         ), label="Function"),

@@ -5,7 +5,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 import datetime
 
-import dash_express as dx
+import dash_labs as dl
 
 from . import make_deps, mock_fn_with_return, assert_deps_eq
 from ..fixtures import (
@@ -17,11 +17,11 @@ from ..helpers_for_testing import flat_deps
 @pytest.mark.parametrize("input_form", [list, tuple])
 def test_arg_dependencies(app, test_template, input_form):
     inputs = input_form([
-        dx.Input(dcc.Slider(), label="Slider"),
-        dx.Input(dcc.Dropdown(), label="Dropdown"),
+        dl.Input(dcc.Slider(), label="Slider"),
+        dl.Input(dcc.Dropdown(), label="Dropdown"),
     ])
-    state = dx.State(dcc.Input(), label="State Input")
-    output = dx.Output(dcc.Markdown(), "children", label="Markdown Output")
+    state = dl.State(dcc.Input(), label="State Input")
+    output = dl.Output(dcc.Markdown(), "children", label="Markdown Output")
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -44,9 +44,9 @@ def test_arg_dependencies(app, test_template, input_form):
 
 
 def test_scalar_input_arg_dependencies(app, test_template):
-    inputs = dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"))
-    state = dx.State(dcc.Input())
-    output = dx.Output(dcc.Markdown(), "children")
+    inputs = dl.Input(dcc.DatePickerRange(), ("start_date", "end_date"))
+    state = dl.State(dcc.Input())
+    output = dl.Output(dcc.Markdown(), "children")
 
     # Build mock function
     fn = mock_fn_with_return("Hello, world")
@@ -71,9 +71,9 @@ def test_scalar_input_arg_dependencies(app, test_template):
 
 
 def test_scalar_output_arg_dependencies(app, test_template):
-    inputs = dx.Input(html.Button(), "n_clicks")
-    state = dx.State(dcc.Input())
-    output = dx.Output(dcc.DatePickerRange(), ("start_date", "end_date"))
+    inputs = dl.Input(html.Button(), "n_clicks")
+    state = dl.State(dcc.Input())
+    output = dl.Output(dcc.DatePickerRange(), ("start_date", "end_date"))
 
     # Build mock function
     fn = mock_fn_with_return((datetime.date(2010, 1, 1), datetime.date(2010, 1, 10)))
@@ -99,10 +99,10 @@ def test_scalar_output_arg_dependencies(app, test_template):
 
 def test_state_kwarg_only(app, test_template):
     state = {
-        "test_input": dx.State(dcc.Input()),
-        "test_slider": dx.Input(dcc.Slider()),
+        "test_input": dl.State(dcc.Input()),
+        "test_slider": dl.Input(dcc.Slider()),
     }
-    output = {"test_output_markdown": dx.Output(dcc.Markdown(), "children")}
+    output = {"test_output_markdown": dl.Output(dcc.Markdown(), "children")}
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})

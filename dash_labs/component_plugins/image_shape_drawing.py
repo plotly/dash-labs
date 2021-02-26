@@ -1,5 +1,5 @@
-from dash_express import build_id
-from dash_express.dependency import Output, Input
+from dash_labs import build_id
+from dash_labs.dependency import Output, Input
 from .base import ComponentPlugin
 import plotly.express as px
 import plotly.graph_objects as go

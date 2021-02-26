@@ -1,10 +1,10 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 from skimage import data
 
 img = data.camera()
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 tpl = dx.templates.DbcSidebar(title="Image Intensity Explorer")
 img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
 

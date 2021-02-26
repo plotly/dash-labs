@@ -1,19 +1,19 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
-tpl = dx.templates.FlatDiv()
-# tpl = dx.templates.DccCard(title="Dash Express App", width="500px")
-# tpl = dx.templates.DbcCard(title="Dash Express App", columns=6)
-# tpl = dx.templates.DbcRow(title="Dash Express App")
-# tpl = dx.templates.DbcSidebar(title="Dash Express App")
-# tpl = dx.templates.DdkCard(title="Dash Express App", width=50)
-# tpl = dx.templates.DdkRow(title="Dash Express App")
-# tpl = dx.templates.DdkSidebar(title="Dash Express App")
+tpl = dl.templates.FlatDiv()
+# tpl = dl.templates.DccCard(title="Dash Express App", width="500px")
+# tpl = dl.templates.DbcCard(title="Dash Express App", columns=6)
+# tpl = dl.templates.DbcRow(title="Dash Express App")
+# tpl = dl.templates.DbcSidebar(title="Dash Express App")
+# tpl = dl.templates.DdkCard(title="Dash Express App", width=50)
+# tpl = dl.templates.DdkRow(title="Dash Express App")
+# tpl = dl.templates.DdkSidebar(title="Dash Express App")
 
 # tpl = dx.templates.DbcSidebar(
 #     title="Dash Express App",

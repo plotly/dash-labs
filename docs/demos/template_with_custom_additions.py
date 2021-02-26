@@ -1,10 +1,10 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 tpl = dx.templates.DbcSidebar(title="Dash Express App")
 
 # import dash_core_components as dcc

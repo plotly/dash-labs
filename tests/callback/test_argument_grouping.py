@@ -1,8 +1,8 @@
 import pytest
 import itertools
 
-import dash_express as dx
-from dash_express.grouping import make_grouping_by_position, grouping_len
+import dash_labs as dl
+from dash_labs.grouping import make_grouping_by_position, grouping_len
 from . import make_deps, assert_deps_eq, mock_fn_with_return, make_letters, \
     make_letters_grouping, make_numbers_grouping
 from ..fixtures import (
@@ -22,7 +22,7 @@ def test_ungrouped_positional_inputs(app, test_template):
     inputs = make_deps(Input, 2)
     state = make_deps(State, 1)
     output = make_deps(Output, 1)[0]
-    @dx.callback(app, output, inputs, state, template=test_template)
+    @dl.callback(app, output, inputs, state, template=test_template)
     def fn(a, b, c):
         return a + b + c
 
@@ -45,7 +45,7 @@ def test_ungrouped_with_mock(app, test_template):
 
     # Build mock function
     fn = mock_fn_with_return(42)
-    fn_wrapper = dx.callback(app, output, inputs, state, template=test_template)(fn)
+    fn_wrapper = dl.callback(app, output, inputs, state, template=test_template)(fn)
 
     # call flat version (like dash would)
     assert fn_wrapper._flat_fn(1, 2, 3) == [42]
@@ -91,9 +91,9 @@ def check_component_props_as_groupings(
     flat_output_deps = make_deps(Output, 1) + flat_deps(output_button, output_prop, "output")
 
     # Build grouped dependency lists
-    grouped_input_deps = [dx.Input(input_button, input_prop), flat_input_deps[-1]]
-    grouped_state_deps = [dx.State(state_button, state_prop)]
-    grouped_output_deps = [flat_output_deps[0], dx.Output(output_button, output_prop)]
+    grouped_input_deps = [dl.Input(input_button, input_prop), flat_input_deps[-1]]
+    grouped_state_deps = [dl.State(state_button, state_prop)]
+    grouped_output_deps = [flat_output_deps[0], dl.Output(output_button, output_prop)]
 
     # Build flat input/output values (state is part of input now)
     flat_input_values = (
@@ -161,7 +161,7 @@ def check_component_props_as_groupings(
     fn = mock_fn_with_return(grouped_output_values)
 
     # Wrap callback with grouped dependency specifications
-    fn_wrapper = dx.callback(
+    fn_wrapper = dl.callback(
         app,
         output=grouped_output_deps,
         inputs=grouped_input_deps,
@@ -279,7 +279,7 @@ def check_dependencies_as_groupings(
     fn = mock_fn_with_return(grouped_output_values)
 
     # Wrap callback with grouped dependency specifications
-    fn_wrapper = dx.callback(
+    fn_wrapper = dl.callback(
         app,
         output=grouped_output_deps,
         inputs=grouped_input_deps,
@@ -367,7 +367,7 @@ def test_input_tuple_of_deps_treated_as_list(app, test_template):
 
     # Build mock function
     fn = mock_fn_with_return(42)
-    fn_wrapper = dx.callback(app, output, inputs, state, template=test_template)(fn)
+    fn_wrapper = dl.callback(app, output, inputs, state, template=test_template)(fn)
 
     # call flat version (like dash would)
     assert fn_wrapper._flat_fn(1, 2, 3) == [42]
@@ -397,7 +397,7 @@ def test_output_tuple_of_deps_treated_as_list(
 
     # Build mock function
     fn = mock_fn_with_return(output_val_form([42, 12]))
-    fn_wrapper = dx.callback(app, output, inputs, state, template=test_template)(fn)
+    fn_wrapper = dl.callback(app, output, inputs, state, template=test_template)(fn)
 
     # call flat version (like dash would)
     assert fn_wrapper._flat_fn(1, 2, 3) == [42, 12]

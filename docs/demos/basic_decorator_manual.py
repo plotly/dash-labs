@@ -1,17 +1,17 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.FlatDiv()
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.FlatDiv()
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown(["sin", "cos", "exp"], label="Function", kind=dx.State),
-        figure_title=tpl.input("Initial Title", label="Figure Title", kind=dx.State),
-        phase=tpl.slider(1, 10, label="Phase", kind=dx.State),
+        fun=tpl.dropdown(["sin", "cos", "exp"], label="Function", kind=dl.State),
+        figure_title=tpl.input("Initial Title", label="Figure Title", kind=dl.State),
+        phase=tpl.slider(1, 10, label="Phase", kind=dl.State),
         amplitude=tpl.slider(1, 10, value=3, label="Amplitude", kind=dx.State),
         n_clicks=tpl.button("Update", label=None)
     ),

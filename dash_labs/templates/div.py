@@ -1,4 +1,4 @@
-from dash_express.templates.base import BaseTemplate
+from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
 
 

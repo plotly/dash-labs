@@ -1,5 +1,5 @@
 import dash_html_components as html
-from dash_express.util import add_css_class
+from dash_labs.util import add_css_class
 
 
 def test_add_css_class_when_undefined():

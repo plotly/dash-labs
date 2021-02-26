@@ -1,17 +1,17 @@
 import dash
-import dash_express as dx
+import dash_labs as dl
 import plotly.graph_objects as go
 import dash_core_components as dcc
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.FlatDiv()
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.FlatDiv()
 
 @app.callback(
     args=dict(
         figure_title=tpl.input("Figure Title", label="Graph Title"),
-        # figure_title=dx.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
+        # figure_title=dl.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
         date_range=tpl.date_picker_range(label="Date"),
-        # date_range=dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
+        # date_range=dl.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
     ),
     template=tpl
 )

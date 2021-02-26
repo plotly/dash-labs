@@ -1,10 +1,10 @@
 from dash.development.base_component import Component
 
-from dash_express.dependency import Output
-from dash_express.templates.base import BaseTemplate
+from dash_labs.dependency import Output
+from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
 
-from dash_express.util import filter_kwargs, build_id
+from dash_labs.util import filter_kwargs, build_id
 
 
 class BaseDDKTemplate(BaseTemplate):

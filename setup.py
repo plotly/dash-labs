@@ -11,7 +11,7 @@ def requirements_txt():
 
 
 setup(
-    name="dash-express",
+    name="dash-labs",
     packages=find_packages(),
     install_requires=requirements_txt(),
 )

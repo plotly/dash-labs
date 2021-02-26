@@ -1,6 +1,6 @@
 from collections import namedtuple
 from dash.dependencies import Input
-from dash_express.grouping import (
+from dash_labs.grouping import (
     flatten_grouping,
     make_grouping_by_position,
     grouping_len,

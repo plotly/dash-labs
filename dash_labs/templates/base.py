@@ -9,8 +9,8 @@ import datetime
 
 from dash.development.base_component import Component
 
-from dash_express.util import filter_kwargs, build_id, insert_into_ordered_dict
-from dash_express.dependency import Input, Output, State, DashExpressDependency
+from dash_labs.util import filter_kwargs, build_id, insert_into_ordered_dict
+from dash_labs.dependency import Input, Output, State, DashExpressDependency
 from dataclasses import dataclass
 
 

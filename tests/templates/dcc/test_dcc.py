@@ -1,5 +1,5 @@
-import dash_express as dx
+import dash_labs as dl
 
 
 def test_dcc_template():
-    template = dx.templates.dcc.DccCard(title="App Title")
+    template = dl.templates.dcc.DccCard(title="App Title")

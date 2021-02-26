@@ -6,11 +6,11 @@ from collections import OrderedDict
 from dash import exceptions, Dash
 from dash.development.base_component import Component
 
-from dash_express import build_id
+from dash_labs import build_id
 
 from .dependency import DashExpressDependency, State, Input, Output
 from .templates.base import BaseTemplate
-from dash_express.grouping import (
+from dash_labs.grouping import (
     flatten_grouping, make_grouping_by_position, validate_grouping, grouping_len,
     make_grouping_by_attr, map_grouping
 )
@@ -248,7 +248,7 @@ def _callback(
     output, inputs, state, prevent_initial_callbacks, template, _wrapped_callback = \
         handle_callback_args(_args, _kwargs)
 
-    from dash_express.templates import FlatDiv
+    from dash_labs.templates import FlatDiv
     # if template is None:
     #     template = FlatDiv()
 
@@ -427,7 +427,7 @@ def extract_callback_args(args, kwargs, names, type_):
             arg = args.pop(0)
             parameters.append(arg)
 
-    # Convert dash.dependency objects into dash express equivalents
+    # Convert dash.dependency objects into dash-labs equivalents
     def to_dx(v):
         if isinstance(v, type_.dependency_class):
             return type_(v.component_id, v.component_property)
