@@ -1,6 +1,6 @@
 from dash_labs import build_id, templates
 from dash_labs.dependency import Output, Input
-from grouping import flatten_grouping
+from dash_labs.grouping import flatten_grouping
 from .base import ComponentPlugin
 
 

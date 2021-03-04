@@ -4,7 +4,9 @@ from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
 from dash_labs.util import filter_kwargs, build_id
 from dash_labs.dependency import Input, Output
-
+import plotly.graph_objects as go
+import copy
+import plotly.io as pio
 
 class BaseDbcTemplate(BaseTemplate):
     # - Align sliders vertically with an outline that matches dropdowns/inputs
@@ -34,6 +36,21 @@ class BaseDbcTemplate(BaseTemplate):
     def __init__(self, theme=None, **kwargs):
         super().__init__()
         self.theme = theme
+
+    # @classmethod
+    # def graph_output(
+    #         cls, figure=None, config=None,
+    #         label=Component.UNDEFINED, role="output",
+    #         component_property="figure", kind=Output, id=None, opts=None
+    # ):
+    #     # classname
+    #     opts = opts or {}
+    #     opts.setdefault("className", "body")
+    #
+    #     return kind(
+    #         cls._graph_class()(**filter_kwargs(opts, figure=figure, config=config, id=id)),
+    #         component_property=component_property, label=label, role=role
+    #     )
 
     # Methods designed to be overridden by subclasses
     @classmethod
@@ -66,6 +83,10 @@ class BaseDbcTemplate(BaseTemplate):
         if value is Component.UNDEFINED and options:
             value = options[0]["value"]
 
+        # classname
+        opts = opts or {}
+        opts.setdefault("className", "h6")
+
         return kind(
             dbc.Select(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property, label=label, role=role
@@ -78,6 +99,10 @@ class BaseDbcTemplate(BaseTemplate):
             component_property="value", kind=Input, id=None, opts=None
     ):
         import dash_bootstrap_components as dbc
+
+        # classname
+        opts = opts or {}
+        opts.setdefault("className", "h6")
 
         return kind(
             dbc.Input(value=value, **filter_kwargs(opts, id=id)),
@@ -94,6 +119,12 @@ class BaseDbcTemplate(BaseTemplate):
 
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
+
+        # classname
+        opts = opts or {}
+        opts.setdefault("className", "h6")
+        opts.setdefault("style", {})
+        opts["style"].setdefault("font-weight", "400")
 
         return kind(
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
@@ -128,7 +159,10 @@ class BaseDbcTemplate(BaseTemplate):
             label_id = build_id("label")
 
         label = dbc.Label(
-            id=label_id, children=[initial_value], style={"display": "block"}
+            id=label_id,
+            children=[initial_value],
+            style={"display": "block"},
+            className="h5",
         )
         container_id = build_id("container")
         container = dbc.FormGroup(id=container_id, children=[label, component])
@@ -155,9 +189,15 @@ class BaseDbcTemplate(BaseTemplate):
                 break
         if add_theme:
             if self.theme is None:
-                app.config.external_stylesheets.append(dbc.themes.BOOTSTRAP)
+                theme = dbc.themes.BOOTSTRAP
             else:
-                app.config.external_stylesheets.append(self.theme)
+                theme = self.theme
+
+            app.config.external_stylesheets.append(theme)
+
+            template = _try_build_plotly_template_from_bootstrap_css_url(theme)
+            if template is not None:
+                pio.templates.default = template
 
 
 class DbcCard(BaseDbcTemplate):
@@ -292,7 +332,10 @@ class DbcSidebar(BaseDbcTemplate):
                     **filter_kwargs(md=self.sidebar_columns),
                 ),
                 dbc.Col(
-                    children=self.get_containers("output"),
+                    children=dbc.Card(
+                        children=self.get_containers("output"),
+                        body=True
+                    )
                 ),
             ],
         )
@@ -304,3 +347,164 @@ class DbcSidebar(BaseDbcTemplate):
         import dash_bootstrap_components as dbc
 
         return dbc.Container(layout, fluid=True, style={"padding": 0})
+
+
+def _parse_rules_from_bootstrap_css(css_text):
+    import tinycss2
+    tinycss_parsed = tinycss2.parse_stylesheet(css_text)
+
+    # Build dict from css selectors to dict of css prop-values
+    rule_props = {}
+    for token in tinycss_parsed:
+        if token.type != "qualified-rule":
+            continue
+        rule = token
+        selector_str = "".join([t.serialize() for t in rule.prelude])
+        selectors = tuple(s.strip() for s in selector_str.split(","))
+        property_strings = [
+            entry for entry in "".join([
+                c.serialize().strip()
+                for c in rule.content]).split(';')
+            if entry
+        ]
+
+        property_pairs = [prop_str.split(":") for prop_str in property_strings]
+        for selector in selectors:
+            for prop_pair in property_pairs:
+                if len(prop_pair) != 2:
+                    continue
+                rule_props.setdefault(selector, {})
+                prop_key = prop_pair[0]
+                prop_value = prop_pair[1].replace("!important", "").strip()
+                rule_props[selector][prop_key] = prop_value
+
+    return rule_props
+
+
+# Get title font color
+def _get_font(rule_props):
+    color = "#000"
+    family = "sans-serif"
+
+    for el in ["html", "body", "h1"]:
+        color = rule_props.get(el, {}).get("color", color)
+        family = rule_props.get(el, {}).get("font-family", family)
+
+    return color, family
+
+
+def _get_role_colors(rule_props):
+    # Initialize role_colors with default values
+    role_colors = {
+        "primary": "#007bff",
+        "secondary": "#6c757d",
+        "success": "#28a745",
+        "info": "#17a2b8",
+        "warning": "#ffc107",
+        "danger": "#dc3545",
+        "light": "#f8f9fa",
+        "dark": "#343a40",
+    }
+
+    # Override with role colors for current theme
+    for prop, val in rule_props[":root"].items():
+        if prop.startswith("--"):
+            maybe_color = prop.lstrip("-")
+            if maybe_color in role_colors:
+                role_colors[maybe_color] = val
+
+    return role_colors
+
+
+def _hex_to_rgb(clr):
+    clr = clr.lstrip("#")
+    if len(clr) == 3:
+        clr = "".join(c[0]*2 for c in clr)
+    return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
+
+
+def _to_rgb_tuple(color):
+    from plotly.colors import hex_to_rgb, unlabel_rgb
+    if isinstance(color, tuple):
+        pass
+    elif color.startswith("#"):
+        color = _hex_to_rgb(color)
+    else:
+        color = unlabel_rgb(color)
+
+    return tuple(int(c) for c in color)
+
+
+def _make_grid_color(bg_color, font_color, weight=0.1):
+    from plotly.colors import find_intermediate_color, label_rgb
+    bg_color = _to_rgb_tuple(bg_color)
+    font_color = _to_rgb_tuple(font_color)
+    return label_rgb(
+        _to_rgb_tuple(find_intermediate_color(bg_color, font_color, weight))
+    )
+
+
+def _build_plotly_template_from_bootstrap_css_text(css_text):
+    # Parse css text
+    rule_props = _parse_rules_from_bootstrap_css(css_text)
+
+    # Initialize role_colors with default values
+    role_colors = _get_role_colors(rule_props)
+
+    # Get font info
+    font_color, font_family = _get_font(rule_props)
+
+    # Get background color
+    plot_bgcolor = rule_props["body"].get("background-color", "#fff")
+    paper_bgcolor = rule_props[".card"].get("background-color", plot_bgcolor)
+
+    # If paper color has transparency, then overlaying on the card won't match the card
+    # so use same color as plot background
+    if "rgba" in paper_bgcolor and "rgba" not in plot_bgcolor:
+        paper_bgcolor = plot_bgcolor
+
+    # Build colorway
+    colorway_roles = [
+        "primary",
+        "success",
+        "info",
+        "warning",
+        "danger",
+    ]
+    colorway = [role_colors[r] for r in colorway_roles]
+
+    # Build grid color
+    gridcolor = _make_grid_color(plot_bgcolor, font_color, 0.1)
+
+    # Make template
+    template = copy.deepcopy(pio.templates["plotly_dark"])
+
+    layout = template.layout
+    layout.colorway = colorway
+    layout.piecolorway = colorway
+    layout.paper_bgcolor = paper_bgcolor
+    layout.plot_bgcolor = plot_bgcolor
+    layout.font.color = font_color
+    layout.font.family = font_family
+    layout.xaxis.gridcolor = gridcolor
+    layout.yaxis.gridcolor = gridcolor
+    layout.xaxis.gridwidth = 0.5
+    layout.yaxis.gridwidth = 0.5
+    layout.xaxis.zerolinecolor = gridcolor
+    layout.yaxis.zerolinecolor = gridcolor
+    layout.margin = dict(l=0, r=0, b=0)
+
+    template.data.scatter = (go.Scatter(marker_line_color=plot_bgcolor),)
+    template.data.scattergl = (go.Scattergl(marker_line_color=plot_bgcolor),)
+
+    return template
+
+
+def _try_build_plotly_template_from_bootstrap_css_url(css_url):
+    import requests
+    response = requests.get(css_url)
+    if response.status_code != 200:
+        return None
+
+    css_text = response.content.decode("utf8")
+    return _build_plotly_template_from_bootstrap_css_text(css_text)

@@ -1,4 +1,4 @@
-from grouping import flatten_grouping
+from dash_labs.grouping import flatten_grouping
 import dash_html_components as html
 
 
