@@ -391,10 +391,12 @@ class DbcSidebarTabs(BaseDbcTemplate):
 
         sidebar_card_style = {"border-radius": 0}
 
-        tabs = dbc.Tabs(
-            [
+        self._tabs.children = [
                 dbc.Tab(
                     dbc.Card(ac.arg_component, body=True),
+                    tab_id=str(
+                        getattr(ac.label_component, ac.label_property)[0]
+                    ),
                     label=str(
                         getattr(ac.label_component, ac.label_property)[0]
                     ),
@@ -403,10 +405,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
                     # tabClassName="card",
                 )
                 for ac in self.roles["output"].values()
-            ],
-            # card=True,
-        )
-        # tabs = dbc.CardHeader(tabs)
+            ]
 
         row = dbc.Row(
             align="top",
@@ -420,7 +419,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
                     style=sidebar_card_style,
                     **filter_kwargs(md=self.sidebar_columns),
                 ),
-                dbc.Col(tabs),
+                dbc.Col(self._tabs),
             ],
         )
         children.append(row)
@@ -432,7 +431,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
         return dbc.Container(layout, fluid=True, style={"padding": 0})
 
     def tab_input(self):
-        pass
+        return Input(self._tabs.id, "active_tab")
 
 def _parse_rules_from_bootstrap_css(css_text):
     import tinycss2

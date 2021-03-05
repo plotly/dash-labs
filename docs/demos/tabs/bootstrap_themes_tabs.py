@@ -45,7 +45,8 @@ tpl = dl.templates.DbcSidebarTabs(
         year=tpl.slider_input(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        logs=tpl.checklist_input(["log(x)", "log(y)"], value="log(x)", label="Axis Scale")
+        logs=tpl.checklist_input(["log(x)", "log(y)"], value="log(x)", label="Axis Scale"),
+        tab=tpl.tab_input(),
     ),
     output=[
         tpl.graph_output(label="Scatter"),
@@ -53,7 +54,8 @@ tpl = dl.templates.DbcSidebarTabs(
     ],
     template=tpl
 )
-def callback(size, figure_title, year, color, logs):
+def callback(size, figure_title, year, color, logs, tab):
+    print(tab)
     logs = logs or []
 
     # Let parameterize infer output component
