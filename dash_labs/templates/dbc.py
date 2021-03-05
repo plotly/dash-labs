@@ -31,26 +31,41 @@ class BaseDbcTemplate(BaseTemplate):
              .param-markdown > p:last-of-type {
                 margin-bottom: 0;
              }
+             
+             .tab-pane .card {
+                border-top-left-radius: 0;
+                border-left-width: 1;
+                border-right-width: 1;
+                border-bottom-width: 1;
+                border-top-width: 0;
+                border-color: rgba(0, 0, 0, 0.125);
+             }
+             
+             .nav-link {
+                border-width: 1 !important;
+                border-color: rgba(0, 0, 0, 0.125) !important;
+                border-left-width: 0.5 !important;
+                border-right-width: 0.5 !important;
+                border-top-width: 0.5 !important;
+                border-bottom-width: 0 !important;
+                border-color: rgba(128, 128, 128, 0.3) !important;
+             }
+             
+             .nav-link.active {
+                background-color: var(--primary) !important;
+                color: var(--white) !important;
+                border-color: rgba(0, 0, 0, 0.125);
+             }
+             
+             .nav-item {
+                margin-right: 0 !important;
+             }
+             
             </style>"""
 
     def __init__(self, theme=None, **kwargs):
         super().__init__()
         self.theme = theme
-
-    # @classmethod
-    # def graph_output(
-    #         cls, figure=None, config=None,
-    #         label=Component.UNDEFINED, role="output",
-    #         component_property="figure", kind=Output, id=None, opts=None
-    # ):
-    #     # classname
-    #     opts = opts or {}
-    #     opts.setdefault("className", "body")
-    #
-    #     return kind(
-    #         cls._graph_class()(**filter_kwargs(opts, figure=figure, config=config, id=id)),
-    #         component_property=component_property, label=label, role=role
-    #     )
 
     # Methods designed to be overridden by subclasses
     @classmethod
@@ -349,6 +364,76 @@ class DbcSidebar(BaseDbcTemplate):
         return dbc.Container(layout, fluid=True, style={"padding": 0})
 
 
+class DbcSidebarTabs(BaseDbcTemplate):
+    def __init__(self, title=None, sidebar_columns=4, **kwargs):
+        import dash_bootstrap_components as dbc
+
+        super().__init__(**kwargs)
+        self.title = title
+        self.sidebar_columns = sidebar_columns
+        self._tabs = dbc.Tabs(id=build_id("tabs"))
+
+    def _perform_layout(self):
+        import dash_bootstrap_components as dbc
+
+        children = []
+
+        if self.title:
+            children.extend(
+                [
+                    html.H3(
+                        className="bg-primary text-white",
+                        children=self.title,
+                        style={"padding": "0.5rem"},
+                    ),
+                ]
+            )
+
+        sidebar_card_style = {"border-radius": 0}
+
+        tabs = dbc.Tabs(
+            [
+                dbc.Tab(
+                    dbc.Card(ac.arg_component, body=True),
+                    label=str(
+                        getattr(ac.label_component, ac.label_property)[0]
+                    ),
+                    # activeTabClassName="card",
+                    # active_tab_style={"background-color": "#303030"},
+                    # tabClassName="card",
+                )
+                for ac in self.roles["output"].values()
+            ],
+            # card=True,
+        )
+        # tabs = dbc.CardHeader(tabs)
+
+        row = dbc.Row(
+            align="top",
+            style={"padding": "10px", "margin": "0"},
+            children=[
+                dbc.Col(
+                    children=dbc.Card(
+                        children=self.get_containers("input"),
+                        body=True,
+                    ),
+                    style=sidebar_card_style,
+                    **filter_kwargs(md=self.sidebar_columns),
+                ),
+                dbc.Col(tabs),
+            ],
+        )
+        children.append(row)
+        return children
+
+    @classmethod
+    def _wrap_layout(cls, layout):
+        import dash_bootstrap_components as dbc
+        return dbc.Container(layout, fluid=True, style={"padding": 0})
+
+    def tab_input(self):
+        pass
+
 def _parse_rules_from_bootstrap_css(css_text):
     import tinycss2
     tinycss_parsed = tinycss2.parse_stylesheet(css_text)
@@ -462,6 +547,8 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
     # so use same color as plot background
     if "rgba" in paper_bgcolor and "rgba" not in plot_bgcolor:
         paper_bgcolor = plot_bgcolor
+
+    # paper_bgcolor = plot_bgcolor
 
     # Build colorway
     colorway_roles = [
