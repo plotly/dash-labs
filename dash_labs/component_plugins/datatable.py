@@ -11,7 +11,7 @@ from dash_table import DataTable
 class DataTablePlugin(ComponentPlugin):
     def __init__(
             self, df, columns=None, page_size=5, sort_mode=None, filterable=False,
-            serverside=False, template=None
+            serverside=False, template=None, role="output"
     ):
         if template is None:
             template = FlatDiv()
@@ -22,6 +22,7 @@ class DataTablePlugin(ComponentPlugin):
         self.page_size = page_size
         self.sort_mode = sort_mode
         self.filterable = filterable
+        self.role = role
 
         self.serverside = serverside
         self.page_count = self._compute_page_count(df)
@@ -98,7 +99,7 @@ class DataTablePlugin(ComponentPlugin):
             )
         ), component_property=dict(
             data="data", columns="columns", page_count="page_count",
-        ))
+        ), role=self.role)
         return result
 
     def _build_serverside_result(self, inputs_value, df, preprocessed=False):
@@ -131,7 +132,7 @@ class DataTablePlugin(ComponentPlugin):
             )
         ), component_property=dict(
             data="data", columns="columns"
-        ))
+        ), role=self.role)
 
     def _build_clientside_result(self, df):
         if df is not None:

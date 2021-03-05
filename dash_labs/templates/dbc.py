@@ -8,21 +8,38 @@ import plotly.graph_objects as go
 import copy
 import plotly.io as pio
 
+
 class BaseDbcTemplate(BaseTemplate):
     # - Align sliders vertically with an outline that matches dropdowns/inputs
     # - Undo the negative margins that table rows pick up from bootstrap's own row
     #   CSS class. Otherwise, table expand in width outside of their container.
     _inline_css = """
             <style>
-            .dcc-slider {
-                padding: 12px 20px 12px 20px !important;
-                border: 1px solid #ced4da;
-                border-radius: .25rem;
-             }
              
              .dash-spreadsheet .row {
                 margin-left: 0;
                 margin-right: 0;
+             }
+             
+             .dash-spreadsheet th {
+                background-color: var(--primary) !important;
+                color: var(--white) !important;
+                border-color: rgba(128, 128, 128, 0.3) !important;
+                font-weight: 400 !important;
+                font-size: 1.25em !important;
+             }
+             
+             .dash-spreadsheet td {
+                background-color: var(--light) !important;
+                border-color: rgba(128, 128, 128, 0.3) !important;
+                color: var(--dark) !important;
+             }
+             
+             .dash-spreadsheet tr:hover td {
+                border-color: lightgrey !important;
+                border-width: 0.5px !important;
+                background-color: var(--info) !important;
+                color: white !important;
              }
              
              .param-markdown > p {
@@ -586,9 +603,17 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
 
 def _try_build_plotly_template_from_bootstrap_css_url(css_url):
     import requests
-    response = requests.get(css_url)
-    if response.status_code != 200:
-        return None
+    from urllib.parse import urlparse
+    parse_result = urlparse(css_url)
+    if parse_result.scheme:
+        # URL
+        response = requests.get(css_url)
+        if response.status_code != 200:
+            return None
+        css_text = response.content.decode("utf8")
+    elif parse_result.path:
+        # Local file
+        with open(parse_result.path, "rt") as f:
+            css_text = f.read()
 
-    css_text = response.content.decode("utf8")
     return _build_plotly_template_from_bootstrap_css_text(css_text)

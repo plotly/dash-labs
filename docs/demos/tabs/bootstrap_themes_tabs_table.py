@@ -8,19 +8,20 @@ import plotly.graph_objects as go
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 df = px.data.gapminder()
+df = df[[c for c in df.columns if not c.startswith("iso_")]]
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
 # theme_name = "cerulean"
 # theme_name = "cosmo"
-theme_name = "cyborg"
+# theme_name = "cyborg"
 # theme_name = "darkly"
 # theme_name = "flatly"
 # theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
 # theme_name = "lux"
-# theme_name = "materia"
+theme_name = "materia"
 # theme_name = "minty"
 # theme_name = "pulse"
 # theme_name = "sandstone"
@@ -34,11 +35,18 @@ theme_name = "cyborg"
 # theme_name = "yeti"
 
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
+# Or, use local file path to assets folder
+# css_url = "assets/darkly_bootstrap.css"
 
 tpl = dl.templates.DbcSidebarTabs(
-    ["Scatter", "Histogram"],
+    ["Scatter", "Histogram", "Table"],
     title=f"Dash Labs - {theme_name.title()} Theme",
     theme=css_url
+)
+
+
+table_plugin = dl.component_plugins.DataTablePlugin(
+    df.iloc[:0], sort_mode="single", role="Table", page_size=15, serverside=True
 )
 
 @app.callback(
@@ -52,16 +60,16 @@ tpl = dl.templates.DbcSidebarTabs(
         logs=tpl.checklist_input(
             ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
         ),
-        tab=tpl.tab_input(),
+        table_inputs=table_plugin.args,
     ),
     output=[
         tpl.graph_output(role="Scatter"),
         tpl.graph_output(role="Histogram"),
+        table_plugin.output,
     ],
     template=tpl
 )
-def callback(year, continent, logs, tab):
-    print(tab)
+def callback(year, continent, logs, table_inputs):
     logs = logs or []
 
     # Let parameterize infer output component
@@ -93,9 +101,9 @@ def callback(year, continent, logs, tab):
         title_text=title,
     )
 
-    return scatter_fig, hist_fig
+    return scatter_fig, hist_fig, table_plugin.get_output_values(table_inputs, df=year_df)
 
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)
