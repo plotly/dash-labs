@@ -9,6 +9,7 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())
+continents = list(df.continent.drop_duplicates())
 
 # css_url = "https://bootswatch.com/4/cerulean/bootstrap.css"
 # css_url = "https://bootswatch.com/4/cosmo/bootstrap.css"
@@ -27,51 +28,54 @@ years = sorted(df.year.drop_duplicates())
 # css_url = "https://bootswatch.com/4/sketchy/bootstrap.css"
 # css_url = "https://bootswatch.com/4/slate/bootstrap.css"
 # css_url = "https://bootswatch.com/4/solar/bootstrap.css"
-css_url = "https://bootswatch.com/4/spacelab/bootstrap.css"
+# css_url = "https://bootswatch.com/4/spacelab/bootstrap.css"
 # css_url = "https://bootswatch.com/4/superhero/bootstrap.css"
 # css_url = "https://bootswatch.com/4/united/bootstrap.css"
-# css_url = "https://bootswatch.com/4/yeti/bootstrap.css"
+css_url = "https://bootswatch.com/4/yeti/bootstrap.css"
 
 tpl = dl.templates.DbcSidebarTabs(
+    ["Scatter", "Histogram"],
     title="Dash Labs App",
     theme=css_url
 )
 
 @app.callback(
     args=dict(
-        size=tpl.dropdown_input(["pop", "gdpPercap", "lifeExp"], label="Size"),
-        color=tpl.dropdown_input(["continent", "pop", "gdpPercap", "lifeExp"], label="Color"),
         figure_title=tpl.textbox_input("Life Expectency", label="Figure Title"),
         year=tpl.slider_input(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        logs=tpl.checklist_input(["log(x)", "log(y)"], value="log(x)", label="Axis Scale"),
+        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
+        logs=tpl.checklist_input(["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"),
+        color=tpl.dropdown_input(["continent", "pop", "gdpPercap", "lifeExp"], label="Color", role="Scatter"),
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(label="Scatter"),
-        tpl.graph_output(label="Histogram"),
+        tpl.graph_output(role="Scatter"),
+        tpl.graph_output(role="Histogram"),
     ],
     template=tpl
 )
-def callback(size, figure_title, year, color, logs, tab):
+def callback(figure_title, year, continent, color, logs, tab):
     print(tab)
     logs = logs or []
 
     # Let parameterize infer output component
     year_df = df[df.year == year]
+    if continent:
+        year_df = year_df[year_df.continent.isin(continent)]
+
     if not len(year_df):
-        return go.Figure()
+        return [go.Figure(), go.Figure()]
 
     fig1 = px.scatter(
         year_df,
         x="gdpPercap",
         y="lifeExp",
-        size=size,
+        size="pop",
         color=color,
         hover_name="country",
         log_x='log(x)' in logs,
-        log_y='log(y)' in logs,
         size_max=60,
     ).update_layout(
         title_text=f"{figure_title} ({year})",

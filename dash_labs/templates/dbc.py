@@ -34,20 +34,14 @@ class BaseDbcTemplate(BaseTemplate):
              
              .tab-pane .card {
                 border-top-left-radius: 0;
-                border-left-width: 1;
-                border-right-width: 1;
-                border-bottom-width: 1;
-                border-top-width: 0;
-                border-color: rgba(0, 0, 0, 0.125);
+             }
+             
+             .nav-tabs {
+                border-bottom-width: 0 !important;
              }
              
              .nav-link {
-                border-width: 1 !important;
-                border-color: rgba(0, 0, 0, 0.125) !important;
-                border-left-width: 0.5 !important;
-                border-right-width: 0.5 !important;
-                border-top-width: 0.5 !important;
-                border-bottom-width: 0 !important;
+                border-width: 0.5px !important;
                 border-color: rgba(128, 128, 128, 0.3) !important;
              }
              
@@ -60,7 +54,7 @@ class BaseDbcTemplate(BaseTemplate):
              .nav-item {
                 margin-right: 0 !important;
              }
-             
+
             </style>"""
 
     def __init__(self, theme=None, **kwargs):
@@ -137,9 +131,8 @@ class BaseDbcTemplate(BaseTemplate):
 
         # classname
         opts = opts or {}
-        opts.setdefault("className", "h6")
-        opts.setdefault("style", {})
-        opts["style"].setdefault("font-weight", "400")
+        # opts.setdefault("className", "h6")
+        # opts.setdefault("className", "btn")
 
         return kind(
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
@@ -365,11 +358,15 @@ class DbcSidebar(BaseDbcTemplate):
 
 
 class DbcSidebarTabs(BaseDbcTemplate):
-    def __init__(self, title=None, sidebar_columns=4, **kwargs):
+    def __init__(self, tab_roles, title=None, sidebar_columns=4, **kwargs):
         import dash_bootstrap_components as dbc
+
+        # Set valid roles before constructor
+        self._valid_roles = ["input", "output"] + list(tab_roles)
 
         super().__init__(**kwargs)
         self.title = title
+        self.tab_roles = tab_roles
         self.sidebar_columns = sidebar_columns
         self._tabs = dbc.Tabs(id=build_id("tabs"))
 
@@ -392,20 +389,18 @@ class DbcSidebarTabs(BaseDbcTemplate):
         sidebar_card_style = {"border-radius": 0}
 
         self._tabs.children = [
-                dbc.Tab(
-                    dbc.Card(ac.arg_component, body=True),
-                    tab_id=str(
-                        getattr(ac.label_component, ac.label_property)[0]
-                    ),
-                    label=str(
-                        getattr(ac.label_component, ac.label_property)[0]
-                    ),
-                    # activeTabClassName="card",
-                    # active_tab_style={"background-color": "#303030"},
-                    # tabClassName="card",
-                )
-                for ac in self.roles["output"].values()
-            ]
+            dbc.Tab(
+                [
+                    dbc.Card([
+                        ac.container_component
+                        for ac in reversed(self.roles[role].values())
+                    ], body=True)
+                ],
+                tab_id=role,
+                label=role,
+            )
+            for role in self.tab_roles
+        ]
 
         row = dbc.Row(
             align="top",
