@@ -11,43 +11,47 @@ df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
-# css_url = "https://bootswatch.com/4/cerulean/bootstrap.css"
-# css_url = "https://bootswatch.com/4/cosmo/bootstrap.css"
-# css_url = "https://bootswatch.com/4/cyborg/bootstrap.css"
-# css_url = "https://bootswatch.com/4/darkly/bootstrap.css"
-# css_url = "https://bootswatch.com/4/flatly/bootstrap.css"
-# css_url = "https://bootswatch.com/4/journal/bootstrap.css"
-# css_url = "https://bootswatch.com/4/litera/bootstrap.css"
-# css_url = "https://bootswatch.com/4/lumen/bootstrap.css"
-# css_url = "https://bootswatch.com/4/lux/bootstrap.css"
-# css_url = "https://bootswatch.com/4/materia/bootstrap.css"
-# css_url = "https://bootswatch.com/4/minty/bootstrap.css"
-# css_url = "https://bootswatch.com/4/pulse/bootstrap.css"
-# css_url = "https://bootswatch.com/4/sandstone/bootstrap.css"
-# css_url = "https://bootswatch.com/4/simplex/bootstrap.css"
-# css_url = "https://bootswatch.com/4/sketchy/bootstrap.css"
-# css_url = "https://bootswatch.com/4/slate/bootstrap.css"
-# css_url = "https://bootswatch.com/4/solar/bootstrap.css"
-# css_url = "https://bootswatch.com/4/spacelab/bootstrap.css"
-# css_url = "https://bootswatch.com/4/superhero/bootstrap.css"
-# css_url = "https://bootswatch.com/4/united/bootstrap.css"
-css_url = "https://bootswatch.com/4/yeti/bootstrap.css"
+# theme_name = "cerulean"
+# theme_name = "cosmo"
+# theme_name = "cyborg"
+# theme_name = "darkly"
+# theme_name = "flatly"
+# theme_name = "journal"
+# theme_name = "litera"
+# theme_name = "lumen"
+theme_name = "lux"
+# theme_name = "materia"
+# theme_name = "minty"
+# theme_name = "pulse"
+# theme_name = "sandstone"
+# theme_name = "simplex"
+# theme_name = "sketchy"
+# theme_name = "slate"
+# theme_name = "solar"
+# theme_name = "spacelab"
+# theme_name = "superhero"
+# theme_name = "united"
+# theme_name = "yeti"
+
+css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 
 tpl = dl.templates.DbcSidebarTabs(
     ["Scatter", "Histogram"],
-    title="Dash Labs App",
+    title=f"Dash Labs - {theme_name.title()} Theme",
     theme=css_url
 )
 
 @app.callback(
     args=dict(
-        figure_title=tpl.textbox_input("Life Expectency", label="Figure Title"),
+        continent=tpl.checklist_input(
+            continents, value=continents, label="Continents"
+        ),
         year=tpl.slider_input(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        logs=tpl.checklist_input(["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"),
-        color=tpl.dropdown_input(["continent", "pop", "gdpPercap", "lifeExp"], label="Color", role="Scatter"),
+        logs=tpl.checklist_input(
+            ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
+        ),
         tab=tpl.tab_input(),
     ),
     output=[
@@ -56,7 +60,7 @@ tpl = dl.templates.DbcSidebarTabs(
     ],
     template=tpl
 )
-def callback(figure_title, year, continent, color, logs, tab):
+def callback(year, continent, logs, tab):
     print(tab)
     logs = logs or []
 
@@ -68,23 +72,30 @@ def callback(figure_title, year, continent, color, logs, tab):
     if not len(year_df):
         return [go.Figure(), go.Figure()]
 
-    fig1 = px.scatter(
+    title = f"Life Expectancy ({year})"
+    scatter_fig = px.scatter(
         year_df,
         x="gdpPercap",
         y="lifeExp",
         size="pop",
-        color=color,
+        color="continent",
         hover_name="country",
         log_x='log(x)' in logs,
         size_max=60,
     ).update_layout(
-        title_text=f"{figure_title} ({year})",
+        title_text=title,
         margin=dict(l=0, r=0, b=0)
     ).update_traces(marker_opacity=0.8)
 
-    return fig1, go.Figure()
+    hist_fig = px.histogram(
+        year_df, x="lifeExp", color="continent", barnorm=""
+    ).update_layout(
+        title_text=title,
+    )
+
+    return scatter_fig, hist_fig
 
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=False)

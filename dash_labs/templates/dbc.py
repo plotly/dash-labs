@@ -54,7 +54,10 @@ class BaseDbcTemplate(BaseTemplate):
              .nav-item {
                 margin-right: 0 !important;
              }
-
+             
+             .card {
+                margin-bottom: 1rem !important;
+            }
             </style>"""
 
     def __init__(self, theme=None, **kwargs):
@@ -412,9 +415,9 @@ class DbcSidebarTabs(BaseDbcTemplate):
                         body=True,
                     ),
                     style=sidebar_card_style,
-                    **filter_kwargs(md=self.sidebar_columns),
+                    md=self.sidebar_columns,
                 ),
-                dbc.Col(self._tabs),
+                dbc.Col(self._tabs, md=12 - self.sidebar_columns),
             ],
         )
         children.append(row)
