@@ -1,9 +1,10 @@
 from dash.development.base_component import Component
 
+from dash_labs.templates._colors import make_grid_color, separate_colorway, maybe_blend
 from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
 from dash_labs.util import filter_kwargs, build_id
-from dash_labs.dependency import Input, Output
+from dash_labs.dependency import Input
 import plotly.graph_objects as go
 import copy
 import plotly.io as pio
@@ -59,13 +60,13 @@ class BaseDbcTemplate(BaseTemplate):
              
              .nav-link {
                 border-width: 0.5px !important;
-                border-color: rgba(128, 128, 128, 0.3) !important;
+                border-color: rgba(100, 100, 100, 0.4) !important;
              }
              
              .nav-link.active {
                 background-color: var(--primary) !important;
                 color: var(--white) !important;
-                border-color: rgba(0, 0, 0, 0.125);
+                border-color: rgba(100, 100, 100, 0.4);
              }
              
              .nav-item {
@@ -74,6 +75,7 @@ class BaseDbcTemplate(BaseTemplate):
              
              .card {
                 margin-bottom: 1rem !important;
+                border-color: rgba(100, 100, 100, 0.4);
             }
             </style>"""
 
@@ -515,34 +517,6 @@ def _get_role_colors(rule_props):
     return role_colors
 
 
-def _hex_to_rgb(clr):
-    clr = clr.lstrip("#")
-    if len(clr) == 3:
-        clr = "".join(c[0]*2 for c in clr)
-    return tuple(int(clr[i:i+2], 16) for i in (0, 2, 4))
-
-
-def _to_rgb_tuple(color):
-    from plotly.colors import hex_to_rgb, unlabel_rgb
-    if isinstance(color, tuple):
-        pass
-    elif color.startswith("#"):
-        color = _hex_to_rgb(color)
-    else:
-        color = unlabel_rgb(color)
-
-    return tuple(int(c) for c in color)
-
-
-def _make_grid_color(bg_color, font_color, weight=0.1):
-    from plotly.colors import find_intermediate_color, label_rgb
-    bg_color = _to_rgb_tuple(bg_color)
-    font_color = _to_rgb_tuple(font_color)
-    return label_rgb(
-        _to_rgb_tuple(find_intermediate_color(bg_color, font_color, weight))
-    )
-
-
 def _build_plotly_template_from_bootstrap_css_text(css_text):
     # Parse css text
     rule_props = _parse_rules_from_bootstrap_css(css_text)
@@ -557,12 +531,12 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
     plot_bgcolor = rule_props["body"].get("background-color", "#fff")
     paper_bgcolor = rule_props[".card"].get("background-color", plot_bgcolor)
 
-    # If paper color has transparency, then overlaying on the card won't match the card
-    # so use same color as plot background
-    if "rgba" in paper_bgcolor and "rgba" not in plot_bgcolor:
+    blended = maybe_blend(plot_bgcolor, paper_bgcolor)
+    if blended is None:
+        # Can't blend, use background color for everything
         paper_bgcolor = plot_bgcolor
-
-    # paper_bgcolor = plot_bgcolor
+    else:
+        paper_bgcolor = blended
 
     # Build colorway
     colorway_roles = [
@@ -573,9 +547,11 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
         "danger",
     ]
     colorway = [role_colors[r] for r in colorway_roles]
+    colorway = separate_colorway(colorway)
+    print("colorway", colorway)
 
     # Build grid color
-    gridcolor = _make_grid_color(plot_bgcolor, font_color, 0.1)
+    gridcolor = make_grid_color(plot_bgcolor, font_color, 0.08)
 
     # Make template
     template = copy.deepcopy(pio.templates["plotly_dark"])
