@@ -46,7 +46,15 @@ def best_darkening(c1, c2, c1_step=(1, 1), c2_step=(1, 1)):
 
 def separate_colorway(html_colors):
 
-    raw_colors = [spectra.html(clr) for clr in html_colors]
+    try:
+        raw_colors = [
+            spectra.rgb(*[c/255 for c in to_rgb_tuple(clr)])
+            for clr in html_colors
+        ]
+    except ValueError:
+        # Unable to parse colors as hex or rgb, return as-is
+        return html_colors
+
     test_colors = [white] + raw_colors + [black]
 
     darkenings = list(np.zeros(len(test_colors)))
