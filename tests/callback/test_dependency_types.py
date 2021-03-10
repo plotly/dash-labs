@@ -38,9 +38,9 @@ def test_arg_dependencies(app, test_template, input_form):
     assert not kwargs
 
     # Check order of dependencies
-    assert_deps_eq(fn_wrapper._flat_input_deps, [a.dependencies for a in inputs])
-    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies])
-    assert_deps_eq(fn_wrapper._flat_output_deps, [output.dependencies])
+    assert_deps_eq(fn_wrapper._flat_input_deps, [a.dependencies() for a in inputs])
+    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies()])
+    assert_deps_eq(fn_wrapper._flat_output_deps, [output.dependencies()])
 
 
 def test_scalar_input_arg_dependencies(app, test_template):
@@ -65,9 +65,9 @@ def test_scalar_input_arg_dependencies(app, test_template):
     assert not kwargs
 
     # Check order of dependencies
-    assert_deps_eq(fn_wrapper._flat_input_deps, list(inputs.dependencies))
-    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies])
-    assert_deps_eq(fn_wrapper._flat_output_deps, [output.dependencies])
+    assert_deps_eq(fn_wrapper._flat_input_deps, list(inputs.dependencies()))
+    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies()])
+    assert_deps_eq(fn_wrapper._flat_output_deps, [output.dependencies()])
 
 
 def test_scalar_output_arg_dependencies(app, test_template):
@@ -92,9 +92,9 @@ def test_scalar_output_arg_dependencies(app, test_template):
     assert not kwargs
 
     # Check order of dependencies
-    assert_deps_eq(fn_wrapper._flat_input_deps, [inputs.dependencies])
-    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies])
-    assert_deps_eq(fn_wrapper._flat_output_deps, list(output.dependencies))
+    assert_deps_eq(fn_wrapper._flat_input_deps, [inputs.dependencies()])
+    assert_deps_eq(fn_wrapper._flat_state_deps, [state.dependencies()])
+    assert_deps_eq(fn_wrapper._flat_output_deps, list(output.dependencies()))
 
 
 def test_state_kwarg_only(app, test_template):
@@ -148,3 +148,28 @@ def test_state_kwarg_only(app, test_template):
     assert isinstance(arg_component, dcc.Markdown)
     assert arg_props == "children"
     assert fn_wrapper._flat_output_deps[0] == expected_deps[0]
+
+
+def test_non_component_property_grouping(app, test_template):
+    input_picker, input_picker_dep = test_template.date_picker_range_input(
+    ).extract_component()
+
+    output_picker, output_picker_dep = test_template.date_picker_range_input(
+        kind=dl.Output
+    ).extract_component()
+
+    # Build mock function
+    fn = mock_fn_with_return(("2020-01-01", "2020-02-01"))
+
+    fn_wrapper = app.callback(
+        output=output_picker_dep, args=input_picker_dep, template=test_template
+    )(fn)
+
+    # call flat version (like dash would)
+    assert fn_wrapper._flat_fn("2021-01-01", "2021-02-01") == \
+           ["2020-01-01", "2020-02-01"]
+
+    # Check how mock function was called
+    args, kwargs = fn.call_args
+    assert args == (("2021-01-01", "2021-02-01"),)
+    assert not kwargs

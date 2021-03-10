@@ -1,20 +1,14 @@
 from functools import update_wrapper, wraps
-from dataclasses import dataclass
-from typing import Any, Union
 from collections import OrderedDict
 
 from dash import exceptions, Dash
 from dash.development.base_component import Component
-
-from dash_labs import build_id
-
-from .dependency import DashExpressDependency, State, Input, Output
-from .templates.base import BaseTemplate
+from .dependency import DashLabsDependency, State, Input, Output
 from dash_labs.grouping import (
     flatten_grouping, make_grouping_by_index, validate_grouping, map_grouping
 )
 from dash.dependencies import (
-    Input as Input_dash, Output as Output_dash, State as State_dash,
+    Input as Input_dash, State as State_dash,
 )
 import dash_html_components as html
 
@@ -22,6 +16,10 @@ _ALL_DEPS = (Input, Output, State)
 
 
 class CallbackWrapper:
+    """
+    Class that functions decorated by app.callback to provide access to
+    original function and callback decorator arguments.
+    """
     def __init__(
             self,
             fn,
@@ -45,13 +43,6 @@ class CallbackWrapper:
         return self.fn(*args, **kwargs)
 
 
-def _is_reference_dependency_grouping(val):
-    """Determine if input is a grouping of dependency values"""
-    flat_vals = flatten_grouping(val)
-    # TODO: require all the same dependency type
-    return all(isinstance(el, _ALL_DEPS) and not el.has_component for el in flat_vals)
-
-
 def _normalize_inputs(inputs, state):
     # Handle positional inputs/state as int dict
     if inputs == [] and isinstance(state, dict):
@@ -73,6 +64,8 @@ def _normalize_inputs(inputs, state):
             elif not isinstance(state, list):
                 state = [state]
 
+        # Create dict from positional argument indices to dependency objects
+        # Note that state values always come after inputs in Dash 1
         inputs = {i: val for i, val in enumerate(inputs)}
         num_inputs = len(inputs)
         if state is not None:
@@ -96,16 +89,21 @@ def _normalize_inputs(inputs, state):
     combined_inputs_state = inputs.copy()
     combined_inputs_state.update(state)
     for name, pattern in combined_inputs_state.items():
+        if isinstance(pattern, DashLabsDependency) and not pattern.has_component:
+            pattern = pattern.dependencies(labs=True)
+
         flat_deps = flatten_grouping(pattern)
         for dep in flat_deps:
-            if not isinstance(dep, DashExpressDependency):
+            if not isinstance(dep, DashLabsDependency):
                 raise ValueError("Invalid dependency: {}".format(dep))
 
             if dep.has_component:
-                # Check is arg is holding a pattern
+                # Apply default label if undefined
+                # (if user explicitly set label to None, leave it alone)
                 if dep.label is Component.UNDEFINED:
                     dep.label = name
 
+                # Update default role if undefined
                 if dep.role is Component.UNDEFINED:
                     dep.role = "input"
 
@@ -134,9 +132,12 @@ def _normalize_output(output):
 
     all_output = OrderedDict()
     for name, pattern in output.items():
+        if isinstance(pattern, DashLabsDependency) and not pattern.has_component:
+            pattern = pattern.dependencies(labs=True)
+
         flat_deps = flatten_grouping(pattern)
         for dep in flat_deps:
-            if not isinstance(dep, DashExpressDependency):
+            if not isinstance(dep, DashLabsDependency):
                 raise ValueError("Invalid dependency: {}".format(dep))
 
             if dep.has_component:
@@ -154,10 +155,6 @@ def _normalize_output(output):
 
 def _add_arg_components_to_template(vals, template):
     for name, val in vals.items():
-        # if (not isinstance(val, DashExpressDependency) or
-        #         not isinstance(val.component, Component)):
-        #     continue
-
         deps = flatten_grouping(val)
         for dep in deps:
             if dep.has_component:
@@ -165,11 +162,14 @@ def _add_arg_components_to_template(vals, template):
                 if isinstance(name, str):
                     opts["name"] = name
 
-                template.add_component(component=dep.component_id,
-                                       component_property=dep.component_property,
-                                       role=dep.role, label=dep.label,
-                                       label_id=dep.label_id,
-                                       containered=dep.containered, **opts)
+                template.add_component(
+                    component=dep.component_id,
+                    component_property=dep.component_property,
+                    role=dep.role, label=dep.label,
+                    label_id=dep.label_id,
+                    containered=dep.containered, **opts
+                )
+
 
 def _get_arg_input_state_dependencies(all_inputs):
     input_groupings = OrderedDict()
@@ -179,10 +179,10 @@ def _get_arg_input_state_dependencies(all_inputs):
     # Collect input groupings
     for name, val in all_inputs.items():
         if isinstance(val, Input):
-            grouping = val.dependencies
-            flat_dependencies = val.flat_dependencies
+            grouping = val.dependencies()
+            flat_dependencies = val.flat_dependencies()
         else:
-            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
+            flat_dependencies = [d.dependencies() for d in flatten_grouping(val)]
             if flat_dependencies and isinstance(flat_dependencies[0], Input_dash):
                 grouping = val
             else:
@@ -195,10 +195,10 @@ def _get_arg_input_state_dependencies(all_inputs):
     num_inputs = len(input_deps)
     for name, val in all_inputs.items():
         if isinstance(val, State):
-            grouping = val.dependencies
-            flat_dependencies = val.flat_dependencies
+            grouping = val.dependencies()
+            flat_dependencies = val.flat_dependencies()
         else:
-            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
+            flat_dependencies = [d.dependencies() for d in flatten_grouping(val)]
             if not flat_dependencies or isinstance(flat_dependencies[0], State_dash):
                 grouping = val
             else:
@@ -221,11 +221,11 @@ def _get_arg_output_dependencies(all_outputs):
     # Collect input groupings
     for name, val in all_outputs.items():
         if isinstance(val, Output):
-            grouping = val.dependencies
-            flat_dependencies = val.flat_dependencies
+            grouping = val.dependencies()
+            flat_dependencies = val.flat_dependencies()
         else:
             grouping = val
-            flat_dependencies = [d.dependencies for d in flatten_grouping(val)]
+            flat_dependencies = [d.dependencies() for d in flatten_grouping(val)]
 
         output_groupings[name] = grouping
         output_deps.extend(flat_dependencies)
@@ -244,33 +244,41 @@ def _callback(
     *_args,
     **_kwargs,
 ):
+    """
+    Implementation of the dash-labs app.callback
+    """
+    # Parse input arguments in a way that is consistent with Dash 1 app.callback
+    # Note that the args argument to app.callback is merged with inputs
     output, inputs, state, prevent_initial_callbacks, template, _wrapped_callback = \
         handle_callback_args(_args, _kwargs)
 
-    from dash_labs.templates import FlatDiv
-    # if template is None:
-    #     template = FlatDiv()
-
-    # Preprocess non-dependency outputs into ComponentPatterns
+    # Combine inputs and stated and normalize into an OrderedDict. List/tuple inputs
+    # have integer keys, which dict inputs have keyword argument names as keys.
     all_inputs, input_form = _normalize_inputs(inputs, state)
+
+    # Likewise, normalize outputs into an OrderedDict
     all_outputs, output_form = _normalize_output(output)
 
-    # Add constructed/literal components to template
+    # For dependencies wrapping component instances, add component to template
     if template is not None:
         _add_arg_components_to_template(all_inputs, template)
         _add_arg_components_to_template(all_outputs, template)
 
-    # Compute Input/State dependency lists and argument groupings
+    # Compute Dash 1 compatible Input/State dependency lists and argument groupings
     input_groupings, input_deps, state_deps = _get_arg_input_state_dependencies(
         all_inputs
     )
 
-    # Compute Output dependency lists and groupings
+    # Compute Dash 1 compatible Output dependency list and output groupings
     output_groupings, output_deps = _get_arg_output_dependencies(all_outputs)
 
     def wrapped(fn) -> CallbackWrapper:
-        # Register callback with output component inference
+        # Preprocess arguments to callback function to create expected argument
+        # groupings from the Dash 1 flat input arguments
         callback_fn = map_input_arguments(fn, input_groupings, input_form)
+
+        # Postprocess return value of wrapped function to validate returned groupings
+        # and flatten values into linear list expected by Dash 1 callback
         callback_fn = map_output_arguments(
             callback_fn, output_groupings, output_form,
         )
@@ -281,11 +289,14 @@ def _callback(
         else:
             _callback = _wrapped_callback
 
+        # Install callback
         _callback(
             app, output_deps, input_deps, state_deps,
             prevent_initial_call=prevent_initial_callbacks
         )(callback_fn)
 
+        # Return CallbackWrapper instance that mimicks wrapped function while providing
+        # access to additional metadata about the callback.
         return CallbackWrapper(
             fn, all_inputs, all_outputs, callback_fn,
             output_deps, input_deps, state_deps
@@ -302,10 +313,10 @@ def map_input_arguments(fn, input_groupings, input_form):
 
         expected_num_args = max([slc.stop for _, slc in input_groupings.values()])
         if len(args) != expected_num_args:
-            # TODO: error report numbers not correct with grouped inputs
-            # error condition is correct.
+            # Not an error condition a user should reach since we control args and
+            # input groupings
             raise ValueError(
-                "Expected {} inputs values, received {}".format(
+                "Expected {} input value(s), received {}".format(
                     expected_num_args, len(args))
             )
 
@@ -322,7 +333,7 @@ def map_input_arguments(fn, input_groupings, input_form):
             return fn(*fn_args)
         elif input_form == "scalar":
             return fn(fn_kwargs[0])
-        else: # "dict"
+        else:  # "dict"
             return fn(**fn_kwargs)
 
     return wrapper
@@ -340,7 +351,7 @@ def map_output_arguments(fn, dep_groupings, output_form):
                 # Accept list when expecting a tuple
                 res = tuple(res)
 
-            flat_res = extract_and_infer_flat_outputs_values(res, dep_grouping)
+            flat_res = extract_and_validate_output_values(res, dep_grouping)
             output.extend(flat_res)
         elif output_form == "list":
             if isinstance(res, tuple):
@@ -351,7 +362,7 @@ def map_output_arguments(fn, dep_groupings, output_form):
             assert len(res) == len(dep_groupings)
 
             for i in range(len(dep_groupings)):
-                flat_res = extract_and_infer_flat_outputs_values(
+                flat_res = extract_and_validate_output_values(
                     res[i], dep_groupings[i]
                 )
                 output.extend(flat_res)
@@ -360,7 +371,7 @@ def map_output_arguments(fn, dep_groupings, output_form):
             assert set(res) == set(dep_groupings)
 
             for name, grouping in dep_groupings.items():
-                flat_res = extract_and_infer_flat_outputs_values(
+                flat_res = extract_and_validate_output_values(
                     res[name], dep_groupings[name]
                 )
                 output.extend(flat_res)
@@ -372,15 +383,14 @@ def map_output_arguments(fn, dep_groupings, output_form):
     return wrapper
 
 
-def extract_and_infer_flat_outputs_values(res_grouping, dep_grouping):
+def extract_and_validate_output_values(res_grouping, dep_grouping):
     # Extracting property values from dependency components
-    if isinstance(res_grouping, DashExpressDependency):
+    if isinstance(res_grouping, DashLabsDependency):
         res_grouping = res_grouping.property_value()
 
     # Check value against schema
     validate_grouping(res_grouping, dep_grouping)
     flat_results = flatten_grouping(res_grouping, dep_grouping)
-    flat_deps = flatten_grouping(dep_grouping)
 
     return flat_results
 
