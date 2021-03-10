@@ -6,7 +6,7 @@ import dash_html_components as html
 
 import pytest
 from dash.dependencies import Input, Output, State
-from dash_labs.grouping import make_grouping_by_position
+from dash_labs.grouping import make_grouping_by_index
 from dash_labs import Plugin
 
 # Helpers
@@ -25,7 +25,7 @@ def build_component_with_grouping(component_cls, int_grouping, size):
     for i, prop in enumerate(props):
         setattr(component, prop, i)
     # Build prop grouping
-    prop_grouping = make_grouping_by_position(int_grouping, props)
+    prop_grouping = make_grouping_by_index(int_grouping, props)
     return component, prop_grouping, int_grouping
 
 

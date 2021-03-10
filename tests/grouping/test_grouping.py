@@ -2,14 +2,16 @@ from collections import namedtuple
 from dash.dependencies import Input
 from dash_labs.grouping import (
     flatten_grouping,
-    make_grouping_by_position,
+    make_grouping_by_index,
     grouping_len,
     make_grouping_by_key,
     make_grouping_by_attr,
     map_grouping,
-    make_schema,
+    make_schema_with_nones,
     validate_grouping,
-    SchemaValidationError,
+    SchemaTypeValidationError,
+    SchemaLengthValidationError,
+    SchemaKeysValidationError,
 )
 
 from ..fixtures import *
@@ -66,7 +68,7 @@ def make_flat_values(size):
 def test_make_grouping_by_position_scalar(scalar_grouping_size):
     grouping, size = scalar_grouping_size
     flat_values = make_flat_values(size)
-    result = make_grouping_by_position(grouping, flat_values)
+    result = make_grouping_by_index(grouping, flat_values)
     expected = flat_values[0]
     assert expected == result
 
@@ -74,7 +76,7 @@ def test_make_grouping_by_position_scalar(scalar_grouping_size):
 def test_make_grouping_by_position_tuple(tuple_grouping_size):
     grouping, size = tuple_grouping_size
     flat_values = make_flat_values(size)
-    result = make_grouping_by_position(grouping, flat_values)
+    result = make_grouping_by_index(grouping, flat_values)
     expected = tuple(flat_values)
     assert expected == result
 
@@ -82,7 +84,7 @@ def test_make_grouping_by_position_tuple(tuple_grouping_size):
 def test_make_grouping_by_position_dict(dict_grouping_size):
     grouping, size = dict_grouping_size
     flat_values = make_flat_values(size)
-    result = make_grouping_by_position(grouping, flat_values)
+    result = make_grouping_by_index(grouping, flat_values)
     expected = {k: flat_values[i] for i, k in enumerate(grouping)}
     assert expected == result
 
@@ -90,7 +92,7 @@ def test_make_grouping_by_position_dict(dict_grouping_size):
 def test_make_grouping_by_position_mixed(mixed_grouping_size):
     grouping, size = mixed_grouping_size
     flat_values = make_flat_values(size)
-    result = make_grouping_by_position(grouping, flat_values)
+    result = make_grouping_by_index(grouping, flat_values)
 
     # Check for size mutation on flat_values
     assert len(flat_values) == size
@@ -191,7 +193,7 @@ def make_grouping_attr_source(int_grouping):
     size = grouping_len(int_grouping)
     props = make_flat_values(size)
     vals = list(range(100, 100 + size))
-    letter_grouping = make_grouping_by_position(int_grouping, props)
+    letter_grouping = make_grouping_by_index(int_grouping, props)
     Source = namedtuple("Source", props)
     return letter_grouping, Source(*vals)
 
@@ -288,7 +290,7 @@ def test_map_grouping_mixed(mixed_grouping_size):
     grouping, size = mixed_grouping_size
     def fn(x): return x*2 + 5
     result = map_grouping(fn, grouping)
-    expected = make_grouping_by_position(
+    expected = make_grouping_by_index(
         grouping, list(map(fn, flatten_grouping(grouping)))
     )
     assert expected == result
@@ -297,8 +299,8 @@ def test_map_grouping_mixed(mixed_grouping_size):
 # Test make_schema
 def test_make_schema_mixed(mixed_grouping_size):
     grouping, size = mixed_grouping_size
-    result = make_schema(grouping)
-    expected = make_grouping_by_position(
+    result = make_schema_with_nones(grouping)
+    expected = make_grouping_by_index(
         grouping, [None for _ in range(grouping_len(grouping))]
     )
     assert expected == result
@@ -307,60 +309,67 @@ def test_make_schema_mixed(mixed_grouping_size):
 # Test validate_schema
 def test_validate_schema_grouping_scalar(scalar_grouping_size):
     grouping, size = scalar_grouping_size
-    schema = make_schema(grouping)
+    schema = make_schema_with_nones(grouping)
     validate_grouping(grouping, schema)
 
-    # check validation failures
-    with pytest.raises(SchemaValidationError):
-        validate_grouping((0,), schema)
-
-    with pytest.raises(SchemaValidationError):
-        validate_grouping({"a": 0}, schema)
-
+    # Anything is valid as a scalar
+    validate_grouping((0,), schema)
+    validate_grouping({"a": 0}, schema)
 
 def test_validate_schema_grouping_tuple(tuple_grouping_size):
     grouping, size = tuple_grouping_size
-    schema = make_schema(grouping)
+    schema = make_schema_with_nones(grouping)
     validate_grouping(grouping, schema)
 
     # check validation failures
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaTypeValidationError):
         validate_grouping(None, schema)
 
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaLengthValidationError):
         validate_grouping((None,)*(size + 1), schema)
 
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaTypeValidationError):
         validate_grouping({"a": 0}, schema)
 
 
 def test_validate_schema_dict(dict_grouping_size):
     grouping, size = dict_grouping_size
-    schema = make_schema(grouping)
+    schema = make_schema_with_nones(grouping)
     validate_grouping(grouping, schema)
 
     # check validation failures
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaTypeValidationError):
         validate_grouping(None, schema)
 
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaTypeValidationError):
         validate_grouping((None,), schema)
 
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaKeysValidationError):
         validate_grouping({"A": 0, "bogus": 2}, schema)
 
 
 def test_validate_schema_mixed(mixed_grouping_size):
     grouping, size = mixed_grouping_size
-    schema = make_schema(grouping)
+    schema = make_schema_with_nones(grouping)
     validate_grouping(grouping, schema)
 
     # check validation failures
-    with pytest.raises(SchemaValidationError):
+    with pytest.raises(SchemaTypeValidationError):
         validate_grouping(None, schema)
 
-    with pytest.raises(SchemaValidationError):
+    # Check invalid tuple value
+    if isinstance(schema, tuple):
+        err = SchemaLengthValidationError
+    else:
+        err = SchemaTypeValidationError
+    with pytest.raises(err):
         validate_grouping((None,), schema)
 
-    with pytest.raises(SchemaValidationError):
+    # Check invalid dict value
+    if isinstance(schema, dict):
+        err = SchemaKeysValidationError
+    else:
+        err = SchemaTypeValidationError
+
+    with pytest.raises(err):
         validate_grouping({"A": 0, "bogus": 2}, schema)

@@ -2,7 +2,7 @@ import string
 from unittest.mock import MagicMock
 
 from dash_labs import build_id
-from grouping import make_grouping_by_position, grouping_len
+from grouping import make_grouping_by_index, grouping_len
 
 
 def make_deps(dep_type, n):
@@ -32,12 +32,12 @@ def make_letters(n, upper=False):
 
 
 def make_letters_grouping(grouping, upper=False):
-    return make_grouping_by_position(
+    return make_grouping_by_index(
         grouping, make_letters(grouping_len(grouping), upper=upper)
     )
 
 
 def make_numbers_grouping(grouping, offset=0):
-    return make_grouping_by_position(
+    return make_grouping_by_index(
         grouping, list(range(offset, offset + grouping_len(grouping)))
     )

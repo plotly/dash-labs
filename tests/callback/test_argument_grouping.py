@@ -2,7 +2,7 @@ import pytest
 import itertools
 
 import dash_labs as dl
-from dash_labs.grouping import make_grouping_by_position, grouping_len
+from dash_labs.grouping import make_grouping_by_index, grouping_len
 from . import make_deps, assert_deps_eq, mock_fn_with_return, make_letters, \
     make_letters_grouping, make_numbers_grouping
 from ..fixtures import (
@@ -65,7 +65,7 @@ def test_ungrouped_with_mock(app, test_template):
 
 
 def button_component_prop_for_grouping(grouping):
-    props_grouping = make_grouping_by_position(
+    props_grouping = make_grouping_by_index(
         grouping, button_props[:grouping_len(grouping)]
     )
     return html.Button(), props_grouping
@@ -204,15 +204,15 @@ def check_dependencies_as_groupings(
 
     # Build grouped dependency lists
     grouped_input_deps = [
-        make_grouping_by_position(input_grouping, flat_input_deps[:-1]),
+        make_grouping_by_index(input_grouping, flat_input_deps[:-1]),
         flat_input_deps[-1]
     ]
     grouped_state_deps = [
-        make_grouping_by_position(state_grouping, flat_state_deps),
+        make_grouping_by_index(state_grouping, flat_state_deps),
     ]
     grouped_output_deps = [
         flat_output_deps[0],
-        make_grouping_by_position(output_grouping, flat_output_deps[1:])
+        make_grouping_by_index(output_grouping, flat_output_deps[1:])
     ]
 
     # Build flat input/output values (state is part of input now)

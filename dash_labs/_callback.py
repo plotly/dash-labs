@@ -11,8 +11,7 @@ from dash_labs import build_id
 from .dependency import DashExpressDependency, State, Input, Output
 from .templates.base import BaseTemplate
 from dash_labs.grouping import (
-    flatten_grouping, make_grouping_by_position, validate_grouping, grouping_len,
-    make_grouping_by_attr, map_grouping
+    flatten_grouping, make_grouping_by_index, validate_grouping, map_grouping
 )
 from dash.dependencies import (
     Input as Input_dash, Output as Output_dash, State as State_dash,
@@ -312,7 +311,7 @@ def map_input_arguments(fn, input_groupings, input_form):
 
         fn_kwargs = {}
         for name, (grouping, slc) in input_groupings.items():
-            fn_kwargs[name] = make_grouping_by_position(grouping, list(args[slc]))
+            fn_kwargs[name] = make_grouping_by_index(grouping, list(args[slc]))
 
         if input_form == "list":
             # keys of fn_kwargs are integers and we need to build list of position
@@ -379,7 +378,7 @@ def extract_and_infer_flat_outputs_values(res_grouping, dep_grouping):
         res_grouping = res_grouping.property_value()
 
     # Check value against schema
-    validate_grouping(res_grouping, dep_grouping, allow_scalar_dict=True)
+    validate_grouping(res_grouping, dep_grouping)
     flat_results = flatten_grouping(res_grouping, dep_grouping)
     flat_deps = flatten_grouping(dep_grouping)
 

@@ -1,4 +1,32 @@
+"""
+This module contains a collection of utility function for dealing with property
+groupings.
+
+Terminology:
+
+For the purpose of grouping and ungrouping, tuples and dictionaries are considered
+"composite values" and all other values are considered "scalar values".
+
+A "grouping value" is either composite or scalar.
+
+A "schema" is a grouping value that can be used to encode an expected grouping
+structure
+
+"""
+
+
 def flatten_grouping(grouping, schema=None):
+    """
+    Convert a grouping value to a list of scalar values
+
+    :param grouping: grouping value to flatten
+    :param schema: If provided, a grouping value representing the expected structure of
+        the input grouping value. If not provided, the grouping value is its own schema.
+        A schema is required in order to be able treat tuples and dicts in the input
+        grouping as scalar values.
+
+    :return: list of the scalar values in the input grouping
+    """
     if schema is None:
         schema = grouping
 
@@ -16,30 +44,38 @@ def flatten_grouping(grouping, schema=None):
         return [grouping]
 
 
-def grouping_len(grouping, schema=None):
-    if schema is None:
-        schema = grouping
+def grouping_len(grouping):
+    """
+    Get the length of a grouping. The length equal to the number of scalar values
+    contained in the grouping, which is equivalent to the length of the list that would
+    result from calling flatten_grouping on the grouping value.
 
-    if isinstance(schema, tuple):
+    :param grouping: The grouping value to calculate the length of
+    :return: non-negative integer
+    """
+    if isinstance(grouping, tuple):
         return sum([
-            grouping_len(group_el, schema_el)
-            for group_el, schema_el in zip(grouping, schema)
+            grouping_len(group_el) for group_el in grouping
         ])
-    elif isinstance(schema, dict):
+    elif isinstance(grouping, dict):
         return sum([
-            grouping_len(group_el, schema_el)
-            for group_el, schema_el in zip(grouping.values(), schema.values())
+            grouping_len(group_el) for group_el in grouping.values()
         ])
     else:
         return 1
 
 
-def make_grouping_by_position(grouping, flat_values):
+def make_grouping_by_index(schema, flat_values):
     """
-    Make grouping like grouping using traversal index. Values in grouping are not
-    used
-    """
+    Make a grouping like the provided grouping schema, with scalar values drawn from a
+    flat list by index.
 
+    Note: Scalar values in schema are not used
+
+    :param schema: Grouping value encoding the structure of the grouping to return
+    :param flat_values: List of values with length matching the grouping_len of schema.
+        Elements of flat_values will become the scalar values in the resulting grouping
+    """
     def _perform_make_grouping_like(value, next_values):
         if isinstance(value, tuple):
             return tuple(
@@ -60,7 +96,7 @@ def make_grouping_by_position(grouping, flat_values):
             "Received value of type {typ}".format(typ=type(flat_values))
         )
 
-    expected_length = len(flatten_grouping(grouping))
+    expected_length = len(flatten_grouping(schema))
     if len(flat_values) != expected_length:
         raise ValueError(
             "The specified grouping pattern requires {n} elements but received {m}\n"
@@ -68,37 +104,24 @@ def make_grouping_by_position(grouping, flat_values):
             "    Values: {flat_values}".format(
                 n=expected_length,
                 m=len(flat_values),
-                pattern=repr(grouping),
+                pattern=repr(schema),
                 flat_values=flat_values,
             )
         )
 
-    return _perform_make_grouping_like(grouping, list(flat_values))
-
-
-def _make_grouping_by_getter(grouping, source, default, getter):
-    if isinstance(grouping, tuple):
-        return tuple(
-            _make_grouping_by_getter(g, source, default, getter) for g in grouping
-        )
-    elif isinstance(grouping, dict):
-        return {
-            k: _make_grouping_by_getter(g, source, default, getter)
-            for k, g in grouping.items()
-        }
-    else:
-        return getter(source, grouping, default)
-
-
-def make_grouping_by_attr(grouping, source, default=None):
-    return _make_grouping_by_getter(grouping, source, default, getattr)
-
-
-def make_grouping_by_key(grouping, source, default=None):
-    return _make_grouping_by_getter(grouping, source, default, type(source).get)
+    return _perform_make_grouping_like(schema, list(flat_values))
 
 
 def map_grouping(fn, grouping):
+    """
+    Map a function over all of the scalar values of a grouping, maintaining the
+    grouping structure
+
+    :param fn: Single-argument function that accepts and returns scalar grouping values
+    :param grouping: The grouping to map the function over
+    :return: A new grouping with the same structure as input grouping with scalar
+        values updated by the input function.
+    """
     if isinstance(grouping, tuple):
         return tuple(
             map_grouping(fn, g) for g in grouping
@@ -109,34 +132,136 @@ def map_grouping(fn, grouping):
         return fn(grouping)
 
 
-def make_schema(grouping):
+def make_grouping_by_attr(schema, source, default=None):
     """
-    Replace all leaf values with None
+    Create a grouping from a schema by using the schema's scalar values to look up
+    attributes in the provided source object.
+
+    :param schema: A grouping of potential attributes in source
+    :param source: Object to use to look up scalar grouping values from attributes
+    :param default: Default value to use if attribute is not present in source
+    :return: grouping
+    """
+    return map_grouping(lambda s: getattr(source, s, default), schema)
+
+
+def make_grouping_by_key(schema, source, default=None):
+    """
+    Create a grouping from a schema by ujsing the schema's scalar values to look up
+    items in the provided source object.
+
+    :param schema: A grouping of potential keys in source
+    :param source: Dict-like object to use to look up scalar grouping value using
+        scalar grouping values as keys
+    :param default: Default scalar value to use if grouping scalar key is not present
+        in source
+    :return: grouping
+    """
+    return map_grouping(lambda s: source.get(s, default), schema)
+
+
+def make_schema_with_nones(grouping):
+    """
+    Create a grouping by replacing all grouping scalars values with None
     """
     return map_grouping(lambda _: None, grouping)
 
 
 class SchemaValidationError(ValueError):
-    pass
+    def __str__(self):
+        return "Grouping Schema Validation Error"
 
 
-def validate_grouping(grouping, schema, allow_scalar_dict=False):
-    def check(condition):
-        if not condition:
-            raise SchemaValidationError()
+class SchemaTypeValidationError(SchemaValidationError):
+    def __init__(self, value, full_schema, path, expected_type):
+        self.value = value
+        self.full_schema = full_schema
+        self.path = list(path)
+        self.expected_type = expected_type.__name__
+
+    def __str__(self):
+        return (
+            "\n"
+            f"    Schema: {self.full_schema}\n"
+            f"    Path: {repr(self.path)}\n"
+            f"    Expected type: {self.expected_type}\n"
+            f"    Received value of type {type(self.value)}:\n"
+            f"        {repr(self.value)}\n"
+        )
+
+    @classmethod
+    def check(cls, value, full_schema, path, expected_type):
+        if not isinstance(value, expected_type):
+            raise SchemaTypeValidationError(value, full_schema, path, expected_type)
+
+
+class SchemaLengthValidationError(SchemaValidationError):
+    def __init__(self, value, full_schema, path, expected_len):
+        self.value = value
+        self.full_schema = full_schema
+        self.path = list(path)
+        self.expected_len = expected_len
+
+    def __str__(self):
+        return (
+            "\n"
+            f"    Schema: {self.full_schema}\n"
+            f"    Path: {repr(self.path)}\n"
+            f"    Expected length: {self.expected_len}\n"
+            f"    Received value of length {len(self.value)}:\n"
+            f"        {repr(self.value)}\n"
+        )
+
+    @classmethod
+    def check(cls, value, full_schema, path, expected_len):
+        if len(value) != expected_len:
+            raise SchemaLengthValidationError(value, full_schema, path, expected_len)
+
+
+class SchemaKeysValidationError(SchemaValidationError):
+    def __init__(self, value, full_schema, path, expected_keys):
+        self.value = value
+        self.full_schema = full_schema
+        self.path = list(path)
+        self.expected_keys = expected_keys
+
+    def __str__(self):
+        return (
+            "\n"
+            f"    Schema: {self.full_schema}\n"
+            f"    Path: {repr(self.path)}\n"
+            f"    Expected keys: {self.expected_keys}\n"
+            f"    Received value with keys {set(self.value.keys())}:\n"
+            f"        {repr(self.value)}\n"
+        )
+
+    @classmethod
+    def check(cls, value, full_schema, path, expected_keys):
+        if set(value.keys()) != set(expected_keys):
+            raise SchemaKeysValidationError(value, full_schema, path, expected_keys)
+
+
+def validate_grouping(grouping, schema, full_schema=None, path=()):
+    """
+    Validate that the provided grouping conforms to the provided schema.
+    If not, raise a SchemaValidationError
+    """
+    if full_schema is None:
+        full_schema = schema
 
     if isinstance(schema, tuple):
-        check(isinstance(grouping, tuple))
-        check(len(grouping) == len(schema))
-        for g, s in zip(grouping, schema):
-            validate_grouping(g, s, allow_scalar_dict=allow_scalar_dict)
+        SchemaTypeValidationError.check(grouping, full_schema, path, tuple)
+        SchemaLengthValidationError.check(grouping, full_schema, path, len(schema))
+
+        for i, (g, s) in enumerate(zip(grouping, schema)):
+            validate_grouping(g, s, full_schema=full_schema, path=path + (i,))
     elif isinstance(schema, dict):
-        check(isinstance(grouping, dict))
-        check(set(grouping) == set(schema))
+        SchemaTypeValidationError.check(grouping, full_schema, path, dict)
+        SchemaKeysValidationError.check(grouping, full_schema, path, set(schema))
+
         for k in schema:
             validate_grouping(
-                grouping[k], schema[k], allow_scalar_dict=allow_scalar_dict
+                grouping[k], schema[k], full_schema=full_schema, path=path + (k,)
             )
     else:
-        invalid = (tuple,) + (dict,) if not allow_scalar_dict else ()
-        check(not isinstance(grouping, invalid))
+        pass
