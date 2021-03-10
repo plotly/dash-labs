@@ -6,15 +6,32 @@ from dash.development.base_component import Component
 import re
 
 
-def reset_uid_random_seed(seed=0):
-    random.seed(seed)
+# Create dedicated random number generator for build UUIDs
+_uid_random = random.Random(0)
 
 
-reset_uid_random_seed()
+def _reset_uuid_random_seed(seed=0):
+    """
+    Reset the random seed used to generate the UUID strings added to the component
+    id values produced by the build_id function.
+
+    :param seed: New random seed
+    :type seed: int
+    """
+    _uid_random.seed(seed)
 
 
 def build_id(name=None, **kwargs):
-    uid = str(uuid.UUID(int=random.randint(0, 2 ** 128)))
+    """
+    Build a unique component id. The returned id is a dictionary containing
+    a UUID string as the value of a `uid` key. If the name and/or kwargs arguments are
+    provided, these will be added to the returned dictionary as well.
+
+    The UUID strings are generated using a fixed random seed so their values are
+    deterministic across multiple executions of an app, and multiple processes running
+    the same app.
+    """
+    uid = str(uuid.UUID(int=_uid_random.randint(0, 2 ** 128)))
     return dict(
         uid=uid,
         **filter_kwargs(name=name, **kwargs),
@@ -22,6 +39,14 @@ def build_id(name=None, **kwargs):
 
 
 def filter_kwargs(*args, **kwargs):
+    """
+    Combine dictionaries and remove values that are None or Component.UNDEFINED
+
+    :param args: List of dictionaries with string keys to filter
+    :param kwargs: Additional keyword arguments to filter
+    :return: dict containing all of the key-value pairs from args and kwargs with
+        values that are not None and not Component.UNDEFINED
+    """
     result = {}
 
     for arg in list(args) + [kwargs]:
@@ -35,7 +60,7 @@ def filter_kwargs(*args, **kwargs):
 
 def insert_into_ordered_dict(odict, value, key=None, before=None, after=None):
     """
-    Return copy of input OrderedDict with value inserted at a specific location.
+    Return copy of the input OrderedDict with a value inserted at a specific location.
 
     Does not modify input OrderedDict
 
@@ -44,7 +69,9 @@ def insert_into_ordered_dict(odict, value, key=None, before=None, after=None):
     to the provided value in the resulting OrderedDict.  If None, the key will be
     the integer index of the insertion location.
 
-    before and after may be strings or integer indices
+    before and after may be strings or integer indices and they can be set the value
+    of an existing key in the OrderedDict that the new value should be instered before
+    or after.
     """
     # Validation
     if key is not None:
@@ -85,6 +112,17 @@ def insert_into_ordered_dict(odict, value, key=None, before=None, after=None):
 
 
 def add_css_class(component, className):
+    """
+    Update the className property of a Dash component to include a CSS class name.
+    If one or more classes already exist, the provided className will be be appended
+    to the list. If the provided className is already present, no change will be made
+    to the component.
+
+    Note: This function mutates the provided component's className property in-place.
+
+    :param component: Dash component
+    :param className: CSS class name string
+    """
     if not className:
         return
 

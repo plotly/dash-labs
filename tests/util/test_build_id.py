@@ -2,11 +2,11 @@ import dash_labs as dl
 
 
 def test_deterministic_uid():
-    dl.util.reset_uid_random_seed()
+    dl.util._reset_uuid_random_seed()
     id1 = dl.build_id(name="foo")
     id2 = dl.build_id(name="bar")
 
-    dl.util.reset_uid_random_seed()
+    dl.util._reset_uuid_random_seed()
     id3 = dl.build_id(name="foo")
     id4 = dl.build_id(name="bar")
 
