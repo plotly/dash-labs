@@ -143,6 +143,16 @@ class DashLabsDependency:
             lambda p: getattr(self.component_id, p, None), self.component_property
         )
 
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}(\n"
+            f"    component_id={repr(self.component_id)},\n"
+            f"    component_property={repr(self.component_property)}\n"
+            f")")
+
+    def __repr__(self):
+        return str(self)
+
 
 class Input(DashLabsDependency):
     dependency_class = Input_dash
