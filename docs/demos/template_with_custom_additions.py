@@ -3,28 +3,32 @@ import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dx.templates.DbcSidebar(title="Dash Labs App")
+tpl = dl.templates.DbcSidebar(
+    title="Dash Labs App",
+    theme=dbc.themes.LUX,
+    figure_template=True
+)
+# tpl = dl.templates.DdkSidebar(title="Dash Labs App")
 
 # import dash_core_components as dcc
 @app.callback(
     inputs=dict(
-        fun=dx.Input(dcc.Dropdown(
-            options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
-            value="sin",
-        ), label="Function"),
-        figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
-        phase=dx.Input(dcc.Slider(min=1, max=10, value=3), label="Phase"),
-        amplitude=dx.Input(dcc.Slider(min=1, max=10, value=4), label="Amplitude")
+        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
+        figure_title=tpl.textbox_input("Initial Title", label="Figure Title"),
+        phase=tpl.slider_input(1, 10, value=3, label="Phase"),
+        amplitude=tpl.slider_input(1, 10, value=4, label="Amplitude"),
     ),
+    output=tpl.graph_output(),
     template=tpl,
 )
 def function_browser(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return dcc.Graph(figure=px.line(
+    return px.line(
         x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title))
+    ).update_layout(title_text=figure_title)
 
 
 # Add extra component to template

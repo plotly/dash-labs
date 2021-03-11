@@ -1,18 +1,14 @@
 from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
-import dash_core_components as dcc
 
 
-class DccCard(BaseTemplate):
-    _inline_css = """
-        <style>
-        .dcc-slider {
-            padding: 12px 20px 12px 20px !important;
-         }
-        </style>"""
-
-    def __init__(self, title=None, width=None, **kwargs):
-        super().__init__(**kwargs)
+class HtmlCard(BaseTemplate):
+    """
+    Simple template that places all components in a few html Div elements with a
+    card-like border.
+    """
+    def __init__(self, title=None, width=None):
+        super().__init__()
         self.title = title
         self.width = width
 

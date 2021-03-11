@@ -1,6 +1,7 @@
+from collections import OrderedDict
+
 from dash.development.base_component import Component
 
-from dash_labs.templates._colors import make_grid_color, separate_colorway, maybe_blend
 from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
 from dash_labs.util import filter_kwargs, build_id
@@ -11,9 +12,13 @@ import plotly.io as pio
 
 
 class BaseDbcTemplate(BaseTemplate):
-    # - Align sliders vertically with an outline that matches dropdowns/inputs
+    """
+    Base class for templates based on the dash-bootstrap-components library
+    """
+
     # - Undo the negative margins that table rows pick up from bootstrap's own row
     #   CSS class. Otherwise, table expand in width outside of their container.
+    # - Style various elements using bootstrap css variables
     _inline_css = """
             <style>
              
@@ -41,13 +46,6 @@ class BaseDbcTemplate(BaseTemplate):
                 border-width: 0.5px !important;
                 background-color: var(--info) !important;
                 color: white !important;
-             }
-             
-             .param-markdown > p {
-                margin-bottom: 0.5rem;
-             }
-             .param-markdown > p:last-of-type {
-                margin-bottom: 0;
              }
              
              .tab-pane .card {
@@ -79,11 +77,83 @@ class BaseDbcTemplate(BaseTemplate):
             }
             </style>"""
 
-    def __init__(self, theme=None, **kwargs):
+    def __init__(self, theme=None, figure_template=False):
+        """
+        :param theme: Path to a bootstrap theme css file. If not provided, a default
+            bootstrap theme will be used.
+        :param figure_template: If True, generate a plotly.py figure template from the
+            provided (or default) bootstrap theme. Figure templates will adopt the
+            colors and fonts of the associated bootstrap theme css file.
+        """
         super().__init__()
         self.theme = theme
+        self.figure_template = figure_template
 
     # Methods designed to be overridden by subclasses
+    @classmethod
+    def build_labeled_component(cls, component, label, label_id=None, role=None):
+        import dash_bootstrap_components as dbc
+
+        if not label_id:
+            label_id = build_id("label")
+
+        label_component = dbc.Label(
+            id=label_id,
+            children=[label],
+            style={"display": "block"},
+            className="h5",
+        )
+        container_id = build_id("container")
+        container = dbc.FormGroup(id=container_id, children=[label_component, component])
+        return container, "children", label_component, "children"
+
+    @classmethod
+    def build_containered_component(cls, component, role=None):
+        import dash_bootstrap_components as dbc
+
+        container_id = build_id("container")
+        container = dbc.FormGroup(id=container_id, children=[component])
+        return container, "children"
+
+    def _configure_app(self, app):
+        super()._configure_app(app)
+        import dash_bootstrap_components as dbc
+
+        # Check if there are any bootstrap css themes already added
+        add_theme = True
+        theme = self.theme
+        for url in app.config.external_stylesheets:
+            if "bootstrapcdn" in url:
+                add_theme = False
+                if theme is None:
+                    theme = url
+                break
+
+        if add_theme:
+            if self.theme is None:
+                theme = dbc.themes.BOOTSTRAP
+            else:
+                theme = self.theme
+
+            app.config.external_stylesheets.append(theme)
+
+        if self.figure_template:
+            self.make_figure_theme(theme, activate=True)
+
+    @classmethod
+    def make_figure_theme(cls, theme, activate=True, raise_on_failure=True):
+        template = _try_build_plotly_template_from_bootstrap_css_path(theme)
+        if template is None and raise_on_failure:
+            raise ValueError(
+                f"Failed to construct plotly.py figure theme from bootstrap theme:\n"
+                f"   {theme}"
+            )
+        if activate:
+            pio.templates.default = template
+
+        return template
+
+    # component dependency constructors
     @classmethod
     def button_input(
             cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
@@ -161,82 +231,22 @@ class BaseDbcTemplate(BaseTemplate):
             component_property=component_property, label=label, role=role
         )
 
-    @classmethod
-    def build_optional_component(self, component, enabled=True):
-        """ Should come before labeling """
-        import dash_bootstrap_components as dbc
-
-        checkbox_id = build_id(
-            kind="disable-checkbox",
-            name=str(component.id["name"]) + "-enabled",
-        )
-        checkbox = dbc.Checkbox(id=checkbox_id, checked=enabled)
-        checkbox_property = "checked"
-
-        container = dbc.InputGroup(
-            [
-                dbc.InputGroupAddon(checkbox, addon_type="prepend"),
-                html.Div(style=dict(flex="auto"), children=component),
-            ]
-        )
-        return container, "children", checkbox, checkbox_property
-
-    @classmethod
-    def build_labeled_component(cls, component, initial_value, label_id=None):
-        import dash_bootstrap_components as dbc
-
-        if not label_id:
-            label_id = build_id("label")
-
-        label = dbc.Label(
-            id=label_id,
-            children=[initial_value],
-            style={"display": "block"},
-            className="h5",
-        )
-        container_id = build_id("container")
-        container = dbc.FormGroup(id=container_id, children=[label, component])
-        return container, "children", label, "children"
-
-
-    @classmethod
-    def build_containered_component(cls, component):
-        import dash_bootstrap_components as dbc
-
-        container_id = build_id("container")
-        container = dbc.FormGroup(id=container_id, children=[component])
-        return container, "children"
-
-    def _configure_app(self, app):
-        super()._configure_app(app)
-        import dash_bootstrap_components as dbc
-
-        # Check if there are any bootstrap css themes already added
-        add_theme = True
-        for url in app.config.external_stylesheets:
-            if "bootstrapcdn" in url:
-                add_theme = False
-                break
-        if add_theme:
-            if self.theme is None:
-                theme = dbc.themes.BOOTSTRAP
-            else:
-                theme = self.theme
-
-            app.config.external_stylesheets.append(theme)
-
-            template = _try_build_plotly_template_from_bootstrap_css_url(theme)
-            if template is not None:
-                pio.templates.default = template
-
 
 class DbcCard(BaseDbcTemplate):
     def __init__(
-        self, title=None, full=True, columns=12, min_width=400, height=None, **kwargs
+        self, title=None, columns=12, min_width=400, height=None
     ):
-        super().__init__(**kwargs)
+        """
+        Template that places all components in a single card
+
+        :param title: Card title
+        :param columns: Responsive width of card in columns (out of 12 columns)
+        :param min_width: Minimum card width in pixels
+        :param height: Fixed height of card or None (default) to let card's height
+            expand to contents
+        """
+        super().__init__()
         self.title = title
-        self.full = full
         self.columns = columns
         self.height = height
         self.min_width = min_width
@@ -285,6 +295,16 @@ class DbcRow(BaseDbcTemplate):
         min_input_width="300px",
         **kwargs,
     ):
+        """
+        Template that places inputs and outputs in separate cards, arranged in a row
+
+        :param title: Input card title
+        :param input_cols: Responsive width of input card in columns (out of 12 columns)
+        :param min_input_width: Minimum input card width in pixels
+        :param row_height: Fixed height of cards in the row in pixels.
+            If None (defualt) each card will independently determine height based on
+            contents.
+        """
         super().__init__(**kwargs)
         self.title = title
         self.row_height = row_height
@@ -327,6 +347,14 @@ class DbcRow(BaseDbcTemplate):
 
 class DbcSidebar(BaseDbcTemplate):
     def __init__(self, title=None, sidebar_columns=4, **kwargs):
+        """
+        Template that includes a title bar, places inputs in a sidebar, and outputs in
+        a responsive card
+
+        :param title: Title bar title string
+        :param sidebar_columns: Responsive width of input card in columns
+            (out of 12 columns)
+        """
         super().__init__(**kwargs)
         self.title = title
         self.sidebar_columns = sidebar_columns
@@ -359,13 +387,14 @@ class DbcSidebar(BaseDbcTemplate):
                         body=True,
                     ),
                     style=sidebar_card_style,
-                    **filter_kwargs(md=self.sidebar_columns),
+                    md=self.sidebar_columns,
                 ),
                 dbc.Col(
                     children=dbc.Card(
                         children=self.get_containers("output"),
                         body=True
-                    )
+                    ),
+                    md=12 - self.sidebar_columns
                 ),
             ],
         )
@@ -373,7 +402,7 @@ class DbcSidebar(BaseDbcTemplate):
         return children
 
     @classmethod
-    def _wrap_layout(cls, layout):
+    def _wrap_full_layout(cls, layout):
         import dash_bootstrap_components as dbc
 
         return dbc.Container(layout, fluid=True, style={"padding": 0})
@@ -381,15 +410,32 @@ class DbcSidebar(BaseDbcTemplate):
 
 class DbcSidebarTabs(BaseDbcTemplate):
     def __init__(self, tab_roles, title=None, sidebar_columns=4, **kwargs):
+        """
+        Template that includes a title bar, places inputs in a sidebar, and outputs in
+        a set of tabs.
+
+        :param tab_roles: List or dict of strings where each string specifies the name
+            of the role corresponding to a single tab. If a list, the role name is
+            also be used as the title of the corresponding tab. If a dict, the keys
+            become the roles and the values become the tab labels
+        :param title: Title bar title string
+        :param sidebar_columns: Responsive width of input card in columns
+            (out of 12 columns)
+        """
         import dash_bootstrap_components as dbc
 
         # Set valid roles before constructor
-        self._valid_roles = ["input", "output"] + list(tab_roles)
+        self.title = title
+        self.sidebar_columns = sidebar_columns
+        if isinstance(tab_roles, (list, tuple)):
+            self.tab_roles = OrderedDict([(role, role) for role in tab_roles])
+        else:
+            self.tab_roles = OrderedDict(tab_roles)
+
+        self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
 
         super().__init__(**kwargs)
-        self.title = title
-        self.tab_roles = tab_roles
-        self.sidebar_columns = sidebar_columns
+
         self._tabs = dbc.Tabs(id=build_id("tabs"))
 
     def _perform_layout(self):
@@ -419,9 +465,9 @@ class DbcSidebarTabs(BaseDbcTemplate):
                     ], body=True)
                 ],
                 tab_id=role,
-                label=role,
+                label=title,
             )
-            for role in self.tab_roles
+            for role, title in self.tab_roles.items()
         ]
 
         row = dbc.Row(
@@ -443,12 +489,13 @@ class DbcSidebarTabs(BaseDbcTemplate):
         return children
 
     @classmethod
-    def _wrap_layout(cls, layout):
+    def _wrap_full_layout(cls, layout):
         import dash_bootstrap_components as dbc
         return dbc.Container(layout, fluid=True, style={"padding": 0})
 
     def tab_input(self):
         return Input(self._tabs.id, "active_tab")
+
 
 def _parse_rules_from_bootstrap_css(css_text):
     import tinycss2
@@ -518,6 +565,10 @@ def _get_role_colors(rule_props):
 
 
 def _build_plotly_template_from_bootstrap_css_text(css_text):
+    from dash_labs.templates._colors import (
+        make_grid_color, separate_colorway, maybe_blend
+    )
+
     # Parse css text
     rule_props = _parse_rules_from_bootstrap_css(css_text)
 
@@ -577,7 +628,7 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
     return template
 
 
-def _try_build_plotly_template_from_bootstrap_css_url(css_url):
+def _try_build_plotly_template_from_bootstrap_css_path(css_url):
     import requests
     from urllib.parse import urlparse
     parse_result = urlparse(css_url)

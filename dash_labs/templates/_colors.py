@@ -1,7 +1,18 @@
 import numpy as np
-import spectra
-from colormath.color_objects import LabColor as LabColor
-from colormath.color_diff import delta_e_cie1994
+
+try:
+    import spectra
+    from colormath.color_objects import LabColor as LabColor
+    from colormath.color_diff import delta_e_cie1994
+except ImportError:
+    msg = (
+        "Generating plotly.py figure templates from bootstrap theme files requires\n"
+        "the optional spectra package, which can be installed using pip...\n"
+        "    $ pip install spectra\n"
+        "or conda...\n"
+        "    $ conda install -c conda-forge spectra"
+    )
+    raise ValueError(msg)
 
 
 white = spectra.lab(100, 0, 0)

@@ -10,23 +10,6 @@ from dash_labs.util import filter_kwargs, build_id
 class BaseDDKTemplate(BaseTemplate):
     _label_value_prop = "label"
 
-    _inline_css = """
-            <style>
-            .dcc-slider {
-                padding: 12px 20px 12px 20px !important;
-             }
-             
-             .param-markdown > p {
-                margin-top: 0.25rem;
-                margin-bottom: 0.5rem;
-             }
-             .param-markdown > h1, h2, h3, h4, h5 {
-                margin-bottom: 0;
-                margin-top: 0;
-             }
-             
-            </style>"""
-
     def __init__(
         self,
         theme=None,
@@ -46,7 +29,7 @@ class BaseDDKTemplate(BaseTemplate):
         self.use_mobile_viewport = use_mobile_viewport
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value, label_id=None):
+    def build_labeled_component(cls, component, label, label_id=None, role=None):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
@@ -54,17 +37,21 @@ class BaseDDKTemplate(BaseTemplate):
             label_id = build_id("label")
 
         container = ddk.ControlItem(
-            id=label_id, label=initial_value, children=component
+            id=label_id, label=label, children=component
         )
-        return container, "children", container, "label"
+        label_component = container
+        label_property = "label"
+
+        return container, "children", label_component, label_property
 
     @classmethod
-    def build_containered_component(cls, component):
+    def build_containered_component(cls, component, role=None):
         import dash_design_kit as ddk
 
         # Subclass could use bootstrap or ddk
         container_id = build_id("container")
         container = ddk.ControlItem(id=container_id, children=component)
+
         return container, "children"
 
     @classmethod
@@ -77,7 +64,7 @@ class BaseDDKTemplate(BaseTemplate):
         from dash_table import DataTable
         return DataTable
 
-    def _wrap_layout(self, layout):
+    def _wrap_full_layout(self, layout):
         import dash_design_kit as ddk
 
         return ddk.App(
@@ -135,7 +122,6 @@ class DdkRow(BaseDDKTemplate):
         input_card = ddk.ControlCard(
             children=self.get_containers("input"),
             width=self.input_width,
-            # **filter_kwargs(width=self.input_width),
         )
 
         output_card_children = []
@@ -143,10 +129,9 @@ class DdkRow(BaseDDKTemplate):
             output_card_children.append(ddk.CardHeader(title=self.title))
         output_card_children.extend(self.get_containers("output"))
 
-        output_card = ddk.Card(
+        output_card = ddk.ControlCard(
             children=output_card_children,
             width=100 - self.input_width,
-            # width=80
         )
 
         row_children = [input_card, output_card]
@@ -187,7 +172,7 @@ class DdkSidebar(BaseDDKTemplate):
         output_card_children = []
         output_card_children.extend(self.get_containers("output"))
 
-        output_card = ddk.Card(children=output_card_children)
+        output_card = ddk.ControlCard(output_card_children)
 
         sidebar_companion = ddk.SidebarCompanion(output_card)
         children.append(sidebar_companion)

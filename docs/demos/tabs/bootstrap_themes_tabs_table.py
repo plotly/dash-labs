@@ -15,12 +15,12 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "cerulean"
 # theme_name = "cosmo"
 # theme_name = "cyborg"
-# theme_name = "darkly"
+theme_name = "darkly"
 # theme_name = "flatly"
 # theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
-theme_name = "lux"
+# theme_name = "lux"
 # theme_name = "materia"
 # theme_name = "minty"
 # theme_name = "pulse"
@@ -33,20 +33,25 @@ theme_name = "lux"
 # theme_name = "superhero"
 # theme_name = "united"
 # theme_name = "yeti"
-
+#
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # Or, use local file path to assets folder
 # css_url = "assets/darkly_bootstrap.css"
 
+# tabs = ["scatter", "hist", "table"]
+tabs = dict(
+    scatter="Scatter", hist="Histogram", table="Table"
+)
+
 tpl = dl.templates.DbcSidebarTabs(
-    ["Scatter", "Histogram", "Table"],
+    tabs,
     title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url
+    theme=css_url, figure_template=True,
 )
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df.iloc[:0], sort_mode="single", role="Table", page_size=15, serverside=True
+    df.iloc[:0], sort_mode="single", role="table", page_size=15, serverside=True
 )
 
 @app.callback(
@@ -58,13 +63,13 @@ table_plugin = dl.component_plugins.DataTablePlugin(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
         logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
+            ["log(x)"], value="log(x)", label="Axis Scale", role="scatter"
         ),
         table_inputs=table_plugin.args,
     ),
     output=[
-        tpl.graph_output(role="Scatter"),
-        tpl.graph_output(role="Histogram"),
+        tpl.graph_output(role="scatter"),
+        tpl.graph_output(role="hist"),
         table_plugin.output,
     ],
     template=tpl

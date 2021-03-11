@@ -147,27 +147,22 @@ class TestTemplate(BaseTemplate):
          }\n"""
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value, label_id=None):
+    def build_labeled_component(cls, component, label, label_id=None, role=None):
         # Subclass could use bootstrap or ddk
         if not label_id:
             label_id = build_id("label")
-        label = html.Label(id=label_id, children=initial_value)
-        container = html.Div(id="container", children=[label, component])
-        return container, "children", label, "children"
+        label_component = html.Label(id=label_id, children=label)
+        container = html.Div(id="container", children=[label_component, component])
+        return container, "children", label_component, "children"
 
     @classmethod
-    def build_containered_component(cls, component):
+    def build_containered_component(cls, component, role=None):
         """
         Alternative to bulid_labeled_component for use without label, but for
         Unitform spacing with it
         """
         container = html.Div(id="container", children=component)
         return container, "children"
-
-    @classmethod
-    def _add_class_to_component(cls, component):
-        if isinstance(component, html.Button):
-            add_css_class(component, "test-button-css-class")
 
     def _perform_layout(self):
         return html.Div(
@@ -180,7 +175,7 @@ class TestTemplate(BaseTemplate):
         )
 
     @classmethod
-    def _wrap_layout(cls, layout):
+    def _wrap_full_layout(cls, layout):
         return html.Div(id="app-div", children=[layout])
 
     def _configure_app(self, app):

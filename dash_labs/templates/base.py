@@ -25,25 +25,44 @@ class ArgumentComponents:
 
 
 class BaseTemplate:
+    """
+    Base class for dash-labs templates
+    """
+    # The property of this template's label components that holds the label string
     _label_value_prop = "children"
+
+    # Optional string containing css class definitions enclosed in a
+    # <style></style> tag. If specified, these definitions are added to the app's
+    # index.html file.
     _inline_css = None
+
+    # Tuple of the roles supported by this template. Subclasses may override this
+    # as a class attribute (as is the case here), or as an instance attribute if the
+    # available roles are dependent on constructor arguments.
+    #
+    # If overriding as an instance attribute, be sure to set the value of the
+    # _valid_roles attribute before calling the superclass constructor so that the
+    # self._roles dict is initialized properly
     _valid_roles = ("input", "output")
 
     def __init__(self):
-        # Maybe this is a TemplateBuilder class with options and a .template()
-        # method that build template that has the
-        self.roles = {role: OrderedDict() for role in self._valid_roles}
+        self._roles = {role: OrderedDict() for role in self._valid_roles}
+
+    @property
+    def roles(self):
+        """
+        Dictionary from role to OrderedDict of ArgumentComponents instances.
+
+        Each component added to the template is wrapped in an ArgumentComponents
+        instance and stored in the OrderedDict corresponding to the component's role
+
+        :return: dict from roles to OrderedDict of ArgumentComponents instances
+        """
+        return self._roles
 
     @classmethod
-    def _add_class_to_component(cls, component):
-        if isinstance(component, (dcc.Slider, dcc.RangeSlider)) and not getattr(
-            component, "className", None
-        ):
-            component.className = "dcc-slider"
-
-    @classmethod
-    def build_parameter_components(
-        cls, component, value_property=(), label=None, label_id=None, containered=True
+    def build_argument_components(
+        cls, component, value_property=(), label=None, label_id=None, role=None,
     ):
         # Get reference to dependency class object for role
         arg_component = component
@@ -53,22 +72,18 @@ class BaseTemplate:
             initial_value = label
             container_component, container_props, label, label_props = \
                 cls.build_labeled_component(
-                    arg_component, initial_value=initial_value, label_id=label_id
+                    arg_component, label=initial_value, label_id=label_id,
+                    role=role,
                 )
             label_component = label
             label_props = label_props
-        elif containered:
+        else:
             label_component = None
             label_props = None
             container_component, container_props = cls.build_containered_component(
-                arg_component
+                arg_component, role=role,
             )
-        else:
-            label_component, label_props = None, None
-            container_component, container_props = arg_component, arg_props
 
-        # container_component = container_cp.component
-        # container_props = container_cp.props
         return ArgumentComponents(
             arg_component=arg_component,
             arg_property=arg_props,
@@ -78,11 +93,33 @@ class BaseTemplate:
             container_property=container_props,
         )
 
-    def add_component(self, component, component_property=None, role="input",
-                      label=None, label_id=None, containered=True, name=None,
-                      before=None, after=None):
+    def add_component(
+            self, component, role="input", label=None, label_id=None,
+            name=None, component_property=None, before=None, after=None
+    ):
         """
-        component id should have been created with build_component_id
+        Add a component to the template
+
+        :param component: The Dash component instance to add to the template
+        :param role: The role of the component within the template. All templates
+            support the "input" and "output" roles, but individual templates may
+            support additional roles.
+        :param label: (optional) A string label for the component
+        :param label_id: (optional) A custom component id to use for the created
+            label component (if any)
+        :param name: (optional) A string name for the component. Must be unique for
+            all components within the same role. If not provided, name is effectively
+            the positional index of component within role.
+        :param component_property: (optional) A component property to be stored in the
+            ArgumentComponents instance for the added component
+        :param before: (optional) String name, or positional index, of existing
+            component within the same role that this component should be inserted
+            before.
+        :param after: (optional) String name, or positional index, of existing
+            component within the same role that this component should be inserted
+            after.
+        :return: ArgumentComponents instance representing the component and label
+            within the template
         """
         if role not in self._valid_roles:
             raise ValueError(
@@ -92,61 +129,31 @@ class BaseTemplate:
                 )
             )
 
-        self._add_class_to_component(component)
-
-        param_components = self.build_parameter_components(
+        arg_components = self.build_argument_components(
             component,
             value_property=component_property,
             label=label,
             label_id=label_id,
-            containered=containered,
+            role=role,
         )
 
-        self.roles[role] = insert_into_ordered_dict(
-            odict=self.roles[role],
-            value=param_components,
+        self._roles[role] = insert_into_ordered_dict(
+            odict=self._roles[role],
+            value=arg_components,
             key=name,
             before=before,
             after=after,
         )
-        return param_components
-
-    @classmethod
-    def infer_output_component_from_value(cls, v):
-        """
-        This is run for the value of the `children` property of any component type.
-
-        For compatibility, it should only convert non-json values to components.
-        It should not alter strings, lists (except for recursion), or dicts.
-        """
-        from plotly.graph_objects import Figure
-
-        if isinstance(v, list):
-            # Process lists recursively
-            return [cls.infer_output_component_from_value(el) for el in v]
-
-        # Check if pandas is already imported. Do this instead of trying to import so
-        # we don't pay the time hit of importing pandas
-        if "pandas" in sys.modules:
-            pd = sys.modules["pandas"]
-        else:
-            pd = None
-
-        name = "callback_output"
-
-        component_id = build_id(name=name)
-        if isinstance(v, Figure):
-            return cls._graph_class()(figure=v, id=component_id)
-        elif pd is not None and isinstance(v, pd.DataFrame):
-            return cls._datatable_class()(
-                id=component_id,
-                columns=[{"name": i, "id": i} for i in v.columns],
-                data=v.to_dict('records'),
-                page_size=15,
-            )
-        return v
+        return arg_components
 
     def get_containers(self, roles=None):
+        """
+        Get list of Dash components that contain the components added to the template
+
+        :param roles: String name of single role to include, or list of
+            roles to include. If None (default), include components from all roles
+        :return: flat list of container components
+        """
         if roles is None:
             roles = self._valid_roles
         elif isinstance(roles, str):
@@ -154,16 +161,39 @@ class BaseTemplate:
 
         containers = []
         for role in roles:
-            for pc in self.roles.get(role, {}).values():
+            for pc in self._roles.get(role, {}).values():
                 containers.append(pc.container_component)
 
         return containers
 
     def layout(self, app, full=True):
+        """
+        Build and return a component that aranges all of the components added to the
+        template.
+
+        May also configure application with additional css and scripts required by
+        the template.
+
+        :param app: The dash.Dash app instance that will be used to display the
+            template
+        :param full: Some component toolkits require a top-level container component
+            that should be assigned to app.layout. For example, Dash Bootstrap
+            Components requires `dbc.Container` and Dash Design Kit requires ddk.App.
+             - If full=True (the default) the returned layout is wrapped in this
+               top-level component and so it may be directly assigned to app.layout.
+               In this case, the returned template should not be nested inside of a
+               larger app.
+             - If full=False, the returned layout is not wrapped in this top-level
+               component. This makes it possible to embed the returned layout in a
+               larger app, but it is the caller's responsibility to wrap the full app
+               in the appropriate top-level component.
+
+        :return: Dash Component
+        """
         # Build structure
         layout = self._perform_layout()
         if full:
-            layout = self._wrap_layout(layout)
+            layout = self._wrap_full_layout(layout)
 
         # Configure app props like CSS
         self._configure_app(app)
@@ -171,56 +201,81 @@ class BaseTemplate:
         return layout
 
     # Methods below this comment are designed to be customized by template subclasses
+    # -------------------------------------------------------------------------------
     def _perform_layout(self):
         """
-        Build the full layout, with the exception of any special top-level components
+        Build the layout, with the exception of any special top-level components
         added by `_wrap_layout`.
 
-        :return:
+        :return: Dash Component
         """
         raise NotImplementedError
 
     @classmethod
-    def _wrap_layout(cls, layout):
+    def _wrap_full_layout(cls, layout):
         """
-        Optionall wrap layout in a top-level component (e.g. Ddk.App or dbc.Container)
-        :param layout:
-        :return:
+        Wrap layout in a top-level component (e.g. Ddk.App or dbc.Container)
+        :param layout: layout component
+        :return: Top-level Dash Component
         """
         return layout
 
     def _configure_app(self, app):
         """
-        configure application object.
+        Configure application object.
 
-        e.g. install CSS / external stylsheets
+        e.g. install inline CSS / add external stylsheets
         """
         if self._inline_css and self._inline_css not in app.index_string:
             new_css = "\n<style>{}</style>\n".format(self._inline_css)
             app.index_string = app.index_string.replace("{%css%}", "{%css%}" + new_css)
 
     @classmethod
-    def build_labeled_component(cls, component, initial_value, label_id=None):
+    def build_labeled_component(cls, component, label, label_id=None, role=None):
+        """
+        Wrap input component in a labeled container
+
+        :param component: Component to wrap
+        :param label: Label string
+        :param label_id: (optional) component of component that will store the label
+            string
+        :param role: Component role
+        :return: tuple of (
+            container: Dash component containing input component and label component
+            container_property: Property of container component containing the input
+                component
+            label_component: Dash component containing the label string
+            label_property: Property of label_component that stores the label string
+        )
+        """
         # Subclass could use bootstrap or ddk
         if not label_id:
             label_id = build_id("label")
-        label = html.Label(id=label_id, children=initial_value)
+        label_component = html.Label(id=label_id, children=label)
         container_id = build_id("container")
         container = html.Div(
             id=container_id,
             style={"padding-top": 10},
             children=[
-                label,
+                label_component,
                 html.Div(style={"display": "block"}, children=component),
             ],
         )
-        return container, "children", label, "children"
+        return container, "children", label_component, "children"
 
     @classmethod
-    def build_containered_component(cls, component):
+    def build_containered_component(cls, component, role=None):
         """
-        Alternative to bulid_labeled_component for use without label, but for
-        Unitform spacing with it
+        Alternative to bulid_labeled_component for use without label. Used to
+        provided unitform spacing across labeled and unlabeled components
+
+        :param component: Component to wrap in container
+        :param role: Component role
+        :return: tuple of (
+            container: Dash component containing input component
+            container_property: Property of container component containing the input
+                component
+        )
         """
         container_id = build_id("container")
         container = html.Div(
@@ -232,7 +287,51 @@ class BaseTemplate:
         )
         return container, "children"
 
+    @classmethod
+    def default_output(cls):
+        """
+        If not Output dependency is specified in app.callback, use this component
+        dependency as the output.
+
+        Typically an html.Div, but it may be overridden by template subclasses
+
+        :return: Dash Component
+        """
+        return cls.div_output()
+
     # Component dependency constructors
+    # ---------------------------------
+    # Subclasses are welcome to override component dependency constructors, and to add
+    # new constructors. The following conventions should be followed
+    #
+    #  1. The final underscore suffix should match the default role of the component.
+    #     e.g. all of the examples below have either a _input or _output suffix, which
+    #     matches the default value of the role argument.  The default suffix/role
+    #     should be chosen based on whether the component is most commonly used as an
+    #     input or output to a callback function.  Callers can override this behavior
+    #     using the role and kind arguments.
+    #
+    #     If there are common uses for the component type in multiple roles,
+    #     multiple methods may be defined, with a suffix for each role.
+    #
+    #  2. The default value of the kind argument should be consistent with the default
+    #     role (e.g. kind=dl.Input for role="input" and kind=hl.Output for
+    #     role="output"). The return value of the method should always match the class
+    #     passed as the kind argument.
+    #
+    #  3. The default value of component_property should be a grouping of properties
+    #     from the type of component returned that are most likely to be used as
+    #     the input or output properties of the callback for that component.
+    #
+    #  4  The opts dict argument should be passed through as keyword arguments to the
+    #     constructor of the underlying component.
+    #
+    #  5. The optional argument should be used to override the id of the constructed
+    #     component.
+    #
+    #  6. The component_property, label, and role arguments should be passed through
+    #     to the return dependency object.
+    #
     @classmethod
     def div_output(
             cls, children=None,

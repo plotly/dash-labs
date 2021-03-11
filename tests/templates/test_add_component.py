@@ -35,9 +35,8 @@ def test_add_single_component_defaults(test_template):
 def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
-    # Add with containered false
     arg_comps1 = test_template.add_component(
-        button1, component_property="n_clicks", containered=False
+        button1, component_property="n_clicks",
     )
 
     # Check inserted as input role
@@ -51,8 +50,8 @@ def test_add_component_options(test_template):
     assert arg_comps1.arg_property == "n_clicks"
 
     # Check that container and label are None
-    assert arg_comps1.container_component is button1
-    assert arg_comps1.container_property is "n_clicks"
+    assert isinstance(arg_comps1.container_component, html.Div)
+    assert arg_comps1.container_property is "children"
     assert arg_comps1.label_component is None
     assert arg_comps1.label_property is None
 

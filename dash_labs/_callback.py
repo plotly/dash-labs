@@ -112,12 +112,18 @@ def _normalize_inputs(inputs, state):
     return all_inputs, input_form
 
 
-def _normalize_output(output):
+def _normalize_output(output, template):
     # output_form stores whether wrapped function is expected to return values as
     # scalar, list, or dict.
     output_form = None
     if output is None or isinstance(output, list) and len(output) == 0:
-        output = Output(html.Div(), component_property="children")
+        if template is None:
+            raise ValueError(
+                "No output dependency objects specified, and no template provided to\n"
+                "construct a default output component."
+            )
+        else:
+            output = template.default_output()
 
     if not isinstance(output, (list, dict)):
         output_form = "scalar"
@@ -167,7 +173,7 @@ def _add_arg_components_to_template(vals, template):
                     component_property=dep.component_property,
                     role=dep.role, label=dep.label,
                     label_id=dep.label_id,
-                    containered=dep.containered, **opts
+                    **opts
                 )
 
 
@@ -257,7 +263,7 @@ def _callback(
     all_inputs, input_form = _normalize_inputs(inputs, state)
 
     # Likewise, normalize outputs into an OrderedDict
-    all_outputs, output_form = _normalize_output(output)
+    all_outputs, output_form = _normalize_output(output, template)
 
     # For dependencies wrapping component instances, add component to template
     if template is not None:

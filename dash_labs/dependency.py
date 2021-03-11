@@ -19,7 +19,7 @@ class DashLabsDependency:
 
     def __init__(
             self, component_id, component_property="value", label=Component.UNDEFINED,
-            role=Component.UNDEFINED, containered=True, label_id=None,
+            role=Component.UNDEFINED, label_id=None,
     ):
         """
         :param component_id: Component id or component instance
@@ -28,8 +28,6 @@ class DashLabsDependency:
             (ignored if component_id is not a component)
         :param role: Template role for component
             (ignored if component_id is not a component)
-        :param containered: Whether template should wrap component in a container
-            (ignored if component_id is not a component)
         :param label_id: Custom id to use for template label
             (ignored if component_id is not a component or label is not defined)
         """
@@ -37,7 +35,6 @@ class DashLabsDependency:
         self.label = label
         self.label_id = label_id
         self.role = role
-        self.containered = containered
 
     @property
     def id(self):
