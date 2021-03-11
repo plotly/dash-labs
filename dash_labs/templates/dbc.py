@@ -19,63 +19,62 @@ class BaseDbcTemplate(BaseTemplate):
     # - Undo the negative margins that table rows pick up from bootstrap's own row
     #   CSS class. Otherwise, table expand in width outside of their container.
     # - Style various elements using bootstrap css variables
-    _inline_css = """
-            <style>
-             
-             .dash-spreadsheet .row {
-                margin-left: 0;
-                margin-right: 0;
-             }
-             
-             .dash-spreadsheet th {
-                background-color: var(--primary) !important;
-                color: var(--white) !important;
-                border-color: rgba(128, 128, 128, 0.3) !important;
-                font-weight: 400 !important;
-                font-size: 1.25em !important;
-             }
-             
-             .dash-spreadsheet td {
-                background-color: var(--light) !important;
-                border-color: rgba(128, 128, 128, 0.3) !important;
-                color: var(--dark) !important;
-             }
-             
-             .dash-spreadsheet tr:hover td {
-                border-color: lightgrey !important;
-                border-width: 0.5px !important;
-                background-color: var(--info) !important;
-                color: white !important;
-             }
-             
-             .tab-pane .card {
-                border-top-left-radius: 0;
-             }
-             
-             .nav-tabs {
-                border-bottom-width: 0 !important;
-             }
-             
-             .nav-link {
-                border-width: 0.5px !important;
-                border-color: rgba(100, 100, 100, 0.4) !important;
-             }
-             
-             .nav-link.active {
-                background-color: var(--primary) !important;
-                color: var(--white) !important;
-                border-color: rgba(100, 100, 100, 0.4);
-             }
-             
-             .nav-item {
-                margin-right: 0 !important;
-             }
-             
-             .card {
-                margin-bottom: 1rem !important;
-                border-color: rgba(100, 100, 100, 0.4);
-            }
-            </style>"""
+    _inline_css = BaseTemplate._inline_css + """
+
+         .dash-spreadsheet .row {
+            margin-left: 0;
+            margin-right: 0;
+         }
+         
+         .dash-spreadsheet th {
+            background-color: var(--primary) !important;
+            color: var(--white) !important;
+            border-color: rgba(128, 128, 128, 0.3) !important;
+            font-weight: 400 !important;
+            font-size: 1.25em !important;
+         }
+         
+         .dash-spreadsheet td {
+            background-color: var(--light) !important;
+            border-color: rgba(128, 128, 128, 0.3) !important;
+            color: var(--dark) !important;
+         }
+         
+         .dash-spreadsheet tr:hover td {
+            border-color: lightgrey !important;
+            border-width: 0.5px !important;
+            background-color: var(--info) !important;
+            color: white !important;
+         }
+         
+         .tab-pane .card {
+            border-top-left-radius: 0;
+         }
+         
+         .nav-tabs {
+            border-bottom-width: 0 !important;
+         }
+         
+         .nav-link {
+            border-width: 0.5px !important;
+            border-color: rgba(100, 100, 100, 0.4) !important;
+         }
+         
+         .nav-link.active {
+            background-color: var(--primary) !important;
+            color: var(--white) !important;
+            border-color: rgba(100, 100, 100, 0.4);
+         }
+         
+         .nav-item {
+            margin-right: 0 !important;
+         }
+         
+         .card {
+            margin-bottom: 1rem !important;
+            border-color: rgba(100, 100, 100, 0.4);
+        }
+        """
 
     def __init__(self, theme=None, figure_template=False):
         """
@@ -493,8 +492,14 @@ class DbcSidebarTabs(BaseDbcTemplate):
         import dash_bootstrap_components as dbc
         return dbc.Container(layout, fluid=True, style={"padding": 0})
 
-    def tab_input(self):
-        return Input(self._tabs.id, "active_tab")
+    def tab_input(self, kind=Input):
+        """
+        Dependency object that can be used to input the active tab
+        :param kind: The dependency kind to return. One of dl.Input (default) or
+            dl.State.
+        :return: Dependency object referencing the active tab
+        """
+        return kind(self._tabs.id, "active_tab")
 
 
 def _parse_rules_from_bootstrap_css(css_text):

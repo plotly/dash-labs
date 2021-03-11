@@ -31,10 +31,13 @@ class BaseTemplate:
     # The property of this template's label components that holds the label string
     _label_value_prop = "children"
 
-    # Optional string containing css class definitions enclosed in a
-    # <style></style> tag. If specified, these definitions are added to the app's
-    # index.html file.
-    _inline_css = None
+    # Optional string containing css class definitions that will be enclosed in a
+    # <style></style> tag and added to the app's index.html file.
+    _inline_css = """
+    .rc-slider-tooltip-inner {
+        user-select: none;
+    }
+    """
 
     # Tuple of the roles supported by this template. Subclasses may override this
     # as a class attribute (as is the case here), or as an instance attribute if the
