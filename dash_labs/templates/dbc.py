@@ -220,10 +220,7 @@ class BaseDbcTemplate(BaseTemplate):
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
 
-        # classname
         opts = opts or {}
-        # opts.setdefault("className", "h6")
-        # opts.setdefault("className", "btn")
 
         return kind(
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
@@ -433,9 +430,9 @@ class DbcSidebarTabs(BaseDbcTemplate):
 
         self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
 
-        super().__init__(**kwargs)
-
         self._tabs = dbc.Tabs(id=build_id("tabs"))
+
+        super().__init__(**kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -458,10 +455,14 @@ class DbcSidebarTabs(BaseDbcTemplate):
         self._tabs.children = [
             dbc.Tab(
                 [
-                    dbc.Card([
-                        ac.container_component
-                        for ac in reversed(self.roles[role].values())
-                    ], body=True)
+                    dbc.Card(
+                        children=list(reversed(self.get_containers(role))),
+                        body=True
+                    ),
+                    # dbc.Card([
+                    #     ac.container_component
+                    #     for ac in reversed(self.roles[role].values())
+                    # ], body=True)
                 ],
                 tab_id=role,
                 label=title,

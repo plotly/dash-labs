@@ -438,6 +438,9 @@ class BaseTemplate:
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
 
+        if not isinstance(value, list):
+            value = [value]
+
         return kind(
             dcc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property, label=label, role=role

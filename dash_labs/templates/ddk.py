@@ -1,32 +1,28 @@
-from dash.development.base_component import Component
-
-from dash_labs.dependency import Output
+from collections import OrderedDict
+from dash_labs.dependency import Output, Input
 from dash_labs.templates.base import BaseTemplate
 import dash_html_components as html
-
 from dash_labs.util import filter_kwargs, build_id
 
 
 class BaseDDKTemplate(BaseTemplate):
+    """
+    Base class for templates based on Dash Design Kit
+    """
     _label_value_prop = "label"
 
     def __init__(
         self,
         theme=None,
-        show_editor=None,
-        theme_dev_tools=None,
-        embedded=None,
-        show_undo_redo=None,
-        use_mobile_viewport=None,
         **kwargs,
     ):
+        """
+        :param theme: DDK theme dictionary
+        :param kwargs: Additional keyword arguments to pass to ddk.App
+        """
         super(BaseDDKTemplate, self).__init__()
         self.theme = theme
-        self.show_editor = show_editor
-        self.theme_dev_tools = theme_dev_tools
-        self.embedded = embedded
-        self.show_undo_redo = show_undo_redo
-        self.use_mobile_viewport = use_mobile_viewport
+        self.app_kwargs = kwargs
 
     @classmethod
     def build_labeled_component(cls, component, label, label_id=None, role=None):
@@ -69,19 +65,19 @@ class BaseDDKTemplate(BaseTemplate):
 
         return ddk.App(
             children=layout,
-            **filter_kwargs(
-                theme=self.theme,
-                show_editor=self.show_editor,
-                theme_dev_tools=self.theme_dev_tools,
-                embedded=self.embedded,
-                show_undo_redo=self.show_undo_redo,
-                use_mobile_viewport=self.use_mobile_viewport,
-            ),
+            **filter_kwargs(self.app_kwargs, theme=self.theme),
         )
 
 
 class DdkCard(BaseDDKTemplate):
     def __init__(self, title=None, width=None, height=None, **kwargs):
+        """
+        Template that places all components in a single card
+
+        :param title: Card title
+        :param width: Proportional width of the card (out of 100)
+        :param height: Height of the card (in pixels)
+        """
         super().__init__(**kwargs)
         self.title = title
         self.width = width
@@ -111,6 +107,12 @@ class DdkCard(BaseDDKTemplate):
 
 class DdkRow(BaseDDKTemplate):
     def __init__(self, title=None, input_width=30, **kwargs):
+        """
+        Template that places inputs and outputs in separate cards, arranged in a row
+
+        :param title: Input card title
+        :param input_width: Input width proportion (out of 100)
+        """
         super().__init__(**kwargs)
         self.title = title
         self.input_width = input_width
@@ -141,7 +143,14 @@ class DdkRow(BaseDDKTemplate):
 
 
 class DdkSidebar(BaseDDKTemplate):
-    def __init__(self, title=None, sidebar_width="300px", **kwargs):
+    def __init__(self, title=None, sidebar_width=300, **kwargs):
+        """
+        Template that includes a title bar, places inputs in a sidebar, and outputs in
+        the main area of the app.
+
+        :param title: Title bar title string
+        :param sidebar_width: Sidebar width in pixels or as a css string
+        """
         super().__init__(**kwargs)
         self.title = title
         self.sidebar_width = sidebar_width
@@ -178,3 +187,76 @@ class DdkSidebar(BaseDDKTemplate):
         children.append(sidebar_companion)
 
         return children
+
+
+class DdkSidebarTabs(BaseDDKTemplate):
+    def __init__(self, tab_roles, title=None, sidebar_width=300, **kwargs):
+        """
+        Template that includes a title bar, places inputs in a sidebar, and outputs in
+        a set of tabs
+
+        :param tab_roles: List or dict of strings where each string specifies the name
+            of the role corresponding to a single tab. If a list, the role name is
+            also be used as the title of the corresponding tab. If a dict, the keys
+            become the roles and the values become the tab labels
+        :param title: Title bar title string
+        :param sidebar_width: Sidebar width in pixels or as a css string
+        """
+        import dash_core_components as dcc
+        self.title = title
+        self.sidebar_width = sidebar_width
+        if isinstance(tab_roles, (list, tuple)):
+            self.tab_roles = OrderedDict([(role, role) for role in tab_roles])
+        else:
+            self.tab_roles = OrderedDict(tab_roles)
+
+        self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
+        self._tabs = dcc.Tabs(id=build_id("tabs"), value=self._valid_roles[2])
+
+        super().__init__(**kwargs)
+
+    def _perform_layout(self):
+        import dash_design_kit as ddk
+        import dash_core_components as dcc
+
+        children = []
+
+        if self.title is not None:
+            children.append(ddk.Header([ddk.Title(self.title)]))
+
+        # Input card
+        sidebar_children = []
+        sidebar_children.append(
+            ddk.ControlCard(
+                children=self.get_containers("input"),
+            )
+        )
+
+        sidebar = ddk.Sidebar(
+            foldable=True,
+            children=sidebar_children,
+            style={"minWidth": self.sidebar_width if self.sidebar_width else "auto"},
+        )
+        children.append(sidebar)
+
+        self._tabs.children = [
+            dcc.Tab(
+                value=role,
+                label=title,
+                children=ddk.ControlCard(list(reversed(self.get_containers(role)))))
+            for role, title in self.tab_roles.items()
+        ]
+
+        sidebar_companion = ddk.SidebarCompanion(self._tabs)
+        children.append(sidebar_companion)
+
+        return children
+
+    def tab_input(self, kind=Input):
+        """
+        Dependency object that can be used to input the active tab
+        :param kind: The dependency kind to return. One of dl.Input (default) or
+            dl.State.
+        :return: Dependency object referencing the active tab
+        """
+        return kind(self._tabs.id, "value")
