@@ -17,6 +17,7 @@ dropdown = dcc.Dropdown(
     options=[{"label": v, "value": v} for v in ["Male", "Female"]]
 )
 
+
 @app.callback(
     args=[
         dl.Input(dropdown, "value"),
@@ -33,7 +34,7 @@ def callback(gender, plugin_input):
 
 
 app.layout = html.Div([
-    dropdown, table_plugin.components_div
+    dropdown, table_plugin.container
 ])
 
 if __name__ == "__main__":

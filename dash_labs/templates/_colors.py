@@ -2,6 +2,7 @@ import numpy as np
 
 try:
     import spectra
+    from colormath.density import auto_density
     from colormath.color_objects import LabColor as LabColor
     from colormath.color_diff import delta_e_cie1994
 except ImportError:
@@ -55,7 +56,7 @@ def best_darkening(c1, c2, c1_step=(1, 1), c2_step=(1, 1)):
     ])[-1]
 
 
-def separate_colorway(html_colors):
+def separate_colorway(html_colors, sort=True):
 
     try:
         raw_colors = [
@@ -77,13 +78,15 @@ def separate_colorway(html_colors):
     max_step_factor = 0.9
 
     iterations = 0
+    distances = np.ones((len(html_colors) + 2, len(html_colors) + 2)) * np.nan
 
-    while iterations < max_iterations:  # and prev_darkenings != darkenings:
+    while iterations < max_iterations:
         for i in range(len(test_colors) - 1):
             c1 = test_colors[i].darken(darkenings[i])
             for j in range(i + 1, len(test_colors)):
                 c2 = test_colors[j].darken(darkenings[j])
                 distance = color_distance(c1, c2)
+                distances[i, j] = distance
 
                 # When comparing to black and white,
                 # skip if at least threshold units away
@@ -105,16 +108,32 @@ def separate_colorway(html_colors):
                     c1_step=(c1_step_down, c1_step_up),
                     c2_step=(c2_step_down, c2_step_up),
                 )
+                distances[i, j] = distance
+
                 darkenings[i] += delta1
                 darkenings[j] += delta2
 
         iterations += 1
         max_step *= max_step_factor
 
-    result = [
-        clr.hexcode
-        for clr in get_darkened_colors(test_colors, darkenings)[1:-1]
-    ]
+    if sort:
+        min_distances = np.nanmin(distances[1:-1], axis=1)
+        darkened_colors = get_darkened_colors(test_colors, darkenings)[1:-1]
+        result = sorted([
+            # (color_distance(black, clr), clr.hexcode)
+            (dist, clr.hexcode)
+            for clr, dist in zip(darkened_colors, min_distances)
+        ], reverse=True)
+
+        # Interleave order
+        result = result[::2] + result[1::2]
+
+        _, result = zip(*result)
+    else:
+        result = [
+            clr.hexcode
+            for clr in get_darkened_colors(test_colors, darkenings)[1:-1]
+        ]
 
     return result
 

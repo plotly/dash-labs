@@ -5,14 +5,49 @@ from dash_labs.util import build_id, filter_kwargs
 from .base import ComponentPlugin
 from dash_labs.templates import FlatDiv
 import pandas as pd
-from dash_table import DataTable
+
+
+operators = [
+    ['ge ', '>='],
+    ['le ', '<='],
+    ['lt ', '<'],
+    ['gt ', '>'],
+    ['ne ', '!='],
+    ['eq ', '='],
+    ['contains '],
+    ['datestartswith ']
+]
 
 
 class DataTablePlugin(ComponentPlugin):
+    """
+    Component plugin to make it easier to work with DataTables
+    """
     def __init__(
             self, df, columns=None, page_size=5, sort_mode=None, filterable=False,
             serverside=False, template=None, role="output"
     ):
+        """
+
+        :param df: Pandas DataFrame to be displayed in the DataTable
+        :param columns: List of columns from df to display in the table. Defaults to
+            all columns if not specified.
+        :param page_size: The number of rows of df to display at once. If the number
+            of rows exceeds this number, the table will display paging controls.
+        :param sort_mode: Sort mode for table. One of:
+            - None: no sorting
+            - 'single': single column sorting
+            - 'multi': multi-column sorting
+        :param filterable: If True, display a filter box below each column in the
+            table. If False (default), no filtering interface is displayed.
+        :param serverside: If True, paging/sorting/filtering operations trigger
+            a callback and are performed in Python and only the current displayed
+            page is transferred to the client. If False (default), all rows of the table
+            are sent to the client at startup and paging/sorting/filtering
+            operations do not trigger a Python callback.
+        :param template: Template to use to construct DataTable
+        :param role: Template role that should be assigned to the constructed DataTable
+        """
         if template is None:
             template = FlatDiv()
 
@@ -35,21 +70,77 @@ class DataTablePlugin(ComponentPlugin):
             self.df = df
 
         self.data, self.columns = self.convert_data_columns(self.df, columns)
-
-        self.template = template
         self.datatable_id = build_id()
-
-        self._output = template._datatable_class()(
-            id=self.datatable_id,
-        )
 
         # Initialize args
         if self.serverside:
-            self._args = self._build_serverside_input()
-            self._output = self._build_serverside_output()
+            args = self._build_serverside_input(template)
+            output = self._build_serverside_output(template)
         else:
-            self._args = self._build_clientside_input()
-            self._output = self._build_clientside_output()
+            args = self._build_clientside_input(template)
+            output = self._build_clientside_output(template)
+
+        super().__init__(args, output, template)
+
+    def get_output_values(self, args_value, df=None, preprocessed=False):
+        """
+        :param args_value: Callback arguments corresponding to the args dependenc
+            grouping
+        :param df: DataFrame to use as input for the table
+            (prior to paging/filtering/sorting). If not provided, the DataFrame passed
+            to the constructor is used.
+        :param preprocessed: Set to true if the df argument was produced by the
+            get_processed_dataframe method. This will bypass the serverside filtering
+            and sorting logic, since it was already applied by get_processed_dataframe
+        :return: Grouping of values corresponding to the dependency grouping returned
+            by the output property
+        """
+        if self.serverside:
+            return self._build_serverside_result(
+                args_value, df, preprocessed=preprocessed
+            )
+        else:
+            return self._build_clientside_result(df)
+
+    def get_processed_dataframe(self, args_value, df=None):
+        """
+        Retrieve the DataFrame produced by the serverside filtering and sorting
+        operations.
+
+        Note: This method is only supported when serverside=True
+
+        :param args_value: Callback arguments corresponding to the args dependenc
+            grouping
+        :param df: DataFrame to use as input to the table filtering and sorting
+            operations. If not provided, the DataFrame passed to the constructor is
+            used.
+        :return: DataFrame that has
+        """
+        if not self.serverside:
+            raise ValueError(
+                "get_processed_dataframe is only supported when serverside=True"
+            )
+
+        sort_by = args_value["sort_by"]
+        # Get active dataframe
+        if df is None:
+            df = self.full_df
+        # Perform filtering
+        print("update serverside")
+        if self.filterable and "filter_query" in args_value:
+            filter_query = args_value["filter_query"]
+            print(filter_query)
+            df = _filter_serverside(df, filter_query)
+        # Perform sorting
+        if sort_by and len(sort_by):
+            df = df.sort_values(
+                [col['column_id'] for col in sort_by],
+                ascending=[
+                    col['direction'] == 'asc'
+                    for col in sort_by
+                ],
+            )
+        return df
 
     def _compute_serverside_dataframe_slice(self, full_df, page_current=None):
         if page_current is None:
@@ -76,16 +167,16 @@ class DataTablePlugin(ComponentPlugin):
         return df, columns
 
     # Serverside helpers
-    def _build_serverside_input(self):
+    def _build_serverside_input(self, template):
         return {
             "page_current": Input(self.datatable_id, "page_current"),
             "sort_by": Input(self.datatable_id, "sort_by"),
             "filter_query": Input(self.datatable_id, "filter_query"),
         }
 
-    def _build_serverside_output(self):
+    def _build_serverside_output(self, template):
         data, columns = self.convert_data_columns(self.df, self.columns)
-        result = Output(DataTable(
+        result = Output(template._datatable_class()(
             data=data, columns=columns, id=self.datatable_id,
             page_current=0,
             page_size=self.page_size,
@@ -117,12 +208,12 @@ class DataTablePlugin(ComponentPlugin):
         return dict(data=data, columns=columns, page_count=page_count)
 
     # Clientside helpers
-    def _build_clientside_input(self):
+    def _build_clientside_input(self, template):
         return ()
 
-    def _build_clientside_output(self):
+    def _build_clientside_output(self, template):
         data, columns = self.convert_data_columns(self.df, self.columns)
-        return Output(DataTable(
+        return Output(template._datatable_class()(
             data=data, columns=columns, id=self.datatable_id,
             page_size=self.page_size,
             **filter_kwargs(
@@ -141,54 +232,6 @@ class DataTablePlugin(ComponentPlugin):
             data, columns = self.data, self.columns
 
         return dict(data=data, columns=columns)
-
-    def get_output_values(self, inputs_value, df=None, preprocessed=False):
-        """
-
-        :param inputs_value:
-        :param df:
-        :param preprocessed: Set to true if df was produced by get_processed_dataframe
-        :return:
-        """
-        if self.serverside:
-            return self._build_serverside_result(
-                inputs_value, df, preprocessed=preprocessed
-            )
-        else:
-            return self._build_clientside_result(df)
-
-    def get_processed_dataframe(self, inputs_value, df):
-        sort_by = inputs_value["sort_by"]
-        # Get active dataframe
-        if df is None:
-            df = self.full_df
-        # Perform filtering
-        print("update serverside")
-        if self.filterable and "filter_query" in inputs_value:
-            filter_query = inputs_value["filter_query"]
-            print(filter_query)
-            df = _filter_serverside(df, filter_query)
-        # Perform sorting
-        if sort_by and len(sort_by):
-            df = df.sort_values(
-                [col['column_id'] for col in sort_by],
-                ascending=[
-                    col['direction'] == 'asc'
-                    for col in sort_by
-                ],
-            )
-        return df
-
-
-
-operators = [['ge ', '>='],
-             ['le ', '<='],
-             ['lt ', '<'],
-             ['gt ', '>'],
-             ['ne ', '!='],
-             ['eq ', '='],
-             ['contains '],
-             ['datestartswith ']]
 
 
 def _split_filter_part(filter_part):

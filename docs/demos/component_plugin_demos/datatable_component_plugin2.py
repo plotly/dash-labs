@@ -11,7 +11,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 )
 
 table_plugin.install_callback(app)
-app.layout = table_plugin.components_div
+app.layout = table_plugin.container
 
 if __name__ == "__main__":
     app.run_server(debug=True)

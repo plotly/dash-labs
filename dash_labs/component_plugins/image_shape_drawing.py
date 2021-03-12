@@ -1,5 +1,6 @@
-from dash_labs import build_id, templates
+from dash_labs import build_id
 from dash_labs.dependency import Output, Input
+from dash_labs.templates import FlatDiv
 from .base import ComponentPlugin
 import plotly.express as px
 import plotly.graph_objects as go
@@ -8,16 +9,18 @@ import dash
 
 class GreyscaleImageROI(ComponentPlugin):
     """
-    Support dynamic labels and checkbox to disable input component
+    Plugin that supports drawing, and editing, a rectangular box on a greyscale image
+    and retrieving the selected region and selected pixels.
     """
     def __init__(
             self, img, template=None, image_label=None, newshape=None, title=None,
             fig_update_callback=None,
     ):
-        self.img = img
 
         if template is None:
-            template = templates.FlatDiv()
+            template = FlatDiv()
+
+        self.img = img
 
         if newshape is None:
             newshape = dict(
@@ -40,18 +43,89 @@ class GreyscaleImageROI(ComponentPlugin):
 
         self.image_graph_id = build_id("image-graph")
         self.histogram_graph_id = build_id("histogram-graph")
-        self.template = template
         self.image_label = image_label
 
         # Initialize args component dependencies
-        self._args = self.template.graph_output(
+        args = template.graph_output(
             self.image_fig, component_property="relayoutData", kind=Input, role="input",
             id=self.image_graph_id, label=self.image_label
         )
 
-        self._output = {
+        output = {
             "image_figure": Output(self.image_graph_id, "figure")
         }
+
+        super().__init__(args, output, template)
+
+    def get_output_values(self, args_value, title=None):
+        relayout_data = args_value
+        if relayout_data:
+            # shape coordinates are floats, we need to convert to ints for slicing
+            bounds = self._extract_pixel_bounds_from_shape(relayout_data)
+            if bounds is None:
+                return {
+                    "image_figure": dash.no_update,
+                }
+
+            x0, y0, x1, y1 = bounds
+            shapes = self._make_rect(x0, y0, x1, y1)
+
+            top_margin = 60 if title is not None else 20
+
+            new_image_fig = go.Figure(
+                self.image_fig
+            )
+            new_image_fig.update_layout(
+                shapes=shapes, margin_t=top_margin,
+            )
+
+            if title is not None:
+                new_image_fig.update_layout(title_text=title)
+
+            return {
+                "image_figure": new_image_fig,
+            }
+        else:
+            return {
+                "image_figure": dash.no_update,
+            }
+
+    def get_rect_bounds(self, args_value, integer=True):
+        """
+        :param args_value: grouping of values corresponding to the dependency
+            grouping returned by the args property
+        :param integer: If True (default), convert bounds into integer pixel
+            coordinates. If False, return floating point bounds
+        :return: Bounds tuple of the form (x0, y0, x1, y1), or None if no box shape
+            is present
+        """
+        relayout_data = args_value
+        if relayout_data:
+            bounds = self._extract_pixel_bounds_from_shape(relayout_data)
+            if integer and bounds is not None:
+                bounds = tuple([int(b) if b is not None else None for b in bounds])
+            return bounds
+        else:
+            return None
+
+    def get_image_slice(self, args_value):
+        """
+        :param args_value: grouping of values corresponding to the dependency
+            grouping returned by the args property
+        :return: Slice of the original image that is inside the current bounds, or
+            None if no box shape present
+        """
+        relayout_data = args_value
+        if relayout_data:
+            bounds = self._extract_pixel_bounds_from_shape(relayout_data)
+
+            if bounds is not None:
+                x0, y0, x1, y1 = bounds
+                return self.img[int(y0):int(y1), int(x0):int(x1)]
+            else:
+                return None
+        else:
+            return None
 
     def _make_rect(self, x0, y0, x1, y1):
         if all(( x0, y0, x1, y1)):
@@ -90,52 +164,7 @@ class GreyscaleImageROI(ComponentPlugin):
             y0 = 0 if y0 < 0 else y0
             y1 = self.img.shape[0] if y1 > self.img.shape[0] else y1
 
-        return x0, y0, x1, y1
-
-    def get_output_values(self, inputs_value, title=None):
-        relayout_data = inputs_value
-        if relayout_data:
-            # shape coordinates are floats, we need to convert to ints for slicing
-            x0, y0, x1, y1 = self._extract_pixel_bounds_from_shape(relayout_data)
-            shapes = self._make_rect(x0, y0, x1, y1)
-
-            top_margin = 60 if title is not None else 20
-
-            new_image_fig = go.Figure(
-                self.image_fig
-            )
-            new_image_fig.update_layout(
-                shapes=shapes, margin_t=top_margin,
-            )
-
-            if title is not None:
-                new_image_fig.update_layout(title_text=title)
-
-            return {
-                "image_figure": new_image_fig,
-            }
-        else:
-            return {
-                "image_figure": dash.no_update,
-            }
-
-    def get_rect_bounds(self, inputs_value, integer=True):
-        relayout_data = inputs_value
-        if relayout_data:
-            bounds = self._extract_pixel_bounds_from_shape(relayout_data)
-            if integer:
-                bounds = tuple([int(b) if b is not None else None for b in bounds])
-            return bounds
-        else:
+        if all(b is None for b in (x0, y0, x1, y1)):
             return None
-
-    def get_image_slice(self, inputs_value):
-        relayout_data = inputs_value
-        if relayout_data:
-            x0, y0, x1, y1 = self._extract_pixel_bounds_from_shape(relayout_data)
-            if all(b is not None for b in [x0, y0, x1, y1]):
-                return self.img[int(y0):int(y1), int(x0):int(x1)]
-            else:
-                return None
         else:
-            return None
+            return x0, y0, x1, y1

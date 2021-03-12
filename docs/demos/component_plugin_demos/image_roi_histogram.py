@@ -6,11 +6,15 @@ import plotly.express as px
 img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcSidebar(title="Image Intensity Explorer", columns=4)
+tpl = dl.templates.DbcSidebar(
+    title="Image Intensity Explorer",
+    sidebar_columns=4,
+    figure_template=True,
+)
+
 img_plugin = dl.component_plugins.GreyscaleImageROI(
     img, template=tpl, title="Bounds:"
 )
-
 
 @app.callback(
     args=[img_plugin.args],

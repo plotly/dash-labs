@@ -71,7 +71,7 @@ class BaseTemplate:
         arg_component = component
         arg_props = value_property
 
-        if label:
+        if label and label is not Component.UNDEFINED:
             initial_value = label
             container_component, container_props, label, label_props = \
                 cls.build_labeled_component(
@@ -291,7 +291,7 @@ class BaseTemplate:
         return container, "children"
 
     @classmethod
-    def default_output(cls):
+    def default_output(cls, children=None):
         """
         If not Output dependency is specified in app.callback, use this component
         dependency as the output.
@@ -300,7 +300,7 @@ class BaseTemplate:
 
         :return: Dash Component
         """
-        return cls.div_output()
+        return cls.div_output(**filter_kwargs(children=children))
 
     # Component dependency constructors
     # ---------------------------------

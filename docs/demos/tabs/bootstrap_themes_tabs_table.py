@@ -12,10 +12,10 @@ df = df[[c for c in df.columns if not c.startswith("iso_")]]
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
-# theme_name = "cerulean"
+theme_name = "cerulean"
 # theme_name = "cosmo"
 # theme_name = "cyborg"
-theme_name = "darkly"
+# theme_name = "darkly"
 # theme_name = "flatly"
 # theme_name = "journal"
 # theme_name = "litera"
@@ -33,10 +33,10 @@ theme_name = "darkly"
 # theme_name = "superhero"
 # theme_name = "united"
 # theme_name = "yeti"
-#
+
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # Or, use local file path to assets folder
-# css_url = "assets/darkly_bootstrap.css"
+# css_url = "assets/custom_bootstrap.css"
 
 # tabs = ["scatter", "hist", "table"]
 tabs = dict(
@@ -46,12 +46,14 @@ tabs = dict(
 tpl = dl.templates.DbcSidebarTabs(
     tabs,
     title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url, figure_template=True,
+    # theme=css_url,
+    figure_template=True,
 )
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df.iloc[:0], sort_mode="single", role="table", page_size=15, serverside=True
+    df.iloc[:0], sort_mode="single", role="table", page_size=15, serverside=True,
+    filterable=True,
 )
 
 @app.callback(
@@ -66,6 +68,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
             ["log(x)"], value="log(x)", label="Axis Scale", role="scatter"
         ),
         table_inputs=table_plugin.args,
+        tab=tpl.tab_input(),
     ),
     output=[
         tpl.graph_output(role="scatter"),
@@ -74,7 +77,8 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     ],
     template=tpl
 )
-def callback(year, continent, logs, table_inputs):
+def callback(year, continent, logs, table_inputs, tab):
+    print(f"tab_id: {tab}")
     logs = logs or []
 
     # Let parameterize infer output component

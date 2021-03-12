@@ -157,7 +157,8 @@ class BaseDbcTemplate(BaseTemplate):
                 f"   {theme}"
             )
         if activate:
-            pio.templates.default = template
+            pio.templates["dash_bootstrap"] = template
+            pio.templates.default = "dash_bootstrap"
 
         return template
 
@@ -239,7 +240,7 @@ class BaseDbcTemplate(BaseTemplate):
 
 class DbcCard(BaseDbcTemplate):
     def __init__(
-        self, title=None, columns=12, min_width=400, height=None
+        self, title=None, columns=12, min_width=400, height=None, **kwargs,
     ):
         """
         Template that places all components in a single card
@@ -250,7 +251,7 @@ class DbcCard(BaseDbcTemplate):
         :param height: Fixed height of card or None (default) to let card's height
             expand to contents
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.title = title
         self.columns = columns
         self.height = height
@@ -468,10 +469,6 @@ class DbcSidebarTabs(BaseDbcTemplate):
                         children=list(reversed(self.get_containers(role))),
                         body=True
                     ),
-                    # dbc.Card([
-                    #     ac.container_component
-                    #     for ac in reversed(self.roles[role].values())
-                    # ], body=True)
                 ],
                 tab_id=role,
                 label=title,

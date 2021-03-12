@@ -12,7 +12,7 @@ phase_plugin = dl.component_plugins.DynamicInputPlugin(
 
 phase_plugin.install_callback(app)
 
-app.layout = phase_plugin.components_div
+app.layout = phase_plugin.container
 
 if __name__ == "__main__":
     app.run_server(debug=True)

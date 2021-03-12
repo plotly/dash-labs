@@ -1,14 +1,17 @@
 import plotly.express as px
 import dash_labs as dl
 import dash
-import pandas as pd
+import plotly.io as pio
+
 
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcCard(title="Table Component Plugin")
+tpl = dl.templates.DbcCard(
+    title="Table Component Plugin",
+    figure_template=True
+)
 
-# serverside = False
 serverside = True
 table_plugin = dl.component_plugins.DataTablePlugin(
     df=df, page_size=10, template=tpl, sort_mode="single", filterable=True,
@@ -31,8 +34,12 @@ def callback(gender, table_input):
 
     dff = table_plugin.get_processed_dataframe(table_input, filtered_df)
 
+    colorway = pio.templates[pio.templates.default].layout.colorway
     fig = px.scatter(
-        dff, x="total_bill", y="tip", color="sex", color_discrete_map={"Male": "green", "Female": "orange"},
+        dff, x="total_bill", y="tip", color="sex",
+        color_discrete_map={
+            "Male": colorway[0], "Female": colorway[1]
+        },
     )
 
     return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
