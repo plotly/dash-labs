@@ -12,7 +12,7 @@ Dash Labs began with several interdependent design goals:
 # Design
 The Dash Labs design centers on enhancements to the `@app.callback` decorator, enabled through the application of the `dl.Plugin()` Dash plugin.
 
-> it is recommended to import `dash_express` as `dx`, and this is the convention that will be used throughout this document.
+> it is recommended to import `dash_labs` as `dl`, and this is the convention that will be used throughout this document.
  
 This document will start with the Dash 1 feature set, and then progressively describe the extensions provided by Dash Labs.  This is how an experienced Dash 1 user might learn about Dash Labs. An alternative introduction should later be developed for new users learning Dash for the first time in the context of Dash Labs. 
 
@@ -39,13 +39,13 @@ This document is organized into the following chapters:
 This chapter covers the core enhancements to `@app.callback` that are introduced by Dash Labs.
 
 ## Enabling the Dash Labs plugin
-The Dash Labs features are enabled by specifying an instance of dx.Plugin when instantiating a Dash app.
+The Dash Labs features are enabled by specifying an instance of dl.Plugin when instantiating a Dash app.
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 ```
 
 ## Positional or Keyword arguments
@@ -221,7 +221,7 @@ def param_fn(a, b, c):
 ```
 
 ## Support for passing components in place of id's
-dash-labs makes it possible to include a component instance in place of a component id in the `Input`, `State`, and `Output` dependency objects.  This feature is currently provided by the special `dx.Input`, `dx.State`, `dx.Output` classes. Dash Labs apps should use these classes in place of the Dash 1 `dash.dependency.Input`, `State`, and `Output` classes.  
+dash-labs makes it possible to include a component instance in place of a component id in the `Input`, `State`, and `Output` dependency objects.  This feature is currently provided by the special `dl.Input`, `dl.State`, `dl.Output` classes. Dash Labs apps should use these classes in place of the Dash 1 `dash.dependency.Input`, `State`, and `Output` classes.  
 
 ```python
 div = html.Div()
@@ -251,23 +251,23 @@ If a component does not have an id when it is wrapped in a dependency, a unique 
 # Chapter 2: The template layout system
 Dash Labs introduces a template system that makes it possible to quickly add components to a pre-defined template.  As will be described below, the template system integrates with `@app.callback`, but templates can also be used independently of `@app.callback`.
 
-Templates that are included with Dash Labs are located in the `dx.templates` package.  The convention is to assign a template instance to a variable named `tpl`. Components can then be added to the template with `tpl.add_component` 
+Templates that are included with Dash Labs are located in the `dl.templates` package.  The convention is to assign a template instance to a variable named `tpl`. Components can then be added to the template with `tpl.add_component` 
 
 [demos/template_system1.py](demos/template_system1.py)
 
 ```python
-import dash_labs as dx
+import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Simple App", columns=6)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 div = html.Div()
 button = html.Button(children="Click Me")
 
 
-@app.callback(dx.Output(div, "children"), dx.Input(button, "n_clicks"))
+@app.callback(dl.Output(div, "children"), dl.Input(button, "n_clicks"))
 def callback(n_clicks):
    return "Clicked {} times".format(n_clicks)
 
@@ -291,17 +291,17 @@ For convenience, `@app.callback` accepts an optional `template` argument. When p
 [demos/template_system2.py](demos/template_system2.py)
 
 ```python
-import dash_labs as dx
+import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Simple App", columns=6)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 
 @app.callback(
-   dx.Output(html.Div(), "children"),
-   dx.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+   dl.Output(html.Div(), "children"),
+   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
    template=tpl
 )
 def callback(n_clicks):
@@ -315,7 +315,7 @@ if __name__ == "__main__":
 ```
 
 ## Component labels
-When a template is populated using `@app.callback`, the label string for a component can be overridden using the `label` keyword argument to `dx.Input`/`dx.State`/`dx.Output`.  See the "Button to click" label added above. 
+When a template is populated using `@app.callback`, the label string for a component can be overridden using the `label` keyword argument to `dl.Input`/`dl.State`/`dl.Output`.  See the "Button to click" label added above. 
 
 ## Default output
 When a template is provided, and no output is provided, the template will provide a default output container for the result of the function (usually an `html.Div` component).
@@ -323,16 +323,16 @@ When a template is provided, and no output is provided, the template will provid
 [demos/template_system3.py](demos/template_system3.py)
 
 ```python
-import dash_labs as dx
+import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Simple App", columns=6)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 
 @app.callback(
-   dx.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
    template=tpl
 )
 def callback(n_clicks):
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 ### `CallbackWrapper`
 The components added to a template are stored in the `.roles` property.  
 
-This is a dictionary from template "roles" to `OrderedDict`s of `ArgumentComponents` (described below). All templates define at least two roles: `"input"` and `"output"`. By default, all components corresponding to the `@app.callback` `inputs` and `state` arguments are assigned the `"input"` role and therefore are included in the `.roles["input"]` `OrderedDict`. Similarly, all components corresponding to the `@app.callback` `output` argument are assigned the "output" role and therefore are included in the `.roles["output"]` `OrderedDict`.  Templates may define additional roles, and dependency values can be assigned to these roles using the `role` argument (e.g. `dx.Input(..., role="footer")`).
+This is a dictionary from template "roles" to `OrderedDict`s of `ArgumentComponents` (described below). All templates define at least two roles: `"input"` and `"output"`. By default, all components corresponding to the `@app.callback` `inputs` and `state` arguments are assigned the `"input"` role and therefore are included in the `.roles["input"]` `OrderedDict`. Similarly, all components corresponding to the `@app.callback` `output` argument are assigned the "output" role and therefore are included in the `.roles["output"]` `OrderedDict`.  Templates may define additional roles, and dependency values can be assigned to these roles using the `role` argument (e.g. `dl.Input(..., role="footer")`).
 
 ### ArgumentComponents
 You might think that the values of the `.roles["inputs"]` and `.roles["output"]` dictionaries described above would simply be the components added to the template.  The reason it's not quite that simple is that for a single component added to a template, the template may create multiple components: There is the original input component, one for the label, and both of these may be wrapped in a container component.  Because the caller may want access to any, or all, of these components individually, references to all of these components, and their associated props, are stored in a `ArgumentComponents` instance.  Here are the attributes of `ArgumentComponents`, and an example of why a caller may want to access them.
@@ -366,7 +366,7 @@ Notice how custom callbacks are applied to the dropdowns returned by `@app.callb
 [demos/custom_layout_and_callback_integration.py](./demos/custom_layout_and_callback_integration.py)
 
 ```python
-import dash_labs as dx
+import dash_labs as dl
 import plotly.express as px
 import dash_core_components as dcc
 import dash_html_components as html
@@ -382,15 +382,15 @@ feature_options = [
 ]
 
 # Build app and template
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcSidebar(title="Iris Dataset")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcSidebar(title="Iris Dataset")
 
 
 # Use parameterize to create components
 @app.callback(
    args=dict(
-      x=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
-      y=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
+      x=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
+      y=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
    ),
    template=tp
 )
@@ -456,25 +456,25 @@ Note how the `add_component` method supports `before` and `after` keyword argume
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-template = dx.templates.DbcSidebar(title="Dash Labs App")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+template = dl.templates.DbcSidebar(title="Dash Labs App")
 
 
 # import dash_core_components as dcc
 @app.callback(
    inputs=dict(
-      fun=dx.Input(dcc.Dropdown(
+      fun=dl.Input(dcc.Dropdown(
          options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
          value="sin",
       ), label="Function"),
-      figure_title=dx.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
-      phase=dx.Input(dcc.Slider(min=1, max=10, value=3), label="Phase"),
-      amplitude=dx.Input(dcc.Slider(min=1, max=10, value=4), label="Amplitude")
+      figure_title=dl.Input(dcc.Input(value="Initial Title"), label="Figure Title"),
+      phase=dl.Input(dcc.Slider(min=1, max=10, value=3), label="Phase"),
+      amplitude=dl.Input(dcc.Slider(min=1, max=10, value=4), label="Amplitude")
    ),
    template=template,
 )
@@ -523,7 +523,7 @@ tp.dropdown_input(["A", "B", "C"], label="My Dropdown")
 evaluates to... 
 
 ```python
-dx.Input(
+dl.Input(
     dcc.Dropdown(
       id={'uid': 'd4713d60-c8a7-0639-eb11-67b367a9c378'},
       options=[{'value': 'A', 'label': 'A'}, {'value': 'B', 'label': 'B'}, {'value': 'C', 'label': 'C'}],
@@ -540,11 +540,11 @@ All of these functions provide the following keyword arguments:
  - `label`: The label to display for the component 
  - `role`: The template role of the component (`"input"`, `"output"`, or custom role defined by the template). If not provided, `app.callback` will assign components wrapped by `Input` or `State` dependencies as `"input"`, and those wrapped by `Output` as `"output"`
  - `component_property`: The property (or property grouping) considered to be the value of the component. This value is optional, and the template will provide a reasonable default for each component type (e.g. `n_clicks` for `dcc.Button`, `value` for `dcc.Dropdown`, `figure` for `dcc.Graph`).
- - `kind`: The dependency class to return. One of `dx.Input`, `dx.State`, or `dx.Output`. This value is optional and templates will provide a reasonable defaults (e.g. `dx.Input` for `dcc.Button` and `dcc.Dropdown`, `dx.Output` for `dcc.Graph`, etc.)
+ - `kind`: The dependency class to return. One of `dl.Input`, `dl.State`, or `dl.Output`. This value is optional and templates will provide a reasonable defaults (e.g. `dl.Input` for `dcc.Button` and `dcc.Dropdown`, `dl.Output` for `dcc.Graph`, etc.)
  - `id`: Optional argument to override the generated component id 
  - `opts`: Dictionary of keyword arguments to pass to the constructor of the component that is created.
 
-In addition to these standard keyword arguments, conponent dependency builders also provide args to make the configuration of the components as concise as possible. e.g. `dx.dropdown(["A", "B", "C])`, `dx.slider(0, 10)`. 
+In addition to these standard keyword arguments, conponent dependency builders also provide args to make the configuration of the components as concise as possible. e.g. `dl.dropdown(["A", "B", "C])`, `dl.slider(0, 10)`. 
 
 These component dependency builders can significantly shorten many `@app.callback` specifications.
 
@@ -552,12 +552,12 @@ These component dependency builders can significantly shorten many `@app.callbac
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import numpy as np
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.dbc.DbcSidebar(title="Sample App")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tp = dl.templates.dbc.DbcSidebar(title="Sample App")
 
 
 @app.callback(
@@ -596,12 +596,12 @@ Here is a full example, specifying the `FlatDiv` template.  The following exampl
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import numpy as np
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.FlatDiv()
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tp = dl.templates.FlatDiv()
 
 
 @app.callback(
@@ -635,7 +635,7 @@ if __name__ == "__main__":
 The `FlatDiv` template arranges all the input and output containers as children of a top-level `Div` component, and makes no attempt to make the result look nice.
 
 ```python=
-template = dx.templates.FlatDiv()
+template = dl.templates.FlatDiv()
 ```
 
 ![](https://i.imgur.com/YSELvgg.png)
@@ -645,7 +645,7 @@ template = dx.templates.FlatDiv()
 The `DccCard` template has no external dependencies and uses some basic inline CSS to place the input and output in a card with a title on top.  It currently puts very little effort into making the result look nice (although this could change).
 
 ```python=
-template = dx.templates.DccCard(title="Dash Labs App", width="500px")
+template = dl.templates.DccCard(title="Dash Labs App", width="500px")
 ```
 
 ![](https://i.imgur.com/387ygkJ.png)
@@ -655,7 +655,7 @@ template = dx.templates.DccCard(title="Dash Labs App", width="500px")
 The `DbcCard` template introduces a dependency on the open source Dash Bootstrap Components library (https://dash-bootstrap-components.opensource.faculty.ai/).  It places all contents in a single bootstrap card, with a card title.
 
 ```python=
-template = dx.templates.DbcCard(title="Dash Labs App", columns=6)
+template = dl.templates.DbcCard(title="Dash Labs App", columns=6)
 ```
 
 ![](https://i.imgur.com/q6k008w.png)
@@ -665,7 +665,7 @@ template = dx.templates.DbcCard(title="Dash Labs App", columns=6)
 The `DbcRow` template places the inputs and outputs in separate cards and then arranges them in a Bootstrap row. This template is a great choice when integrating the components generated by `@app.callback` into a larger app made with Dash Bootstrap Components.
 
 ```python=
-template = dx.templates.DbcRow(title="Dash Labs App")
+template = dl.templates.DbcRow(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/sLaDDdS.png)
@@ -675,7 +675,7 @@ template = dx.templates.DbcRow(title="Dash Labs App")
 The `DbcSidebar` template creates an app title bar and then includes the inputs in a sidebar on the left of the app, and the outputs in a card in the main app area.  This template is a great choice when using `@app.callback` to build an entire app.
 
 ```python=
-template = dx.templates.DbcSidebar(title="Dash Labs App")
+template = dl.templates.DbcSidebar(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/wqeZY0B.png)
@@ -685,7 +685,7 @@ template = dx.templates.DbcSidebar(title="Dash Labs App")
 The `DdkCard` template introduces a dependency on the proprietary Dash Design Kit library that is included with Dash Enterprise.  Like `DbcCard`, in places all the outputs and inputs in a single card, along with a card title.
 
 ```python=
-template = dx.templates.DdkCard(title="Dash Labs App", width=50)
+template = dl.templates.DdkCard(title="Dash Labs App", width=50)
 ```
 
 ![](https://i.imgur.com/kmX6fuP.png)
@@ -696,7 +696,7 @@ Like the `DbcRow` template, `DdkRow` places the input and output components in s
 
 
 ```python=
-template = dx.templates.DdkRow(title="Dash Labs App")
+template = dl.templates.DdkRow(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/s29txGA.png)
@@ -706,7 +706,7 @@ template = dx.templates.DdkRow(title="Dash Labs App")
 The `DdkSidebar` template creates a full app experience with an app header, a sidebar for the input controls, and a large main area for the output components.
 
 ```python=
-template = dx.templates.DdkSidebar(title="Dash Labs App")
+template = dl.templates.DdkSidebar(title="Dash Labs App")
 ```
 
 ![](https://i.imgur.com/db8a8eo.png)
@@ -716,7 +716,7 @@ template = dx.templates.DdkSidebar(title="Dash Labs App")
 All of the `Dbc*` components can be themed using the Bootstrap themeing system. Simply pass the URL of a bootstrap theme css file as the `theme` argument of the template. Check out https://www.bootstrapcdn.com/bootswatch/ to browse available templates.
 
 ```python=
-template = dx.templates.DbcSidebar(
+template = dl.templates.DbcSidebar(
     title="Dash Labs App", 
     theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css"
 )
@@ -732,13 +732,13 @@ Theme in [demos/ddk_theme.py](./demos/ddk_theme.py)
 
 ```python=
 from my_theme import theme
-template = dx.templates.DdkSidebar(title="Dash Labs App", theme=theme)
+template = dl.templates.DdkSidebar(title="Dash Labs App", theme=theme)
 ```
 
 ![](https://i.imgur.com/pcmRf1k.png)
 
 ## Creating custom templates
-Custom templates can be created by subclassing the `dx.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dx.templates.ddk.BaseDdkTemplate`.
+Custom templates can be created by subclassing the `dl.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dl.templates.ddk.BaseDdkTemplate`.
 
 Overriding a template may involve:
  1. Customizing the components that are constructed by "tp.dropdown", "tp.graph", etc.
@@ -752,7 +752,7 @@ Overriding a template may involve:
 Here are a few more examples of apps that make use of the templates and component dependency builders.
 
 ## Input components with multiple valuesk
-Some components have multiple properties that could be considered the "value" of the component for the purpose of decorated  callback function. One common example is the `DatePickerRange` component.  For this component, the start date is stored in the `start_date` prop and the end date in the `end_date` prop.  To make it possible to pass both of these values to the function, the `component_properties` argument to `dx.Input` may be a tuple (or dict) of multiple properties.
+Some components have multiple properties that could be considered the "value" of the component for the purpose of decorated  callback function. One common example is the `DatePickerRange` component.  For this component, the start date is stored in the `start_date` prop and the end date in the `end_date` prop.  To make it possible to pass both of these values to the function, the `component_properties` argument to `dl.Input` may be a tuple (or dict) of multiple properties.
 
 In this example, the default value of the `component_properties` argument to `tp.date_picker_range` is the tuple `("start_date", "end_date")`, which results in a tuple of the corresponding component property values being passed to the decorated callback function.
 
@@ -762,20 +762,20 @@ Note: The explicit declarations of the two input arguments (without component de
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import plotly.graph_objects as go
 import dash_core_components as dcc
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tp = dx.templates.FlatDiv()
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tp = dl.templates.FlatDiv()
 
 
 @app.callback(
    args=dict(
       figure_title=tp.textbox_input("Figure Title", label="Graph Title"),
-      # figure_title=dx.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
+      # figure_title=dl.Input(dcc.Input(value="Figure Title"), label="Graph Title"),
       date_range=tp.date_picker_range_input(label="Date"),
-      # date_range=dx.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
+      # date_range=dl.Input(dcc.DatePickerRange(), ("start_date", "end_date"), label="Date")
    ),
    template=tp
 )
@@ -806,28 +806,28 @@ if __name__ == "__main__":
 
 The ipywidgets `@interact` decorator supports a `manual` argument. When `True`, an update button is automatically added and changes to the other widgets are not applied until the update button is clicked.  This workflow can be replicated with `@app.callback` by adding an `html.Button` component and specifying that all inputs other than the button should be classified as `State` (rather than the default of `Input`).  
 
-Here is a full example of specifying all the components except the button as `kind=dx.State` to `@app.callback`.
+Here is a full example of specifying all the components except the button as `kind=dl.State` to `@app.callback`.
 
 [demos/basic_decorator_labels_state.py](./demos/basic_decorator_labels_state.py)
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.FlatDiv()
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.FlatDiv()
 
 
 @app.callback(
    args=dict(
-      fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dx.State),
+      fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
       figure_title=tpl.textbox_input("Initial Title", label="Figure Title",
-                                     kind=dx.State),
-      phase=tpl.slider_input(1, 10, label="Phase", kind=dx.State),
-      amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dx.State),
+                                     kind=dl.State),
+      phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
+      amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dl.State),
       n_clicks=tpl.button_input("Update", label=None)
    ),
    template=tpl
@@ -854,16 +854,16 @@ When a template is provided, the new `@app.callback` decorator no longer require
 
 Here is an example that outputs a string to the `children` property of a `dcc.Markdown` component.
 
-Note that the default value of `kind` for `tpl.markdown` is `dx.Output`, which is why it's not necessary to override the `kind` argument. 
+Note that the default value of `kind` for `tpl.markdown` is `dl.Output`, which is why it's not necessary to override the `kind` argument. 
 
 [demos/output_markdown.py](./demos/output_markdown.py)
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcSidebar("App Title", sidebar_columns=6)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 
 @app.callback(
@@ -954,17 +954,17 @@ Note that the DataFrame that is input to the DataTable is first filtered using a
 
 ```python
 import plotly.express as px
-import dash_labs as dx
+import dash_labs as dl
 import dash
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Table Component Plugin")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
 serverside = True
-table_plugin = dx.component_plugins.DataTablePlugin(
+table_plugin = dl.component_plugins.DataTablePlugin(
    df=df, page_size=10, sort_mode="single", filterable=True,
    serverside=serverside, template=tpl
 )
@@ -999,17 +999,17 @@ And here is an example of using the same plugin to display the contents of the t
 
 ```python
 import plotly.express as px
-import dash_labs as dx
+import dash_labs as dl
 import dash
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcCard(title="Clientside Table Component Plugin")
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcCard(title="Clientside Table Component Plugin")
 
 # serverside = False
 serverside = True
-table_plugin = dx.component_plugins.DataTablePlugin(
+table_plugin = dl.component_plugins.DataTablePlugin(
    df=df, page_size=10, template=tpl, sort_mode="single", filterable=True,
    serverside=serverside
 )
@@ -1056,14 +1056,14 @@ Here is an example of using the plugin
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 from skimage import data
 
 img = data.camera()
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
-tpl = dx.templates.DbcSidebar(title="Image Intensity Explorer")
-img_plugin = dx.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
+tpl = dl.templates.DbcSidebar(title="Image Intensity Explorer")
+img_plugin = dl.component_plugins.GreyscaleImageHistogramROI(img, template=tpl)
 
 
 @app.callback(
@@ -1092,23 +1092,23 @@ And usage
 
 ```python
 import dash
-import dash_labs as dx
+import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dx.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
-tpl = dx.templates.DbcSidebar(title="Dynamic Label Plugin")
+tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
 
-phase_plugin = dx.component_plugins.DynamicInputPlugin(
+phase_plugin = dl.component_plugins.DynamicInputPlugin(
    tpl.slider_input(1, 10, value=4, label="Phase: {}"), template=tpl
 )
 
 
 @app.callback(
    args=dict(
-      fun=dx.Input(dcc.Dropdown(
+      fun=dl.Input(dcc.Dropdown(
          options=[{"value": v, "label": v} for v in ["sin", "cos", "exp"]],
          value="sin"
       ), label="Function"),
