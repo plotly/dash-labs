@@ -23,8 +23,8 @@ tpl = dl.templates.DbcSidebar(title="Iris Dataset")
 # Use parameterize to create components
 @app.callback(
     args=dict(
-        x=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
-        y=dx.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
+        x=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
+        y=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
     ),
     template=tpl
 )

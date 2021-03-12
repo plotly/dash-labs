@@ -3,15 +3,9 @@ import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
-import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcSidebar(
-    title="Dash Labs App",
-    theme=dbc.themes.LUX,
-    figure_template=True
-)
-# tpl = dl.templates.DdkSidebar(title="Dash Labs App")
+tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 
 # import dash_core_components as dcc
 @app.callback(

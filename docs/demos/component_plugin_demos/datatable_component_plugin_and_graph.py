@@ -47,4 +47,4 @@ def callback(gender, table_input):
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8888)

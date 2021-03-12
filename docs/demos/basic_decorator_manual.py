@@ -12,7 +12,7 @@ tpl = dl.templates.FlatDiv()
         fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
         figure_title=tpl.textbox_input("Initial Title", label="Figure Title", kind=dl.State),
         phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
-        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dx.State),
+        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dl.State),
         n_clicks=tpl.button_input("Update", label=None)
     ),
     template=tpl

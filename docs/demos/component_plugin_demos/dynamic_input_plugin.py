@@ -27,7 +27,6 @@ def callback(fun, phase_inputs):
 
     return [fig, phase_plugin.get_output_values(phase_inputs)]
 
-
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":

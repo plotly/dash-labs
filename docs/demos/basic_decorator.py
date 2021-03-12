@@ -17,7 +17,6 @@ tpl = dl.templates.dbc.DbcSidebar(title="Sample App")
     template=tpl
 )
 def greet(fun, figure_title, phase, amplitude):
-    print(fun, figure_title, phase, amplitude)
     xs = np.linspace(-10, 10, 100)
     return dcc.Graph(figure=px.line(
         x=xs, y=getattr(np, fun)(xs + phase) * amplitude

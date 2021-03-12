@@ -9,7 +9,6 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 tpl = dl.templates.DbcSidebar(
     title="Image Intensity Explorer",
     sidebar_columns=4,
-    figure_template=True,
 )
 
 img_plugin = dl.component_plugins.GreyscaleImageROI(
