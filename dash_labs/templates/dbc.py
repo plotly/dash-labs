@@ -607,10 +607,10 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
     # Build colorway
     colorway_roles = [
         "primary",
-        "success",
-        "info",
-        "warning",
         "danger",
+        "success",
+        "warning",
+        "info",
     ]
     colorway = [role_colors[r] for r in colorway_roles]
     colorway = separate_colorway(colorway)
