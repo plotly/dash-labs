@@ -26,12 +26,21 @@ class BaseDbcTemplate(BaseTemplate):
             margin-right: 0;
          }
          
-         .dash-spreadsheet th {
+         .dash-spreadsheet .dash-header {
             background-color: var(--primary) !important;
             color: var(--white) !important;
             border-color: rgba(128, 128, 128, 0.3) !important;
             font-weight: 400 !important;
             font-size: 1.25em !important;
+         }
+         
+         .dash-spreadsheet .dash-filter {
+            background-color: var(--primary) !important;
+            border-color: rgba(128, 128, 128, 0.3) !important;
+         }
+         
+         .dash-spreadsheet .dash-filter input {
+            color: var(--white) !important;
          }
          
          .dash-spreadsheet td {
@@ -40,7 +49,7 @@ class BaseDbcTemplate(BaseTemplate):
             color: var(--dark) !important;
          }
          
-         .dash-spreadsheet tr:hover td {
+         .dash-spreadsheet tr:hover td.dash-cell {
             border-color: lightgrey !important;
             border-width: 0.5px !important;
             background-color: var(--info) !important;
