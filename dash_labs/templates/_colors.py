@@ -56,7 +56,7 @@ def best_darkening(c1, c2, c1_step=(1, 1), c2_step=(1, 1)):
     ])[-1]
 
 
-def separate_colorway(html_colors, sort=True):
+def separate_colorway(html_colors):
 
     try:
         raw_colors = [
@@ -116,24 +116,10 @@ def separate_colorway(html_colors, sort=True):
         iterations += 1
         max_step *= max_step_factor
 
-    if sort:
-        min_distances = np.nanmin(distances[1:-1], axis=1)
-        darkened_colors = get_darkened_colors(test_colors, darkenings)[1:-1]
-        result = sorted([
-            # (color_distance(black, clr), clr.hexcode)
-            (dist, clr.hexcode)
-            for clr, dist in zip(darkened_colors, min_distances)
-        ], reverse=True)
-
-        # Interleave order
-        result = result[::2] + result[1::2]
-
-        _, result = zip(*result)
-    else:
-        result = [
-            clr.hexcode
-            for clr in get_darkened_colors(test_colors, darkenings)[1:-1]
-        ]
+    result = [
+        clr.hexcode
+        for clr in get_darkened_colors(test_colors, darkenings)[1:-1]
+    ]
 
     return result
 
