@@ -443,15 +443,15 @@ def extract_callback_args(args, kwargs, names, type_):
             parameters.append(arg)
 
     # Convert dash.dependency objects into dash-labs equivalents
-    def to_dx(v):
+    def to_dl(v):
         if isinstance(v, type_.dependency_class):
             return type_(v.component_id, v.component_property)
         else:
             return v
     if isinstance(parameters, list):
-        parameters = [map_grouping(to_dx, p) for p in parameters]
+        parameters = [map_grouping(to_dl, p) for p in parameters]
     else:
-        parameters = map_grouping(to_dx, parameters)
+        parameters = map_grouping(to_dl, parameters)
 
     return parameters
 
