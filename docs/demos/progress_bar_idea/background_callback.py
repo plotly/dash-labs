@@ -8,7 +8,7 @@ from dash.dependencies import Output
 
 # User defined
 def background_callback(app, cache, args, output=None, interval=1000, template=None):
-    progress_id = dx.build_id("progress")
+    progress_id = dl.build_id("progress")
     progress_style = {"width": "100%"}
 
     def wrapper(fn):
@@ -37,8 +37,8 @@ def background_callback(app, cache, args, output=None, interval=1000, template=N
                     result=html.Progress(id=progress_id, style=progress_style),
                     interval_disabled=False
                 )
-        interval_component = dx.Input(
-            dcc.Interval(interval=interval, id=dx.build_id("interval")),
+        interval_component = dl.Input(
+            dcc.Interval(interval=interval, id=dl.build_id("interval")),
             "n_intervals", label=None,
         )
 
@@ -52,7 +52,7 @@ def background_callback(app, cache, args, output=None, interval=1000, template=N
             all_args = [interval_component] + all_args
 
         all_output = dict(
-            result=dx.Output(html.Div(), "children"),
+            result=dl.Output(html.Div(), "children"),
             interval_disabled=Output(interval_component.id, "disabled")
         )
         return app.callback(
