@@ -288,7 +288,10 @@ def test_map_grouping_dict(dict_grouping_size):
 
 def test_map_grouping_mixed(mixed_grouping_size):
     grouping, size = mixed_grouping_size
-    def fn(x): return x*2 + 5
+
+    def fn(x):
+        return x * 2 + 5
+
     result = map_grouping(fn, grouping)
     expected = make_grouping_by_index(
         grouping, list(map(fn, flatten_grouping(grouping)))
@@ -316,6 +319,7 @@ def test_validate_schema_grouping_scalar(scalar_grouping_size):
     validate_grouping((0,), schema)
     validate_grouping({"a": 0}, schema)
 
+
 def test_validate_schema_grouping_tuple(tuple_grouping_size):
     grouping, size = tuple_grouping_size
     schema = make_schema_with_nones(grouping)
@@ -326,7 +330,7 @@ def test_validate_schema_grouping_tuple(tuple_grouping_size):
         validate_grouping(None, schema)
 
     with pytest.raises(SchemaLengthValidationError):
-        validate_grouping((None,)*(size + 1), schema)
+        validate_grouping((None,) * (size + 1), schema)
 
     with pytest.raises(SchemaTypeValidationError):
         validate_grouping({"a": 0}, schema)

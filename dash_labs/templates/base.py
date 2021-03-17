@@ -28,6 +28,7 @@ class BaseTemplate:
     """
     Base class for dash-labs templates
     """
+
     # The property of this template's label components that holds the label string
     _label_value_prop = "children"
 
@@ -65,7 +66,12 @@ class BaseTemplate:
 
     @classmethod
     def build_argument_components(
-        cls, component, value_property=(), label=None, label_id=None, role=None,
+        cls,
+        component,
+        value_property=(),
+        label=None,
+        label_id=None,
+        role=None,
     ):
         # Get reference to dependency class object for role
         arg_component = component
@@ -73,18 +79,25 @@ class BaseTemplate:
 
         if label and label is not Component.UNDEFINED:
             initial_value = label
-            container_component, container_props, label, label_props = \
-                cls.build_labeled_component(
-                    arg_component, label=initial_value, label_id=label_id,
-                    role=role,
-                )
+            (
+                container_component,
+                container_props,
+                label,
+                label_props,
+            ) = cls.build_labeled_component(
+                arg_component,
+                label=initial_value,
+                label_id=label_id,
+                role=role,
+            )
             label_component = label
             label_props = label_props
         else:
             label_component = None
             label_props = None
             container_component, container_props = cls.build_containered_component(
-                arg_component, role=role,
+                arg_component,
+                role=role,
             )
 
         return ArgumentComponents(
@@ -97,8 +110,15 @@ class BaseTemplate:
         )
 
     def add_component(
-            self, component, role="input", label=None, label_id=None,
-            name=None, component_property=None, before=None, after=None
+        self,
+        component,
+        role="input",
+        label=None,
+        label_id=None,
+        name=None,
+        component_property=None,
+        before=None,
+        after=None,
     ):
         """
         Add a component to the template
@@ -337,52 +357,88 @@ class BaseTemplate:
     #
     @classmethod
     def div_output(
-            cls, children=None,
-            label=Component.UNDEFINED, role="output",
-            component_property="children", kind=Output, id=None, opts=None
+        cls,
+        children=None,
+        label=Component.UNDEFINED,
+        role="output",
+        component_property="children",
+        kind=Output,
+        id=None,
+        opts=None,
     ):
         return kind(
             html.Div(**filter_kwargs(opts, children=children, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def markdown_output(
-            cls, children=None,
-            label=Component.UNDEFINED, role="output",
-            component_property="children", kind=Output, id=None, opts=None
+        cls,
+        children=None,
+        label=Component.UNDEFINED,
+        role="output",
+        component_property="children",
+        kind=Output,
+        id=None,
+        opts=None,
     ):
         return kind(
             dcc.Markdown(**filter_kwargs(opts, children=children, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def textarea_input(
-            cls, value=None,
-            label=Component.UNDEFINED, role="input",
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        value=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         return kind(
             dcc.Textarea(**filter_kwargs(opts, value=value, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def button_input(
-            cls, children, label=Component.UNDEFINED, role="input",
-            component_property="n_clicks", kind=Input, id=None, opts=None
+        cls,
+        children,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="n_clicks",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         return kind(
             html.Button(children=children, **filter_kwargs(opts, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def dropdown_input(
-            cls, options, value=Component.UNDEFINED, clearable=False,
-            label=Component.UNDEFINED, role="input",
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        options,
+        value=Component.UNDEFINED,
+        clearable=False,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
@@ -392,16 +448,28 @@ class BaseTemplate:
             value = options[0]["value"]
 
         return kind(
-            dcc.Dropdown(options=options, **filter_kwargs(
-                opts, value=value, id=id, clearable=clearable)),
-            component_property=component_property, label=label, role=role
+            dcc.Dropdown(
+                options=options,
+                **filter_kwargs(opts, value=value, id=id, clearable=clearable)
+            ),
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def slider_input(
-            cls, min, max, value=Component.UNDEFINED, step=None,
-            label=Component.UNDEFINED, role="input",
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        min,
+        max,
+        value=Component.UNDEFINED,
+        step=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         tooltip = (opts or {}).pop(
             "tooltip", {"placement": "bottom", "always_visible": True}
@@ -412,28 +480,44 @@ class BaseTemplate:
 
         return kind(
             dcc.Slider(
-                min=min, max=max,
-                **filter_kwargs(opts,  tooltip=tooltip, step=step, value=value, id=id)
+                min=min,
+                max=max,
+                **filter_kwargs(opts, tooltip=tooltip, step=step, value=value, id=id)
             ),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def textbox_input(
-            cls, value=None,
-            label=Component.UNDEFINED, role="input",
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        value=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         return kind(
             dcc.Input(value=value, **filter_kwargs(opts, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def checklist_input(
-            cls, options, value=None,
-            label=Component.UNDEFINED, role="input",
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        options,
+        value=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         if isinstance(options, list) and options and not isinstance(options[0], dict):
             options = [{"value": opt, "label": opt} for opt in options]
@@ -443,7 +527,9 @@ class BaseTemplate:
 
         return kind(
             dcc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
@@ -452,41 +538,63 @@ class BaseTemplate:
 
     @classmethod
     def graph_output(
-            cls, figure=None, config=None,
-            label=Component.UNDEFINED, role="output",
-            component_property="figure", kind=Output, id=None, opts=None
+        cls,
+        figure=None,
+        config=None,
+        label=Component.UNDEFINED,
+        role="output",
+        component_property="figure",
+        kind=Output,
+        id=None,
+        opts=None,
     ):
         return kind(
-            cls._graph_class()(**filter_kwargs(opts, figure=figure, config=config, id=id)),
-            component_property=component_property, label=label, role=role
+            cls._graph_class()(
+                **filter_kwargs(opts, figure=figure, config=config, id=id)
+            ),
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def _datatable_class(cls):
         from dash_table import DataTable
+
         return DataTable
 
     @classmethod
     def date_picker_single_input(
-            cls, date=None,
-            label=Component.UNDEFINED, role="input",
-            component_property="date", kind=Input, id=None, opts=None
+        cls,
+        date=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property="date",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         if isinstance(date, datetime.date):
             date = date.isoformat()
 
         return kind(
-            dcc.DatePickerSingle(
-                date=date, **filter_kwargs(opts, id=id)
-            ),
-            component_property=component_property, label=label, role=role
+            dcc.DatePickerSingle(date=date, **filter_kwargs(opts, id=id)),
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def date_picker_range_input(
-            cls, start_date=None, end_date=None,
-            label=Component.UNDEFINED, role="input",
-            component_property=("start_date", "end_date"), kind=Input, id=None, opts=None
+        cls,
+        start_date=None,
+        end_date=None,
+        label=Component.UNDEFINED,
+        role="input",
+        component_property=("start_date", "end_date"),
+        kind=Input,
+        id=None,
+        opts=None,
     ):
 
         if isinstance(start_date, datetime.date):
@@ -498,5 +606,7 @@ class BaseTemplate:
             dcc.DatePickerRange(
                 start_date=start_date, end_date=end_date, **filter_kwargs(opts, id=id)
             ),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )

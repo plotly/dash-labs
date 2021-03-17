@@ -8,14 +8,14 @@ import pandas as pd
 
 
 operators = [
-    ['ge ', '>='],
-    ['le ', '<='],
-    ['lt ', '<'],
-    ['gt ', '>'],
-    ['ne ', '!='],
-    ['eq ', '='],
-    ['contains '],
-    ['datestartswith ']
+    ["ge ", ">="],
+    ["le ", "<="],
+    ["lt ", "<"],
+    ["gt ", ">"],
+    ["ne ", "!="],
+    ["eq ", "="],
+    ["contains "],
+    ["datestartswith "],
 ]
 
 
@@ -23,9 +23,17 @@ class DataTablePlugin(ComponentPlugin):
     """
     Component plugin to make it easier to work with DataTables
     """
+
     def __init__(
-            self, df, columns=None, page_size=5, sort_mode=None, filterable=False,
-            serverside=False, template=None, role="output"
+        self,
+        df,
+        columns=None,
+        page_size=5,
+        sort_mode=None,
+        filterable=False,
+        serverside=False,
+        template=None,
+        role="output",
     ):
         """
 
@@ -134,11 +142,8 @@ class DataTablePlugin(ComponentPlugin):
         # Perform sorting
         if sort_by and len(sort_by):
             df = df.sort_values(
-                [col['column_id'] for col in sort_by],
-                ascending=[
-                    col['direction'] == 'asc'
-                    for col in sort_by
-                ],
+                [col["column_id"] for col in sort_by],
+                ascending=[col["direction"] == "asc" for col in sort_by],
             )
         return df
 
@@ -176,21 +181,29 @@ class DataTablePlugin(ComponentPlugin):
 
     def _build_serverside_output(self, template):
         data, columns = self.convert_data_columns(self.df, self.columns)
-        result = Output(template._datatable_class()(
-            data=data, columns=columns, id=self.datatable_id,
-            page_current=0,
-            page_size=self.page_size,
-            page_action="custom",
-            page_count=self._compute_page_count(self.full_df),
-            **filter_kwargs(
-                sort_action=None if self.sort_mode is None else "custom",
-                sort_mode=self.sort_mode,
-                filter_action="custom" if self.filterable else None,
-                filter_query="" if self.filterable else None,
-            )
-        ), component_property=dict(
-            data="data", columns="columns", page_count="page_count",
-        ), role=self.role)
+        result = Output(
+            template._datatable_class()(
+                data=data,
+                columns=columns,
+                id=self.datatable_id,
+                page_current=0,
+                page_size=self.page_size,
+                page_action="custom",
+                page_count=self._compute_page_count(self.full_df),
+                **filter_kwargs(
+                    sort_action=None if self.sort_mode is None else "custom",
+                    sort_mode=self.sort_mode,
+                    filter_action="custom" if self.filterable else None,
+                    filter_query="" if self.filterable else None,
+                )
+            ),
+            component_property=dict(
+                data="data",
+                columns="columns",
+                page_count="page_count",
+            ),
+            role=self.role,
+        )
         return result
 
     def _build_serverside_result(self, inputs_value, df, preprocessed=False):
@@ -213,17 +226,21 @@ class DataTablePlugin(ComponentPlugin):
 
     def _build_clientside_output(self, template):
         data, columns = self.convert_data_columns(self.df, self.columns)
-        return Output(template._datatable_class()(
-            data=data, columns=columns, id=self.datatable_id,
-            page_size=self.page_size,
-            **filter_kwargs(
-                sort_action=None if self.sort_mode is None else "native",
-                sort_mode=self.sort_mode,
-                filter_action="native" if self.filterable else None
-            )
-        ), component_property=dict(
-            data="data", columns="columns"
-        ), role=self.role)
+        return Output(
+            template._datatable_class()(
+                data=data,
+                columns=columns,
+                id=self.datatable_id,
+                page_size=self.page_size,
+                **filter_kwargs(
+                    sort_action=None if self.sort_mode is None else "native",
+                    sort_mode=self.sort_mode,
+                    filter_action="native" if self.filterable else None,
+                )
+            ),
+            component_property=dict(data="data", columns="columns"),
+            role=self.role,
+        )
 
     def _build_clientside_result(self, df):
         if df is not None:
@@ -239,12 +256,12 @@ def _split_filter_part(filter_part):
         for operator in operator_type:
             if operator in filter_part:
                 name_part, value_part = filter_part.split(operator, 1)
-                name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
+                name = name_part[name_part.find("{") + 1 : name_part.rfind("}")]
 
                 value_part = value_part.strip()
                 v0 = value_part[0]
-                if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
-                    value = value_part[1: -1].replace('\\' + v0, v0)
+                if v0 == value_part[-1] and v0 in ("'", '"', "`"):
+                    value = value_part[1:-1].replace("\\" + v0, v0)
                 else:
                     try:
                         value = float(value_part)
@@ -259,18 +276,18 @@ def _split_filter_part(filter_part):
 
 
 def _filter_serverside(df, filter_query):
-    filtering_expressions = filter_query.split(' && ')
+    filtering_expressions = filter_query.split(" && ")
     dff = df
 
     for filter_part in filtering_expressions:
         col_name, operator, filter_value = _split_filter_part(filter_part)
 
-        if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
+        if operator in ("eq", "ne", "lt", "le", "gt", "ge"):
             # these operators match pandas series operator method names
             dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
-        elif operator == 'contains':
+        elif operator == "contains":
             dff = dff.loc[dff[col_name].str.contains(filter_value)]
-        elif operator == 'datestartswith':
+        elif operator == "datestartswith":
             # this is a simplification of the front-end filtering logic,
             # only works with complete fields in standard format
             dff = dff.loc[dff[col_name].str.startswith(filter_value)]

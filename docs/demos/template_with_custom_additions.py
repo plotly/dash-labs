@@ -20,30 +20,36 @@ tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 )
 def function_browser(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title)
+    return px.line(x=xs, y=getattr(np, fun)(xs + phase) * amplitude).update_layout(
+        title_text=figure_title
+    )
 
 
 # Add extra component to template
+tpl.add_component(dcc.Markdown(children="# First Group"), role="input", before="fun")
+
 tpl.add_component(
-    dcc.Markdown(children="# First Group"), role="input", before="fun"
+    dcc.Markdown(
+        children=[
+            "# Second Group\n"
+            "Specify the Phase and Amplitudue for the chosen function"
+        ]
+    ),
+    role="input",
+    before="phase",
 )
 
-tpl.add_component(dcc.Markdown(children=[
-    "# Second Group\n"
-    "Specify the Phase and Amplitudue for the chosen function"
-]), role="input", before="phase")
 
-
-tpl.add_component(dcc.Markdown(children=[
-    "# H2 Title\n",
-    "Here is the *main* plot"
-]), role="output", before=0)
+tpl.add_component(
+    dcc.Markdown(children=["# H2 Title\n", "Here is the *main* plot"]),
+    role="output",
+    before=0,
+)
 
 tpl.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
-    component_property="children", role="output"
+    component_property="children",
+    role="output",
 )
 
 app.layout = tpl.layout(app)

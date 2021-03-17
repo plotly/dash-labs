@@ -7,6 +7,7 @@ class FlatDiv(BaseTemplate):
     Trivial template that returns all input containers in a single flat Div,
     inputs followed by outputs
     """
+
     def __init__(self):
         super().__init__()
 

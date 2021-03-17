@@ -7,6 +7,7 @@ import plotly.express as px
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 tpl = dl.templates.dbc.DbcSidebar(title="Sample App")
 
+
 @app.callback(
     args=dict(
         fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
@@ -14,13 +15,15 @@ tpl = dl.templates.dbc.DbcSidebar(title="Sample App")
         phase=tpl.slider_input(1, 10, label="Phase"),
         amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude"),
     ),
-    template=tpl
+    template=tpl,
 )
 def greet(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return dcc.Graph(figure=px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title))
+    return dcc.Graph(
+        figure=px.line(x=xs, y=getattr(np, fun)(xs + phase) * amplitude).update_layout(
+            title_text=figure_title
+        )
+    )
 
 
 app.layout = tpl.layout(app)

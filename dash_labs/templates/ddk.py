@@ -9,6 +9,7 @@ class BaseDDKTemplate(BaseTemplate):
     """
     Base class for templates based on Dash Design Kit
     """
+
     _label_value_prop = "label"
 
     def __init__(
@@ -32,9 +33,7 @@ class BaseDDKTemplate(BaseTemplate):
         if not label_id:
             label_id = build_id("label")
 
-        container = ddk.ControlItem(
-            id=label_id, label=label, children=component
-        )
+        container = ddk.ControlItem(id=label_id, label=label, children=component)
         label_component = container
         label_property = "label"
 
@@ -53,11 +52,13 @@ class BaseDDKTemplate(BaseTemplate):
     @classmethod
     def _graph_class(cls):
         import dash_design_kit as ddk
+
         return ddk.Graph
 
     @classmethod
     def _datatable_class(cls):
         from dash_table import DataTable
+
         return DataTable
 
     def _wrap_full_layout(self, layout):
@@ -92,7 +93,9 @@ class DdkCard(BaseDDKTemplate):
             card_children.append(ddk.CardHeader(title=self.title))
 
         card_children.append(
-            html.Div(style={"padding": 20}, children=html.Div(self.get_containers("output")))
+            html.Div(
+                style={"padding": 20}, children=html.Div(self.get_containers("output"))
+            )
         )
         card_children.append(html.Hr(style={"width": "100%", "margin": "auto"}))
         card_children.extend(self.get_containers("input"))
@@ -203,6 +206,7 @@ class DdkSidebarTabs(BaseDDKTemplate):
         :param sidebar_width: Sidebar width in pixels or as a css string
         """
         import dash_core_components as dcc
+
         self.title = title
         self.sidebar_width = sidebar_width
         if isinstance(tab_roles, (list, tuple)):
@@ -243,7 +247,8 @@ class DdkSidebarTabs(BaseDDKTemplate):
             dcc.Tab(
                 value=role,
                 label=title,
-                children=ddk.ControlCard(list(reversed(self.get_containers(role)))))
+                children=ddk.ControlCard(list(reversed(self.get_containers(role)))),
+            )
             for role, title in self.tab_roles.items()
         ]
 

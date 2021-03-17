@@ -5,10 +5,14 @@ from dash import exceptions, Dash
 from dash.development.base_component import Component
 from .dependency import DashLabsDependency, State, Input, Output
 from dash_labs.grouping import (
-    flatten_grouping, make_grouping_by_index, validate_grouping, map_grouping
+    flatten_grouping,
+    make_grouping_by_index,
+    validate_grouping,
+    map_grouping,
 )
 from dash.dependencies import (
-    Input as Input_dash, State as State_dash,
+    Input as Input_dash,
+    State as State_dash,
 )
 import dash_html_components as html
 
@@ -20,15 +24,16 @@ class CallbackWrapper:
     Class that functions decorated by app.callback to provide access to
     original function and callback decorator arguments.
     """
+
     def __init__(
-            self,
-            fn,
-            args_dependencies,
-            output_dependencies,
-            flat_fn=None,
-            flat_output_deps=None,
-            flat_input_deps=None,
-            flat_state_deps=None
+        self,
+        fn,
+        args_dependencies,
+        output_dependencies,
+        flat_fn=None,
+        flat_output_deps=None,
+        flat_input_deps=None,
+        flat_state_deps=None,
     ):
         self.fn = fn
         self.args = args_dependencies
@@ -171,9 +176,10 @@ def _add_arg_components_to_template(vals, template):
                 template.add_component(
                     component=dep.component_id,
                     component_property=dep.component_property,
-                    role=dep.role, label=dep.label,
+                    role=dep.role,
+                    label=dep.label,
                     label_id=dep.label_id,
-                    **opts
+                    **opts,
                 )
 
 
@@ -212,7 +218,7 @@ def _get_arg_input_state_dependencies(all_inputs):
 
         slc = slice(
             num_inputs + len(state_deps),
-            num_inputs + len(state_deps) + len(flat_dependencies)
+            num_inputs + len(state_deps) + len(flat_dependencies),
         )
         input_groupings[name] = (grouping, slc)
         state_deps.extend(flat_dependencies)
@@ -255,8 +261,14 @@ def _callback(
     """
     # Parse input arguments in a way that is consistent with Dash 1 app.callback
     # Note that the args argument to app.callback is merged with inputs
-    output, inputs, state, prevent_initial_callbacks, template, _wrapped_callback = \
-        handle_callback_args(_args, _kwargs)
+    (
+        output,
+        inputs,
+        state,
+        prevent_initial_callbacks,
+        template,
+        _wrapped_callback,
+    ) = handle_callback_args(_args, _kwargs)
 
     # Combine inputs and stated and normalize into an OrderedDict. List/tuple inputs
     # have integer keys, which dict inputs have keyword argument names as keys.
@@ -286,7 +298,9 @@ def _callback(
         # Postprocess return value of wrapped function to validate returned groupings
         # and flatten values into linear list expected by Dash 1 callback
         callback_fn = map_output_arguments(
-            callback_fn, output_groupings, output_form,
+            callback_fn,
+            output_groupings,
+            output_form,
         )
 
         # Register wrapped function with app.callback
@@ -297,15 +311,23 @@ def _callback(
 
         # Install callback
         _callback(
-            app, output_deps, input_deps, state_deps,
-            prevent_initial_call=prevent_initial_callbacks
+            app,
+            output_deps,
+            input_deps,
+            state_deps,
+            prevent_initial_call=prevent_initial_callbacks,
         )(callback_fn)
 
         # Return CallbackWrapper instance that mimicks wrapped function while providing
         # access to additional metadata about the callback.
         return CallbackWrapper(
-            fn, all_inputs, all_outputs, callback_fn,
-            output_deps, input_deps, state_deps
+            fn,
+            all_inputs,
+            all_outputs,
+            callback_fn,
+            output_deps,
+            input_deps,
+            state_deps,
         )
 
     return wrapped
@@ -323,7 +345,8 @@ def map_input_arguments(fn, input_groupings, input_form):
             # input groupings
             raise ValueError(
                 "Expected {} input value(s), received {}".format(
-                    expected_num_args, len(args))
+                    expected_num_args, len(args)
+                )
             )
 
         fn_kwargs = {}
@@ -368,9 +391,7 @@ def map_output_arguments(fn, dep_groupings, output_form):
             assert len(res) == len(dep_groupings)
 
             for i in range(len(dep_groupings)):
-                flat_res = extract_and_validate_output_values(
-                    res[i], dep_groupings[i]
-                )
+                flat_res = extract_and_validate_output_values(res[i], dep_groupings[i])
                 output.extend(flat_res)
         else:  # form == "dict"
             assert isinstance(res, dict)
@@ -399,7 +420,6 @@ def extract_and_validate_output_values(res_grouping, dep_grouping):
     flat_results = flatten_grouping(res_grouping, dep_grouping)
 
     return flat_results
-
 
 
 def _validate_prop_name(component, prop_name):
@@ -448,6 +468,7 @@ def extract_callback_args(args, kwargs, names, type_):
             return type_(v.component_id, v.component_property)
         else:
             return v
+
     if isinstance(parameters, list):
         parameters = [map_grouping(to_dl, p) for p in parameters]
     else:
@@ -488,7 +509,8 @@ def handle_callback_args(args, kwargs):
     state_values = states.values() if isinstance(states, dict) else states
     output_values = (
         validate_outputs.values()
-        if isinstance(validate_outputs, dict) else validate_outputs
+        if isinstance(validate_outputs, dict)
+        else validate_outputs
     )
 
     validate_callback(output_values, input_values, state_values, flat_args)

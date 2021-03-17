@@ -8,15 +8,14 @@ class DynamicInputPlugin(ComponentPlugin):
     Plugin that supports formatting a component's template label with the current
     component value
     """
+
     def __init__(self, input_dependency, template=None):
         if template is None:
             template = templates.FlatDiv()
 
         self.input_dependency = input_dependency
         self.format_string = self.input_dependency.label
-        self.label_string = self.format_string.format(
-            input_dependency.property_value()
-        )
+        self.label_string = self.format_string.format(input_dependency.property_value())
         self.label_id = build_id("label")
         self.label_prop = template._label_value_prop
 

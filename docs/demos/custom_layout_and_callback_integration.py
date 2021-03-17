@@ -26,12 +26,13 @@ tpl = dl.templates.DbcSidebar(title="Iris Dataset")
         x=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
         y=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
     ),
-    template=tpl
+    template=tpl,
 )
 def iris(x, y):
     return dcc.Graph(
         figure=px.scatter(df, x=x, y=y, color="species"),
     )
+
 
 # Get references to the dropdowns and register a custom callback to prevent the user
 # from setting x and y to the same variable
@@ -50,6 +51,7 @@ def filter_options(v):
         for col, label in zip(feature_cols, feature_labels)
     ]
 
+
 app.callback(Output(x_component.id, "options"), [Input(y_component.id, "value")])(
     filter_options
 )
@@ -62,15 +64,17 @@ x_container = tpl.roles["input"]["x"].container_component
 y_container = tpl.roles["input"]["y"].container_component
 output_component = tpl.roles["output"][0].container_component
 
-app.layout = html.Div([
-    html.H1("Iris Feature Explorer"),
-    html.H2("Select Features"),
-    x_container,
-    y_container,
-    html.Hr(),
-    html.H2("Feature Scatter Plot"),
-    output_component
-])
+app.layout = html.Div(
+    [
+        html.H1("Iris Feature Explorer"),
+        html.H2("Select Features"),
+        x_container,
+        y_container,
+        html.Hr(),
+        html.H2("Feature Scatter Plot"),
+        output_component,
+    ]
+)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -1,3 +1,7 @@
 .vscode
 .idea
 *.egg-info
+build
+dist
+cache
+.pytest_cache

@@ -49,7 +49,12 @@ def test_slider_builder(test_template):
 
     # But can be overridden with tooltip argument, and can override kind to State
     component_dep = test_template.slider_input(
-        min, max, id=id, value=val, kind=State, opts=dict(tooltip=None),
+        min,
+        max,
+        id=id,
+        value=val,
+        kind=State,
+        opts=dict(tooltip=None),
     )
 
     assert isinstance(component_dep, State)
@@ -60,7 +65,9 @@ def test_slider_builder(test_template):
 
 
 def test_input_builder(test_template):
-    component_dep = test_template.textbox_input("Starting", id="test-input", opts=dict(disabled=True))
+    component_dep = test_template.textbox_input(
+        "Starting", id="test-input", opts=dict(disabled=True)
+    )
 
     assert isinstance(component_dep, Input)
     assert component_dep.component_property == "value"
@@ -129,7 +136,9 @@ def test_graph_builder(test_template):
         data=[dict(y=[1, 3, 2])], layout=dict(title=dict(text="Figure Title"))
     )
     config = dict(config_prop="config-val")
-    component_dep = test_template.graph_output(figure=figure, id="test-graph", config=config)
+    component_dep = test_template.graph_output(
+        figure=figure, id="test-graph", config=config
+    )
 
     assert isinstance(component_dep, Output)
     assert component_dep.component_property == "figure"
@@ -161,7 +170,8 @@ def test_date_picker_range_builder(test_template):
     end_date = datetime.date(200, 1, 15)
 
     component_dep = test_template.date_picker_range_input(
-        start_date, end_date,
+        start_date,
+        end_date,
         id="test-daterangepicker",
         opts=dict(month_format="MM YY"),
     )

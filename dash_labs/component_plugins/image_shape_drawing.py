@@ -12,9 +12,15 @@ class GreyscaleImageROI(ComponentPlugin):
     Plugin that supports drawing, and editing, a rectangular box on a greyscale image
     and retrieving the selected region and selected pixels.
     """
+
     def __init__(
-            self, img, template=None, image_label=None, newshape=None, title=None,
-            fig_update_callback=None,
+        self,
+        img,
+        template=None,
+        image_label=None,
+        newshape=None,
+        title=None,
+        fig_update_callback=None,
     ):
 
         if template is None:
@@ -28,13 +34,11 @@ class GreyscaleImageROI(ComponentPlugin):
             )
 
         self.newshape = newshape
-        self.fig_update_callback=fig_update_callback
+        self.fig_update_callback = fig_update_callback
 
         top_margin = 60 if title is not None else 20
 
-        self.image_fig = px.imshow(
-            img, binary_string=True
-        ).update_layout(
+        self.image_fig = px.imshow(img, binary_string=True).update_layout(
             dragmode="drawrect",
             margin=dict(l=20, b=20, r=20, t=top_margin),
             newshape=self.newshape,
@@ -47,13 +51,15 @@ class GreyscaleImageROI(ComponentPlugin):
 
         # Initialize args component dependencies
         args = template.graph_output(
-            self.image_fig, component_property="relayoutData", kind=Input, role="input",
-            id=self.image_graph_id, label=self.image_label
+            self.image_fig,
+            component_property="relayoutData",
+            kind=Input,
+            role="input",
+            id=self.image_graph_id,
+            label=self.image_label,
         )
 
-        output = {
-            "image_figure": Output(self.image_graph_id, "figure")
-        }
+        output = {"image_figure": Output(self.image_graph_id, "figure")}
 
         super().__init__(args, output, template)
 
@@ -72,11 +78,10 @@ class GreyscaleImageROI(ComponentPlugin):
 
             top_margin = 60 if title is not None else 20
 
-            new_image_fig = go.Figure(
-                self.image_fig
-            )
+            new_image_fig = go.Figure(self.image_fig)
             new_image_fig.update_layout(
-                shapes=shapes, margin_t=top_margin,
+                shapes=shapes,
+                margin_t=top_margin,
             )
 
             if title is not None:
@@ -121,22 +126,27 @@ class GreyscaleImageROI(ComponentPlugin):
 
             if bounds is not None:
                 x0, y0, x1, y1 = bounds
-                return self.img[int(y0):int(y1), int(x0):int(x1)]
+                return self.img[int(y0) : int(y1), int(x0) : int(x1)]
             else:
                 return None
         else:
             return None
 
     def _make_rect(self, x0, y0, x1, y1):
-        if all(( x0, y0, x1, y1)):
-            return [dict({
-                "editable": True,
-                "type": "rect",
-                "x0": x0,
-                "y0": y0,
-                "x1": x1,
-                "y1": y1
-            }, **self.newshape)]
+        if all((x0, y0, x1, y1)):
+            return [
+                dict(
+                    {
+                        "editable": True,
+                        "type": "rect",
+                        "x0": x0,
+                        "y0": y0,
+                        "x1": x1,
+                        "y1": y1,
+                    },
+                    **self.newshape
+                )
+            ]
         else:
             return []
 

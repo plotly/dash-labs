@@ -1,5 +1,7 @@
 from dash.dependencies import (
-    Input as Input_dash, Output as Output_dash, State as State_dash
+    Input as Input_dash,
+    Output as Output_dash,
+    State as State_dash,
 )
 from dash.development.base_component import Component
 
@@ -18,8 +20,12 @@ class DashLabsDependency:
     dependency_class = None
 
     def __init__(
-            self, component_id, component_property="value", label=Component.UNDEFINED,
-            role=Component.UNDEFINED, label_id=None,
+        self,
+        component_id,
+        component_property="value",
+        label=Component.UNDEFINED,
+        role=Component.UNDEFINED,
+        label_id=None,
     ):
         """
         :param component_id: Component id or component instance
@@ -145,7 +151,8 @@ class DashLabsDependency:
             f"{self.__class__.__name__}(\n"
             f"    component_id={repr(self.component_id)},\n"
             f"    component_property={repr(self.component_property)}\n"
-            f")")
+            f")"
+        )
 
     def __repr__(self):
         return str(self)
