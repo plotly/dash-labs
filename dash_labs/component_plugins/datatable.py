@@ -4,7 +4,6 @@ from dash_labs.dependency import Output, Input
 from dash_labs.util import build_id, filter_kwargs
 from .base import ComponentPlugin
 from dash_labs.templates import FlatDiv
-import pandas as pd
 
 
 operators = [
@@ -160,6 +159,8 @@ class DataTablePlugin(ComponentPlugin):
 
     def convert_data_columns(self, df, columns=None):
         # Handle DataFrame input
+        import pandas as pd
+
         if isinstance(df, pd.DataFrame):
             if columns is None:
                 columns = df.columns.tolist()

@@ -2,7 +2,6 @@ from dash_labs import build_id
 from dash_labs.dependency import Output, Input
 from dash_labs.templates import FlatDiv
 from .base import ComponentPlugin
-import plotly.express as px
 import plotly.graph_objects as go
 import dash
 
@@ -22,6 +21,7 @@ class GreyscaleImageROI(ComponentPlugin):
         title=None,
         fig_update_callback=None,
     ):
+        import plotly.express as px
 
         if template is None:
             template = FlatDiv()
