@@ -14,10 +14,33 @@ def requirements_txt():
         return [line.strip() for line in f.read().split("\n")]
 
 
+def readme():
+    with open(here / 'README.md', 'rt') as f:
+        return f.read()
+
+
 setup(
     name="dash-labs",
     version=main_ns["__version__"],
+    author="Jon Mease",
+    author_email="jon@plot.ly",
+    maintainer="Jon Mease",
+    maintainer_email="jon@plot.ly",
+    url="https://github.com/plotly/dash-labs",
+    project_urls={"Github": "https://github.com/plotly/dash-labs"},
+    description="Experimental enhancements for potential inclusion in Dash",
+    long_description=readme(),
+    long_description_content_type="text/markdown",
+    classifiers=[
+        "Development Status :: 4 - Beta"
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Scientific/Engineering :: Visualization",
+        "Framework :: Dash",
+    ],
+    license="MIT",
+    license_files=['LICENSE.txt'],
     python_requires=">=3.6.*",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     install_requires=requirements_txt(),
 )
