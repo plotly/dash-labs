@@ -2,7 +2,7 @@ import string
 from unittest.mock import MagicMock
 
 from dash_labs import build_id
-from grouping import make_grouping_by_index, grouping_len
+from dash_labs.grouping import make_grouping_by_index, grouping_len
 
 
 def make_deps(dep_type, n):

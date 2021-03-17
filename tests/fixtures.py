@@ -10,8 +10,8 @@ from dash_labs.grouping import make_grouping_by_index
 from dash_labs import Plugin
 
 # Helpers
-from templates.base import BaseTemplate
-from util import add_css_class, build_id
+from dash_labs.templates.base import BaseTemplate
+from dash_labs.util import add_css_class, build_id
 
 
 def all_component_props(component):
@@ -138,7 +138,7 @@ def app():
     return dash.Dash(plugins=[Plugin()])
 
 
-class TestTemplate(BaseTemplate):
+class ExampleTemplate(BaseTemplate):
     _valid_roles = ("input", "output", "custom")
 
     _inline_css = """
@@ -192,4 +192,4 @@ class TestTemplate(BaseTemplate):
 
 @pytest.fixture
 def test_template():
-    return TestTemplate()
+    return ExampleTemplate()
