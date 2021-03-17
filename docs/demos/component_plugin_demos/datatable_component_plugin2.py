@@ -7,7 +7,11 @@ df = px.data.tips()
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df=df, page_size=10, sort_mode="single", filterable=True, serverside=True,
+    df=df,
+    page_size=10,
+    sort_mode="single",
+    filterable=True,
+    serverside=True,
 )
 
 table_plugin.install_callback(app)

@@ -19,7 +19,9 @@ class BaseDbcTemplate(BaseTemplate):
     # - Undo the negative margins that table rows pick up from bootstrap's own row
     #   CSS class. Otherwise, table expand in width outside of their container.
     # - Style various elements using bootstrap css variables
-    _inline_css = BaseTemplate._inline_css + """
+    _inline_css = (
+        BaseTemplate._inline_css
+        + """
 
          .dash-spreadsheet .row {
             margin-left: 0;
@@ -84,6 +86,7 @@ class BaseDbcTemplate(BaseTemplate):
             border-color: rgba(100, 100, 100, 0.4);
         }
         """
+    )
 
     def __init__(self, theme=None, figure_template=False):
         """
@@ -112,7 +115,9 @@ class BaseDbcTemplate(BaseTemplate):
             className="h5",
         )
         container_id = build_id("container")
-        container = dbc.FormGroup(id=container_id, children=[label_component, component])
+        container = dbc.FormGroup(
+            id=container_id, children=[label_component, component]
+        )
         return container, "children", label_component, "children"
 
     @classmethod
@@ -165,21 +170,36 @@ class BaseDbcTemplate(BaseTemplate):
     # component dependency constructors
     @classmethod
     def button_input(
-            cls, children, label=Component.UNDEFINED, role=Component.UNDEFINED,
-            component_property="n_clicks", kind=Input, id=None, opts=None
+        cls,
+        children,
+        label=Component.UNDEFINED,
+        role=Component.UNDEFINED,
+        component_property="n_clicks",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         import dash_bootstrap_components as dbc
 
         return kind(
             dbc.Button(children=children, **filter_kwargs(opts, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def dropdown_input(
-            cls, options, value=Component.UNDEFINED, clearable=False,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        options,
+        value=Component.UNDEFINED,
+        clearable=False,
+        label=Component.UNDEFINED,
+        role=Component.UNDEFINED,
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         import dash_bootstrap_components as dbc
 
@@ -199,14 +219,21 @@ class BaseDbcTemplate(BaseTemplate):
 
         return kind(
             dbc.Select(options=options, **filter_kwargs(opts, value=value, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def textbox_input(
-            cls, value=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        value=None,
+        label=Component.UNDEFINED,
+        role=Component.UNDEFINED,
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         import dash_bootstrap_components as dbc
 
@@ -216,14 +243,22 @@ class BaseDbcTemplate(BaseTemplate):
 
         return kind(
             dbc.Input(value=value, **filter_kwargs(opts, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
     @classmethod
     def checklist_input(
-            cls, options, value=None,
-            label=Component.UNDEFINED, role=Component.UNDEFINED,
-            component_property="value", kind=Input, id=None, opts=None
+        cls,
+        options,
+        value=None,
+        label=Component.UNDEFINED,
+        role=Component.UNDEFINED,
+        component_property="value",
+        kind=Input,
+        id=None,
+        opts=None,
     ):
         import dash_bootstrap_components as dbc
 
@@ -234,13 +269,20 @@ class BaseDbcTemplate(BaseTemplate):
 
         return kind(
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
-            component_property=component_property, label=label, role=role
+            component_property=component_property,
+            label=label,
+            role=role,
         )
 
 
 class DbcCard(BaseDbcTemplate):
     def __init__(
-        self, title=None, columns=12, min_width=400, height=None, **kwargs,
+        self,
+        title=None,
+        columns=12,
+        min_width=400,
+        height=None,
+        **kwargs,
     ):
         """
         Template that places all components in a single card
@@ -397,10 +439,9 @@ class DbcSidebar(BaseDbcTemplate):
                 ),
                 dbc.Col(
                     children=dbc.Card(
-                        children=self.get_containers("output"),
-                        body=True
+                        children=self.get_containers("output"), body=True
                     ),
-                    md=12 - self.sidebar_columns
+                    md=12 - self.sidebar_columns,
                 ),
             ],
         )
@@ -466,8 +507,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
             dbc.Tab(
                 [
                     dbc.Card(
-                        children=list(reversed(self.get_containers(role))),
-                        body=True
+                        children=list(reversed(self.get_containers(role))), body=True
                     ),
                 ],
                 tab_id=role,
@@ -497,6 +537,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
     @classmethod
     def _wrap_full_layout(cls, layout):
         import dash_bootstrap_components as dbc
+
         return dbc.Container(layout, fluid=True, style={"padding": 0})
 
     def tab_input(self, kind=Input):
@@ -511,6 +552,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
 
 def _parse_rules_from_bootstrap_css(css_text):
     import tinycss2
+
     tinycss_parsed = tinycss2.parse_stylesheet(css_text)
 
     # Build dict from css selectors to dict of css prop-values
@@ -522,9 +564,10 @@ def _parse_rules_from_bootstrap_css(css_text):
         selector_str = "".join([t.serialize() for t in rule.prelude])
         selectors = tuple(s.strip() for s in selector_str.split(","))
         property_strings = [
-            entry for entry in "".join([
-                c.serialize().strip()
-                for c in rule.content]).split(';')
+            entry
+            for entry in "".join([c.serialize().strip() for c in rule.content]).split(
+                ";"
+            )
             if entry
         ]
 
@@ -578,7 +621,9 @@ def _get_role_colors(rule_props):
 
 def _build_plotly_template_from_bootstrap_css_text(css_text):
     from dash_labs.templates._colors import (
-        make_grid_color, separate_colorway, maybe_blend
+        make_grid_color,
+        separate_colorway,
+        maybe_blend,
     )
 
     # Parse css text
@@ -643,6 +688,7 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
 def _try_build_plotly_template_from_bootstrap_css_path(css_url):
     import requests
     from urllib.parse import urlparse
+
     parse_result = urlparse(css_url)
     if parse_result.scheme:
         # URL

@@ -9,17 +9,23 @@ import dash_labs as dl
 
 from . import make_deps, mock_fn_with_return, assert_deps_eq
 from ..fixtures import (
-    app, test_template, tuple_grouping_size, dict_grouping_size, mixed_grouping_size
+    app,
+    test_template,
+    tuple_grouping_size,
+    dict_grouping_size,
+    mixed_grouping_size,
 )
 from ..helpers_for_testing import flat_deps
 
 
 @pytest.mark.parametrize("input_form", [list, tuple])
 def test_arg_dependencies(app, test_template, input_form):
-    inputs = input_form([
-        dl.Input(dcc.Slider(), label="Slider"),
-        dl.Input(dcc.Dropdown(), label="Dropdown"),
-    ])
+    inputs = input_form(
+        [
+            dl.Input(dcc.Slider(), label="Slider"),
+            dl.Input(dcc.Dropdown(), label="Dropdown"),
+        ]
+    )
     state = dl.State(dcc.Input(), label="State Input")
     output = dl.Output(dcc.Markdown(), "children", label="Markdown Output")
 
@@ -61,7 +67,10 @@ def test_scalar_input_arg_dependencies(app, test_template):
 
     # Check how mock function was called
     args, kwargs = fn.call_args
-    assert args == ((datetime.date(2010, 1, 1), datetime.date(2010, 1, 10)), "Some Text")
+    assert args == (
+        (datetime.date(2010, 1, 1), datetime.date(2010, 1, 10)),
+        "Some Text",
+    )
     assert not kwargs
 
     # Check order of dependencies
@@ -82,9 +91,10 @@ def test_scalar_output_arg_dependencies(app, test_template):
     )(fn)
 
     # call flat version (like dash would)
-    assert fn_wrapper._flat_fn(
-        12, "Some Text"
-    ) == [datetime.date(2010, 1, 1), datetime.date(2010, 1, 10)]
+    assert fn_wrapper._flat_fn(12, "Some Text") == [
+        datetime.date(2010, 1, 1),
+        datetime.date(2010, 1, 10),
+    ]
 
     # Check how mock function was called
     args, kwargs = fn.call_args
@@ -106,9 +116,7 @@ def test_state_kwarg_only(app, test_template):
 
     # Build mock function
     fn = mock_fn_with_return({"test_output_markdown": "Hello, world"})
-    fn_wrapper = app.callback(
-        output=output, state=state, template=test_template
-    )(fn)
+    fn_wrapper = app.callback(output=output, state=state, template=test_template)(fn)
 
     # call flat version (like dash would)
     assert fn_wrapper._flat_fn(1, "input string") == ["Hello, world"]
@@ -151,8 +159,10 @@ def test_state_kwarg_only(app, test_template):
 
 
 def test_non_component_property_grouping(app, test_template):
-    input_picker, input_picker_dep = test_template.date_picker_range_input(
-    ).extract_component()
+    (
+        input_picker,
+        input_picker_dep,
+    ) = test_template.date_picker_range_input().extract_component()
 
     output_picker, output_picker_dep = test_template.date_picker_range_input(
         kind=dl.Output
@@ -166,8 +176,10 @@ def test_non_component_property_grouping(app, test_template):
     )(fn)
 
     # call flat version (like dash would)
-    assert fn_wrapper._flat_fn("2021-01-01", "2021-02-01") == \
-           ["2020-01-01", "2020-02-01"]
+    assert fn_wrapper._flat_fn("2021-01-01", "2021-02-01") == [
+        "2020-01-01",
+        "2020-02-01",
+    ]
 
     # Check how mock function was called
     args, kwargs = fn.call_args

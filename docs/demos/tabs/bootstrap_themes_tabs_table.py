@@ -12,12 +12,12 @@ df = df[[c for c in df.columns if not c.startswith("iso_")]]
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
-theme_name = "cerulean"
+# theme_name = "cerulean"
 # theme_name = "cosmo"
 # theme_name = "cyborg"
 # theme_name = "darkly"
 # theme_name = "flatly"
-# theme_name = "journal"
+theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
 # theme_name = "lux"
@@ -39,28 +39,29 @@ css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # css_url = "assets/custom_bootstrap.css"
 
 # tabs = ["scatter", "hist", "table"]
-tabs = dict(
-    scatter="Scatter", hist="Histogram", table="Table"
-)
+tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
     tabs,
     title=f"Dash Labs - {theme_name.title()} Theme",
-    # theme=css_url,
+    theme=css_url,
     figure_template=True,
 )
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df.iloc[:0], sort_mode="single", role="table", page_size=15, serverside=True,
+    df.iloc[:0],
+    sort_mode="single",
+    role="table",
+    page_size=15,
+    serverside=True,
     filterable=True,
 )
 
+
 @app.callback(
     args=dict(
-        continent=tpl.checklist_input(
-            continents, value=continents, label="Continents"
-        ),
+        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
         year=tpl.slider_input(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
@@ -75,7 +76,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
         tpl.graph_output(role="hist"),
         table_plugin.output,
     ],
-    template=tpl
+    template=tpl,
 )
 def callback(year, continent, logs, table_inputs, tab):
     print(f"tab_id: {tab}")
@@ -90,19 +91,20 @@ def callback(year, continent, logs, table_inputs, tab):
         return [go.Figure(), go.Figure()]
 
     title = f"Life Expectancy ({year})"
-    scatter_fig = px.scatter(
-        year_df,
-        x="gdpPercap",
-        y="lifeExp",
-        size="pop",
-        color="continent",
-        hover_name="country",
-        log_x='log(x)' in logs,
-        size_max=60,
-    ).update_layout(
-        title_text=title,
-        margin=dict(l=0, r=0, b=0)
-    ).update_traces(marker_opacity=0.8)
+    scatter_fig = (
+        px.scatter(
+            year_df,
+            x="gdpPercap",
+            y="lifeExp",
+            size="pop",
+            color="continent",
+            hover_name="country",
+            log_x="log(x)" in logs,
+            size_max=60,
+        )
+        .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
+        .update_traces(marker_opacity=0.8)
+    )
 
     hist_fig = px.histogram(
         year_df, x="lifeExp", color="continent", barnorm=""
@@ -110,7 +112,12 @@ def callback(year, continent, logs, table_inputs, tab):
         title_text=title,
     )
 
-    return scatter_fig, hist_fig, table_plugin.get_output_values(table_inputs, df=year_df)
+    return (
+        scatter_fig,
+        hist_fig,
+        table_plugin.get_output_values(table_inputs, df=year_df),
+    )
+
 
 app.layout = tpl.layout(app)
 

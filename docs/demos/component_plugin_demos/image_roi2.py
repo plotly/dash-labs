@@ -9,11 +9,7 @@ tpl = dl.templates.DbcCard(title="Image Intensity Explorer", columns=4)
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
 
 
-@app.callback(
-    args=[img_plugin.args],
-    output=img_plugin.output,
-    template=tpl
-)
+@app.callback(args=[img_plugin.args], output=img_plugin.output, template=tpl)
 def callback(inputs_value):
     bounds = img_plugin.get_rect_bounds(inputs_value)
     title = "Bounds: {}".format(bounds)

@@ -9,20 +9,18 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df=df, page_size=10, sort_mode="single", filterable=True,
+    df=df,
+    page_size=10,
+    sort_mode="single",
+    filterable=True,
     serverside=True,
 )
 
-dropdown = dcc.Dropdown(
-    options=[{"label": v, "value": v} for v in ["Male", "Female"]]
-)
+dropdown = dcc.Dropdown(options=[{"label": v, "value": v} for v in ["Male", "Female"]])
 
 
 @app.callback(
-    args=[
-        dl.Input(dropdown, "value"),
-        table_plugin.args
-    ],
+    args=[dl.Input(dropdown, "value"), table_plugin.args],
     output=table_plugin.output,
 )
 def callback(gender, plugin_input):
@@ -33,9 +31,7 @@ def callback(gender, plugin_input):
     return table_plugin.get_output_values(plugin_input, filtered_df)
 
 
-app.layout = html.Div([
-    dropdown, table_plugin.container
-])
+app.layout = html.Div([dropdown, table_plugin.container])
 
 if __name__ == "__main__":
     app.run_server(debug=True)

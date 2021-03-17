@@ -7,6 +7,7 @@ class HtmlCard(BaseTemplate):
     Simple template that places all components in a few html Div elements with a
     card-like border.
     """
+
     def __init__(self, title=None, width=None):
         super().__init__()
         self.title = title

@@ -32,12 +32,14 @@ def flatten_grouping(grouping, schema=None):
 
     if isinstance(schema, tuple):
         return [
-            g for group_el, schema_el in zip(grouping, schema)
+            g
+            for group_el, schema_el in zip(grouping, schema)
             for g in flatten_grouping(group_el, schema_el)
         ]
     elif isinstance(schema, dict):
         return [
-            g for group_el, schema_el in zip(grouping.values(), schema.values())
+            g
+            for group_el, schema_el in zip(grouping.values(), schema.values())
             for g in flatten_grouping(group_el, schema_el)
         ]
     else:
@@ -54,13 +56,9 @@ def grouping_len(grouping):
     :return: non-negative integer
     """
     if isinstance(grouping, tuple):
-        return sum([
-            grouping_len(group_el) for group_el in grouping
-        ])
+        return sum([grouping_len(group_el) for group_el in grouping])
     elif isinstance(grouping, dict):
-        return sum([
-            grouping_len(group_el) for group_el in grouping.values()
-        ])
+        return sum([grouping_len(group_el) for group_el in grouping.values()])
     else:
         return 1
 
@@ -76,6 +74,7 @@ def make_grouping_by_index(schema, flat_values):
     :param flat_values: List of values with length matching the grouping_len of schema.
         Elements of flat_values will become the scalar values in the resulting grouping
     """
+
     def _perform_make_grouping_like(value, next_values):
         if isinstance(value, tuple):
             return tuple(
@@ -123,9 +122,7 @@ def map_grouping(fn, grouping):
         values updated by the input function.
     """
     if isinstance(grouping, tuple):
-        return tuple(
-            map_grouping(fn, g) for g in grouping
-        )
+        return tuple(map_grouping(fn, g) for g in grouping)
     elif isinstance(grouping, dict):
         return {k: map_grouping(fn, g) for k, g in grouping.items()}
     else:

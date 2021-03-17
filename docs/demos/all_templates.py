@@ -21,6 +21,7 @@ tpl = dl.templates.HtmlCard(title="Dash Labs App", width="500px")
 # )
 
 import dash_bootstrap_components as dbc
+
 tpl = dl.templates.DbcSidebar(
     title="Dash Labs App",
     theme=dbc.themes.CYBORG,
@@ -38,7 +39,7 @@ tpl = dl.templates.DbcSidebar(
         amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude"),
     ),
     output=tpl.graph_output(),
-    template=tpl
+    template=tpl,
 )
 def callback(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)

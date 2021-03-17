@@ -36,7 +36,8 @@ def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
     arg_comps1 = test_template.add_component(
-        button1, component_property="n_clicks",
+        button1,
+        component_property="n_clicks",
     )
 
     # Check inserted as input role
@@ -59,8 +60,11 @@ def test_add_component_options(test_template):
     button2 = html.Button(id="button2")
     button3 = html.Button(id="button3")
     arg_comps2 = test_template.add_component(
-        button2, component_property="n_clicks", label="Button 2",  name="button2_arg",
-        label_id="label"
+        button2,
+        component_property="n_clicks",
+        label="Button 2",
+        name="button2_arg",
+        label_id="label",
     )
     assert arg_comps2.arg_component.id == "button2"
     assert arg_comps2.arg_property == "n_clicks"

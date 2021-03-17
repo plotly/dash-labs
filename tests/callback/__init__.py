@@ -14,8 +14,8 @@ def assert_deps_eq(deps1, deps2):
     assert len(deps1) == len(deps2)
     assert all(type(d1) is type(d2) for d1, d2 in zip(deps1, deps2))
     assert all(
-        d1.component_id == d2.component_id and
-        d1.component_property == d2.component_property
+        d1.component_id == d2.component_id
+        and d1.component_property == d2.component_property
         for d1, d2 in zip(deps1, deps2)
     )
 

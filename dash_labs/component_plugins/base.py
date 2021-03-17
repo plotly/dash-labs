@@ -6,6 +6,7 @@ class ComponentPlugin:
     """
     Base class for component plugins
     """
+
     def __init__(self, args, output, template=None):
         """
         Superclass constructor that should be called by subclass constructors
@@ -81,7 +82,8 @@ class ComponentPlugin:
             self.template.build_argument_components(
                 c.component_id, label=c.label, label_id=c.label_id
             ).container_component
-            for c in flatten_grouping(self.args) if c.has_component
+            for c in flatten_grouping(self.args)
+            if c.has_component
         ]
 
     @property
@@ -94,7 +96,8 @@ class ComponentPlugin:
             self.template.build_argument_components(
                 c.component_id, label=c.label, label_id=c.label_id
             ).container_component
-            for c in flatten_grouping(self.output) if c.has_component
+            for c in flatten_grouping(self.output)
+            if c.has_component
         ]
 
     @property

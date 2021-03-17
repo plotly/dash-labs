@@ -18,16 +18,16 @@ def background_callback(app, cache, args, output=None, interval=1000, template=N
             result = cache.get(result_key)
             progress = cache.get(progress_key)
             if result is not None:
-                return dict(
-                    result=result,
-                    interval_disabled=True
-                )
+                return dict(result=result, interval_disabled=True)
             elif progress is not None:
                 return dict(
                     result=html.Progress(
-                        value=str(progress[0]), max=str(progress[1]), id=progress_id, style=progress_style
+                        value=str(progress[0]),
+                        max=str(progress[1]),
+                        id=progress_id,
+                        style=progress_style,
                     ),
-                    interval_disabled=False
+                    interval_disabled=False,
                 )
             else:
                 target = make_update_cache(fn, cache, result_key, progress_key)
@@ -35,11 +35,13 @@ def background_callback(app, cache, args, output=None, interval=1000, template=N
                 p.start()
                 return dict(
                     result=html.Progress(id=progress_id, style=progress_style),
-                    interval_disabled=False
+                    interval_disabled=False,
                 )
+
         interval_component = dl.Input(
             dcc.Interval(interval=interval, id=dl.build_id("interval")),
-            "n_intervals", label=None,
+            "n_intervals",
+            label=None,
         )
 
         # Add interval component to inputs
@@ -53,11 +55,11 @@ def background_callback(app, cache, args, output=None, interval=1000, template=N
 
         all_output = dict(
             result=dl.Output(html.Div(), "children"),
-            interval_disabled=Output(interval_component.id, "disabled")
+            interval_disabled=Output(interval_component.id, "disabled"),
         )
-        return app.callback(
-            args=all_args, output=all_output, template=template
-        )(callback)
+        return app.callback(args=all_args, output=all_output, template=template)(
+            callback
+        )
 
     return wrapper
 
