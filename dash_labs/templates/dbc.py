@@ -144,7 +144,7 @@ class BaseDbcTemplate(BaseTemplate):
 
         if add_theme:
             if self.theme is None:
-                theme = dbc.themes.BOOTSTRAP
+                theme = dbc.themes.YETI
             else:
                 theme = self.theme
 
@@ -481,7 +481,8 @@ class DbcSidebarTabs(BaseDbcTemplate):
 
         self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
 
-        self._tabs = dbc.Tabs(id=build_id("tabs"))
+        first_tab = next(iter(self.tab_roles))
+        self._tabs = dbc.Tabs(id=build_id("tabs"), active_tab=first_tab)
 
         super().__init__(**kwargs)
 

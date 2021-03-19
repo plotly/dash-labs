@@ -1,19 +1,19 @@
 import dash
 import dash_labs as dl
-import numpy as np
-import dash_core_components as dcc
 import plotly.express as px
 import plotly.graph_objects as go
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
+# Load gapminder dataset
 df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
+# # Build Themed Template
 # theme_name = "cerulean"
 # theme_name = "cosmo"
-theme_name = "cyborg"
+# theme_name = "cyborg"
 # theme_name = "darkly"
 # theme_name = "flatly"
 # theme_name = "journal"
@@ -27,7 +27,7 @@ theme_name = "cyborg"
 # theme_name = "simplex"
 # theme_name = "sketchy"
 # theme_name = "slate"
-# theme_name = "solar"
+theme_name = "solar"
 # theme_name = "spacelab"
 # theme_name = "superhero"
 # theme_name = "united"
@@ -38,9 +38,8 @@ css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 tpl = dl.templates.DbcSidebarTabs(
     ["Scatter", "Histogram"],
     title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url,
+    theme=css_url, figure_template=True
 )
-
 
 @app.callback(
     args=dict(
@@ -60,7 +59,7 @@ tpl = dl.templates.DbcSidebarTabs(
     template=tpl,
 )
 def callback(year, continent, logs, tab):
-    print(tab)
+    print(f"Active Tab: {tab}")
     logs = logs or []
 
     # Let parameterize infer output component
@@ -75,12 +74,9 @@ def callback(year, continent, logs, tab):
     scatter_fig = (
         px.scatter(
             year_df,
-            x="gdpPercap",
-            y="lifeExp",
-            size="pop",
-            color="continent",
-            hover_name="country",
-            log_x="log(x)" in logs,
+            x="gdpPercap", y="lifeExp",
+            size="pop", color="continent",
+            hover_name="country", log_x="log(x)" in logs,
             size_max=60,
         )
         .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
@@ -99,4 +95,4 @@ def callback(year, continent, logs, tab):
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)

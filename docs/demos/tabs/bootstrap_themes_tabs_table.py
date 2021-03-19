@@ -17,7 +17,7 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "cyborg"
 # theme_name = "darkly"
 # theme_name = "flatly"
-theme_name = "journal"
+# theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
 # theme_name = "lux"
@@ -32,7 +32,7 @@ theme_name = "journal"
 # theme_name = "spacelab"
 # theme_name = "superhero"
 # theme_name = "united"
-# theme_name = "yeti"
+theme_name = "yeti"
 
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # Or, use local file path to assets folder

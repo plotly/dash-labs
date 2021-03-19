@@ -5,11 +5,10 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
-tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
+tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin", figure_template=True)
 phase_plugin = dl.component_plugins.DynamicInputPlugin(
-    tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}"), template=tpl
+    tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
-
 
 @app.callback(
     args=dict(
@@ -22,7 +21,7 @@ phase_plugin = dl.component_plugins.DynamicInputPlugin(
 def callback(fun, phase_inputs):
     phase = phase_plugin.get_value(phase_inputs)
     xs = np.linspace(-10, 10, 100)
-    fig = px.line(x=xs, y=getattr(np, fun)(xs + phase)).update_layout()
+    fig = px.line(x=xs, y=getattr(np, fun)(xs + phase), title="Function Value")
 
     return [fig, phase_plugin.get_output_values(phase_inputs)]
 
