@@ -1,9 +1,8 @@
 import dash
 import dash_labs as dl
-import numpy as np
-import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
@@ -12,59 +11,27 @@ df = df[[c for c in df.columns if not c.startswith("iso_")]]
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
-# theme_name = "cerulean"
-# theme_name = "cosmo"
-# theme_name = "cyborg"
-# theme_name = "darkly"
-theme_name = "flatly"
-# theme_name = "journal"
-# theme_name = "litera"
-# theme_name = "lumen"
-# theme_name = "lux"
-# theme_name = "materia"
-# theme_name = "minty"
-# theme_name = "pulse"
-# theme_name = "sandstone"
-# theme_name = "simplex"
-# theme_name = "sketchy"
-# theme_name = "slate"
-# theme_name = "solar"
-# theme_name = "spacelab"
-# theme_name = "superhero"
-# theme_name = "united"
-# theme_name = "yeti"
-
-css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
-# Or, use local file path to assets folder
-# css_url = "assets/custom_bootstrap.css"
-
-# tabs = ["scatter", "hist", "table"]
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
-    tabs,
-    title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url,
-    figure_template=True,
+    tabs, title=f"Dash Labs App", theme=dbc.themes.DARKLY, figure_template=True,
 )
-
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df.iloc[:0],
-    sort_mode="single",
-    role="table",
-    page_size=15,
-    serverside=True,
-    filterable=True,
+    df.iloc[:0], sort_mode="single", role="table",
+    page_size=15, serverside=True, filterable=True,
 )
 
+year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
+    tpl.slider_input(
+        years[0], years[-1], step=5, value=years[-1], label="Year: {}", tooltip=False,
+    )
+)
 
 @app.callback(
     args=dict(
         continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        year=tpl.slider_input(
-            years[0], years[-1], step=5, value=years[-1], label="Year"
-        ),
+        year_args=year_label_plugin.args,
         logs=tpl.checklist_input(
             ["log(x)"], value="log(x)", label="Axis Scale", role="scatter"
         ),
@@ -75,11 +42,18 @@ table_plugin = dl.component_plugins.DataTablePlugin(
         tpl.graph_output(role="scatter"),
         tpl.graph_output(role="hist"),
         table_plugin.output,
+        year_label_plugin.output,
+        dl.Output(
+            dbc.Label(children="Current Tab: ", className="h5"),
+            "children", role="input"
+        )
     ],
     template=tpl,
 )
-def callback(year, continent, logs, table_inputs, tab):
-    print(f"tab_id: {tab}")
+def callback(year_args, continent, logs, table_inputs, tab):
+
+    # Get year value from plugin
+    year = year_label_plugin.get_value(year_args)
     logs = logs or []
 
     # Let parameterize infer output component
@@ -116,8 +90,9 @@ def callback(year, continent, logs, table_inputs, tab):
         scatter_fig,
         hist_fig,
         table_plugin.get_output_values(table_inputs, df=year_df),
+        year_label_plugin.get_output_values(year_args),
+        "Current Tab: " + tabs[tab]
     )
-
 
 app.layout = tpl.layout(app)
 

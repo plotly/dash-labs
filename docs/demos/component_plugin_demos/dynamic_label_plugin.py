@@ -6,7 +6,7 @@ import plotly.express as px
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
 tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin", figure_template=True)
-phase_plugin = dl.component_plugins.DynamicInputPlugin(
+phase_plugin = dl.component_plugins.DynamicLabelPlugin(
     tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
 

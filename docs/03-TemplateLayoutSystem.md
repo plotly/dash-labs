@@ -34,7 +34,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/sZ5HUrO.gif)
+![](https://i.imgur.com/eSRujx6.gif)
 
 ### Component role
 When a component is added to a template using `add_component`, it is associated with a template role using the `role` argument. Components that share the same role will be grouped together by the template in the component layout it produces. All templates support the `"input"` and `"output"` roles, and individual templates may provide support for additional roles.
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/sZ5HUrO.gif)
+![](https://i.imgur.com/eSRujx6.gif)
 
 ### Customize labels and roles
 When a template is populated using `@app.callback`, the label string and role for a component can be overridden using the `label` and `role` keyword arguments to `dl.Input`/`dl.State`/`dl.Output`.  See the "Button to click" label added above. 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 ```
 
-![](https://i.imgur.com/sZ5HUrO.gif)
+![](https://i.imgur.com/eSRujx6.gif)
 
 ## Template component constructors
 To reduce the amount of boilerplate required to construct the dependency components to pass to `@app.callback`, template classes provide a variety of helper functions. A few examples are `tpl.div_output()`, `tpl.button_input()`, `tpl.dropdown_input()`, etc.  These are relatively simple class methods that return a dependency object. For example:
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/sZ5HUrO.gif)
+![](https://i.imgur.com/53XDlQ1.gif)
 
 ## Component constructor specialization
 Another advantage of the component constructor paradigm is that templates can specialize the representation of the different components. For example, Dash Bootstrap templates can use `dbc.Select` in place of `dcc.Dropdown` for `tpl.dropdown_input()`. And DDK templates can use `ddk.Graph` in place of `dcc.Graph` for `tpl.graph_output()`.
@@ -192,35 +192,36 @@ import dash_core_components as dcc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.FlatDiv()
-
+tpl = dl.templates.DbcRow(title="Manual Update")
 
 @app.callback(
-   args=dict(
-      fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
-      figure_title=tpl.textbox_input("Initial Title", label="Figure Title",
-                                     kind=dl.State),
-      phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
-      amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dl.State),
-      n_clicks=tpl.button_input("Update", label=None)
-   ),
-   template=tpl
+    args=dict(
+        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
+        figure_title=tpl.textbox_input(
+            "Initial Title", label="Figure Title", kind=dl.State
+        ),
+        phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
+        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dl.State),
+        n_clicks=tpl.button_input("Update", label=None),
+    ),
+    template=tpl,
 )
 def greet(fun, figure_title, phase, amplitude, n_clicks):
-   print(fun, figure_title, phase, amplitude)
-   xs = np.linspace(-10, 10, 100)
-   return dcc.Graph(figure=px.line(
-      x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-   ).update_layout(title_text=figure_title))
-
+    print(fun, figure_title, phase, amplitude)
+    xs = np.linspace(-10, 10, 100)
+    return dcc.Graph(
+        figure=px.line(x=xs, y=getattr(np, fun)(xs + phase) * amplitude).update_layout(
+            title_text=figure_title
+        )
+    )
 
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-   app.run_server(debug=True)
+    app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/8cd9KvF.gif)
+![](https://i.imgur.com/U9iieJC.gif)
 
 
 ## Custom output components
@@ -256,7 +257,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/vLbBF2R.gif)
+![](https://i.imgur.com/qO1p7hK.gif)
 
 ## Adding additional components to a template
 
@@ -321,7 +322,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/VX6E6kD.png)
+![](https://i.imgur.com/AW53Sun.png)
 
 
 ## Accessing individual components to build custom layouts
@@ -421,4 +422,4 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/MX4WaGS.gif)
+![](https://i.imgur.com/RfnVJ8a.gif)

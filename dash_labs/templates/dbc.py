@@ -69,6 +69,7 @@ class BaseDbcTemplate(BaseTemplate):
          .nav-link {
             border-width: 0.5px !important;
             border-color: rgba(100, 100, 100, 0.4) !important;
+            color: var(--primary) !important;
          }
          
          .nav-link.active {
@@ -144,7 +145,7 @@ class BaseDbcTemplate(BaseTemplate):
 
         if add_theme:
             if self.theme is None:
-                theme = dbc.themes.YETI
+                theme = dbc.themes.FLATLY
             else:
                 theme = self.theme
 
@@ -172,6 +173,9 @@ class BaseDbcTemplate(BaseTemplate):
     def button_input(
         cls,
         children,
+        color="secondary",
+        size="md",
+        outline=False,
         label=Component.UNDEFINED,
         role=Component.UNDEFINED,
         component_property="n_clicks",
@@ -182,7 +186,10 @@ class BaseDbcTemplate(BaseTemplate):
         import dash_bootstrap_components as dbc
 
         return kind(
-            dbc.Button(children=children, **filter_kwargs(opts, id=id)),
+            dbc.Button(
+                children=children,
+                **filter_kwargs(opts, id=id, color=color, size=size, outline=outline)
+            ),
             component_property=component_property,
             label=label,
             role=role,
@@ -279,9 +286,10 @@ class DbcCard(BaseDbcTemplate):
     def __init__(
         self,
         title=None,
-        columns=12,
+        columns=6,
         min_width=400,
         height=None,
+        margin="10px 10px 10px 10px",
         **kwargs,
     ):
         """
@@ -292,12 +300,14 @@ class DbcCard(BaseDbcTemplate):
         :param min_width: Minimum card width in pixels
         :param height: Fixed height of card or None (default) to let card's height
             expand to contents
+        :param margin: CSS margin around row
         """
         super().__init__(**kwargs)
         self.title = title
         self.columns = columns
         self.height = height
         self.min_width = min_width
+        self.margin = margin
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -305,18 +315,21 @@ class DbcCard(BaseDbcTemplate):
         # No callbacks here. Must be constant or idempotent
         card_children = []
         if self.title:
-            card_children.append(dbc.CardHeader(self.title))
+            card_children.append(dbc.CardHeader(self.title, className="h4"))
 
         card_body_children = []
         output_containers = self.get_containers("output")
-        if output_containers:
-            card_body_children.extend(output_containers)
+        input_containers = self.get_containers("input")
+        card_body_children.extend(output_containers)
+        if output_containers and input_containers:
             card_body_children.append(html.Hr())
-        card_body_children.extend(self.get_containers("input"))
+        card_body_children.extend(input_containers)
 
         card_children.append(dbc.CardBody(children=card_body_children))
 
         card_style = {"padding": 0}
+        if self.margin:
+            card_style["margin"] = self.margin
         if self.height is not None:
             card_style["height"] = self.height
 
@@ -341,6 +354,7 @@ class DbcRow(BaseDbcTemplate):
         row_height=None,
         input_cols=4,
         min_input_width="300px",
+        margin="10px 0 10px 0",
         **kwargs,
     ):
         """
@@ -349,6 +363,7 @@ class DbcRow(BaseDbcTemplate):
         :param title: Input card title
         :param input_cols: Responsive width of input card in columns (out of 12 columns)
         :param min_input_width: Minimum input card width in pixels
+        :param margin: CSS margin around row
         :param row_height: Fixed height of cards in the row in pixels.
             If None (defualt) each card will independently determine height based on
             contents.
@@ -358,21 +373,26 @@ class DbcRow(BaseDbcTemplate):
         self.row_height = row_height
         self.input_cols = input_cols
         self.min_input_width = min_input_width
+        self.margin = margin
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
 
         output_card_children = []
         if self.title:
-            output_card_children.append(dbc.CardHeader(self.title))
+            output_card_children.append(dbc.CardHeader(self.title, className="h4"))
 
-        output_card_children.extend(self.get_containers("output"))
+        output_card_children.append(
+            dbc.CardBody(self.get_containers("output"))
+        )
 
         input_card_style = {}
         if self.min_input_width is not None:
             input_card_style["min-width"] = self.min_input_width
 
         row_style = {}
+        if self.margin:
+            row_style["margin"] = self.margin
         if self.row_height is not None:
             row_style["height"] = self.row_height
 

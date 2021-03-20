@@ -5,7 +5,7 @@ import dash
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcCard(title="Table Component Plugin")
+tpl = dl.templates.DbcCard(title="Table Component Plugin", columns=8)
 
 # serverside = False
 serverside = True

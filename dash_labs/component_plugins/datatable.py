@@ -133,10 +133,8 @@ class DataTablePlugin(ComponentPlugin):
         if df is None:
             df = self.full_df
         # Perform filtering
-        print("update serverside")
         if self.filterable and "filter_query" in args_value:
             filter_query = args_value["filter_query"]
-            print(filter_query)
             df = _filter_serverside(df, filter_query)
         # Perform sorting
         if sort_by and len(sort_by):

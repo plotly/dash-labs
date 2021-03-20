@@ -49,7 +49,7 @@ The `FlatDiv` template arranges all the input and output containers as children 
 tpl = dl.templates.FlatDiv()
 ```
 
-![](https://i.imgur.com/YSELvgg.png)
+![](https://i.imgur.com/AV9yqRQ.png)
 
 ### HtmlCard
 
@@ -59,7 +59,7 @@ The `HtmlCard` template has no external dependencies and uses some basic inline 
 tpl = dl.templates.HtmlCard(title="Dash Labs App", width="500px")
 ```
 
-![](https://i.imgur.com/387ygkJ.png)
+![](https://i.imgur.com/E9865h3.png)
 
 ### DbcCard
 
@@ -69,7 +69,7 @@ The `DbcCard` template introduces a dependency on the open source Dash Bootstrap
 tpl = dl.templates.DbcCard(title="Dash Labs App", columns=6)
 ```
 
-![](https://i.imgur.com/q6k008w.png)
+![](https://i.imgur.com/FiZAOFv.png)
 
 ### DbcRow
 
@@ -79,7 +79,7 @@ The `DbcRow` template places the inputs and outputs in separate cards and then a
 tpl = dl.templates.DbcRow(title="Dash Labs App")
 ```
 
-![](https://i.imgur.com/sLaDDdS.png)
+![](https://i.imgur.com/zW5z2Eh.png)
 
 ### DbcSidebar
 
@@ -89,7 +89,7 @@ The `DbcSidebar` template creates an app title bar and then includes the inputs 
 tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 ```
 
-![](https://i.imgur.com/wqeZY0B.png)
+![](https://i.imgur.com/FEpzde2.png)
 
 ### DdkCard
 
@@ -99,7 +99,7 @@ The `DdkCard` template introduces a dependency on the proprietary Dash Design Ki
 tpl = dl.templates.DdkCard(title="Dash Labs App", width=50)
 ```
 
-![](https://i.imgur.com/kmX6fuP.png)
+![](https://i.imgur.com/Vt2o8td.png)
 
 ### DdkRow
 
@@ -110,7 +110,7 @@ Like the `DbcRow` template, `DdkRow` places the input and output components in s
 tpl = dl.templates.DdkRow(title="Dash Labs App")
 ```
 
-![](https://i.imgur.com/s29txGA.png)
+![](https://i.imgur.com/iqgyeTf.png)
 
 ### DdkSidebar
 
@@ -120,20 +120,25 @@ The `DdkSidebar` template creates a full app experience with an app header, a si
 tpl = dl.templates.DdkSidebar(title="Dash Labs App")
 ```
 
-![](https://i.imgur.com/db8a8eo.png)
+![](https://i.imgur.com/OKYOFYY.png)
 
 ### Themed DbcSidebar
 
 All of the `Dbc*` components can be themed using the Bootstrap themeing system. Simply pass the URL of a bootstrap theme css file as the `theme` argument of the template. Check out https://www.bootstrapcdn.com/bootswatch/ to browse available templates.
 
+#### Bootstrap figure theming
+Templates based on Dash Bootstrap Components have the ability to dynamically generate a plotly.py figure template from the bootstrap CSS theme file. This is enabled by setting `figure_template=True` in the constructor of a Dash Bootstrap Components template. 
+
+
 ```python=
 tpl = dl.templates.DbcSidebar(
     title="Dash Labs App", 
-    theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css"
+    theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css",
+    figure_template=True
 )
 ```
 
-![](https://i.imgur.com/aKy415h.png)
+![](https://i.imgur.com/lLZrDfY.png)
 
 or use the convenience theme values provided by Dash Bootstrap Components
 
@@ -156,10 +161,7 @@ from my_theme import theme
 tpl = dl.templates.DdkSidebar(title="Dash Labs App", theme=theme)
 ```
 
-![](https://i.imgur.com/pcmRf1k.png)
-
-## Bootstrap figure theming
-Templates based on Dash Bootstrap Components have the ability to dynamically generate a plotly.py figure template from the bootstrap CSS theme file. This is enabled by setting `figure_template=True` in the constructor of a Dash Bootstrap Components template. 
+![](https://i.imgur.com/PIAywnx.png)
 
 ## Sidebar Tabs Templates
 Dash Labs provides a more advanced template style that support displaying callback outputs across a collection of tabs.  These are `DbcSidebarTabs` and `DdkSidebarTabs` which use the Dash Bootstrap Components and Dash Design Kit libraries respectively.
@@ -188,7 +190,7 @@ years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
 # Build Themed Template
-theme_name = "solar"
+theme_name = "darkly"
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 
 tpl = dl.templates.DbcSidebarTabs(
@@ -252,6 +254,8 @@ app.layout = tpl.layout(app)
 if __name__ == "__main__":
     app.run_server(debug=True)
 ```
+
+![](https://i.imgur.com/XH62pPe.gif)
 
 ## Creating custom templates
 Custom templates can be created by subclassing the `dl.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dl.templates.ddk.BaseDdkTemplate`.

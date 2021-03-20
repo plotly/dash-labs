@@ -6,7 +6,7 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 
-phase_plugin = dl.component_plugins.DynamicInputPlugin(
+phase_plugin = dl.component_plugins.DynamicLabelPlugin(
     dl.Input(dcc.Slider(min=1, max=10, value=4), label="Phase: {}")
 )
 
