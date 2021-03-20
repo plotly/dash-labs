@@ -62,13 +62,10 @@ class ComponentPlugin:
         :param app: dash.Dash app instance
         """
 
-        if not flatten_grouping(self.args):
-            # No inputs, nothing to do
-            return
-
         @app.callback(
             args=[self.args],
             output=[self.output],
+            template=self.template,
         )
         def callback(plugin_inputs):
             return [self.get_output_values(plugin_inputs)]

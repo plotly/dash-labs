@@ -7,7 +7,9 @@ import plotly.io as pio
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcCard(title="Table Component Plugin", figure_template=True)
+tpl = dl.templates.DbcSidebar(
+    title="Table Component Plugin", sidebar_columns=6, figure_template=True
+)
 
 serverside = True
 table_plugin = dl.component_plugins.DataTablePlugin(
@@ -17,6 +19,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     sort_mode="single",
     filterable=True,
     serverside=serverside,
+    role="input",
 )
 
 
@@ -51,4 +54,4 @@ def callback(gender, table_input):
 app.layout = tpl.layout(app)
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8888)
+    app.run_server(debug=True)

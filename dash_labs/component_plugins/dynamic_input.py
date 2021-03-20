@@ -3,7 +3,7 @@ from dash_labs.dependency import Output
 from .base import ComponentPlugin
 
 
-class DynamicInputPlugin(ComponentPlugin):
+class DynamicLabelPlugin(ComponentPlugin):
     """
     Plugin that supports formatting a component's template label with the current
     component value
@@ -28,7 +28,7 @@ class DynamicInputPlugin(ComponentPlugin):
             label_value=Output(self.label_id, self.label_prop),
         )
 
-        super(DynamicInputPlugin, self).__init__(args=args, output=output)
+        super(DynamicLabelPlugin, self).__init__(args=args, output=output)
 
     def get_value(self, args_value):
         """

@@ -464,6 +464,7 @@ class BaseTemplate:
         max,
         value=Component.UNDEFINED,
         step=None,
+        tooltip=None,
         label=Component.UNDEFINED,
         role="input",
         component_property="value",
@@ -471,9 +472,14 @@ class BaseTemplate:
         id=None,
         opts=None,
     ):
-        tooltip = (opts or {}).pop(
-            "tooltip", {"placement": "bottom", "always_visible": True}
-        )
+        if tooltip is None:
+            tooltip = (opts or {}).pop(
+                "tooltip", {"placement": "bottom", "always_visible": True}
+            )
+        elif tooltip is True:
+            tooltip = {"placement": "bottom", "always_visible": True}
+        else:
+            tooltip = None
 
         if value is Component.UNDEFINED:
             value = min

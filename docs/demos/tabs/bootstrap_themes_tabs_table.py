@@ -1,7 +1,7 @@
 import dash
 import dash_labs as dl
 import numpy as np
-import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -16,8 +16,8 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "cosmo"
 # theme_name = "cyborg"
 # theme_name = "darkly"
-# theme_name = "flatly"
-theme_name = "journal"
+theme_name = "flatly"
+# theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
 # theme_name = "lux"

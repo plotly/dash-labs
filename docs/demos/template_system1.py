@@ -3,7 +3,7 @@ import dash_html_components as html
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(title="Simple App", columns=4)
 
 div = html.Div()
 button = html.Button(children="Click Me")

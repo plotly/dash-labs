@@ -310,13 +310,14 @@ def _callback(
             _callback = _wrapped_callback
 
         # Install callback
-        _callback(
-            app,
-            output_deps,
-            input_deps,
-            state_deps,
-            prevent_initial_call=prevent_initial_callbacks,
-        )(callback_fn)
+        if input_deps:
+            _callback(
+                app,
+                output_deps,
+                input_deps,
+                state_deps,
+                prevent_initial_call=prevent_initial_callbacks,
+            )(callback_fn)
 
         # Return CallbackWrapper instance that mimicks wrapped function while providing
         # access to additional metadata about the callback.
