@@ -28,6 +28,7 @@ app = dash.Dash(__name__, plugins=[dl.Plugin()])
 # )
 
 from my_theme import theme
+
 tpl = dl.templates.DdkSidebar(title="Dash Labs App", theme=theme)
 
 

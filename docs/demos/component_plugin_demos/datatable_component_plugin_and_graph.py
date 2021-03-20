@@ -19,7 +19,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     sort_mode="single",
     filterable=True,
     serverside=serverside,
-    role="input"
+    role="input",
 )
 
 

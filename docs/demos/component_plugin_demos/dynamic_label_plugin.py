@@ -10,6 +10,7 @@ phase_plugin = dl.component_plugins.DynamicLabelPlugin(
     tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
 
+
 @app.callback(
     args=dict(
         fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),

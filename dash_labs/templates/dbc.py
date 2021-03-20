@@ -188,7 +188,7 @@ class BaseDbcTemplate(BaseTemplate):
         return kind(
             dbc.Button(
                 children=children,
-                **filter_kwargs(opts, id=id, color=color, size=size, outline=outline)
+                **filter_kwargs(opts, id=id, color=color, size=size, outline=outline),
             ),
             component_property=component_property,
             label=label,
@@ -382,9 +382,7 @@ class DbcRow(BaseDbcTemplate):
         if self.title:
             output_card_children.append(dbc.CardHeader(self.title, className="h4"))
 
-        output_card_children.append(
-            dbc.CardBody(self.get_containers("output"))
-        )
+        output_card_children.append(dbc.CardBody(self.get_containers("output")))
 
         input_card_style = {}
         if self.min_input_width is not None:

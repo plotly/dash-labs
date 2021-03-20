@@ -61,6 +61,7 @@ class ComponentPlugin:
 
         :param app: dash.Dash app instance
         """
+
         @app.callback(
             args=[self.args],
             output=[self.output],

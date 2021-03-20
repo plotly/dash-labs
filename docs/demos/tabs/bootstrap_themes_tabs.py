@@ -38,8 +38,10 @@ css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 tpl = dl.templates.DbcSidebarTabs(
     ["Scatter", "Histogram"],
     title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url, figure_template=True
+    theme=css_url,
+    figure_template=True,
 )
+
 
 @app.callback(
     args=dict(
@@ -74,9 +76,12 @@ def callback(year, continent, logs, tab):
     scatter_fig = (
         px.scatter(
             year_df,
-            x="gdpPercap", y="lifeExp",
-            size="pop", color="continent",
-            hover_name="country", log_x="log(x)" in logs,
+            x="gdpPercap",
+            y="lifeExp",
+            size="pop",
+            color="continent",
+            hover_name="country",
+            log_x="log(x)" in logs,
             size_max=60,
         )
         .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))

@@ -6,6 +6,7 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.Plugin()])
 import dash_bootstrap_components as dbc
+
 tpl = dl.templates.DbcRow(title="Manual Update", theme=dbc.themes.SOLAR)
 
 
