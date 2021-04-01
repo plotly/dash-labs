@@ -28,6 +28,11 @@ class BaseDbcTemplate(BaseTemplate):
             margin-right: 0;
          }
          
+         .dash-spreadsheet-inner input {
+            color: var(--danger) !important;
+            font-weight: 800 !important;
+         }         
+
          .dash-spreadsheet .dash-header {
             background-color: var(--primary) !important;
             color: var(--white) !important;
