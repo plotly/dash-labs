@@ -199,7 +199,7 @@ date_picker_range = dcc.DatePickerRange()
 @app.callback(Output(div, "children"), Input(date_picker_range, ("start_date", "end_date")))
 def callback(date_range):
     start_date, end_date = date_range
-    return f"Start date: {}\n End date: {}".format(start_date, end_date)
+    return "Start date: {}\n End date: {}".format(start_date, end_date)
 ```
 
 ## Component id's

@@ -258,7 +258,7 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/XH62pPe.gif)
 
 ## Creating custom templates
-Custom templates can be created by subclassing the `dl.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dash.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dl.templates.ddk.BaseDdkTemplate`.
+Custom templates can be created by subclassing the `dl.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dl.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dl.templates.ddk.BaseDdkTemplate`.
 
 Overriding a template may involve:
  1. Customizing the components that are constructed by `tp.dropdown_input`, `tp.graph_output`, etc.
