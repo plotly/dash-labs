@@ -86,6 +86,26 @@ class BaseDbcTemplate(BaseTemplate):
             margin-bottom: 1rem !important;
             border-color: rgba(100, 100, 100, 0.4);
         }
+        
+    
+        .rc-slider-handle {
+            border: solid 2px var(--primary) !important;
+        }
+        
+        .rc-slider-handle:focus {
+            box-shadow: unset; !important;
+            background-color: var(--primary);
+        }
+        
+        .rc-slider-track {
+            background-color: var(--primary);
+            height: 2px;
+            margin-top: 1px;
+        }
+        .rc-slider-rail {
+            height: 2px;
+            margin-top: 1px;
+        }
         """
     )
 
