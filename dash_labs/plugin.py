@@ -6,7 +6,12 @@ from types import MethodType
 
 class Plugin:
     """
-    Dash app plugin to enable DashLabs features.
+    Dash app plugin to enable advanced callback behaviors including:
+      - Property grouping
+      - Keyword argument support
+      - Support for providing full components in place of ids when using the
+        dl.Output/dl.Input/sl.State dependency objects.
+
     Usage:
 
     >>> import dash
