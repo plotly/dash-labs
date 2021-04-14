@@ -29,7 +29,7 @@ class BaseDbcTemplate(BaseTemplate):
          }
          
          .dash-spreadsheet-inner input {
-            color: var(--danger) !important;
+            color: var(--white) !important;
             font-weight: 800 !important;
          }         
 
@@ -56,13 +56,15 @@ class BaseDbcTemplate(BaseTemplate):
             color: var(--dark) !important;
          }
          
-         .dash-spreadsheet tr:hover td.dash-cell {
-            border-color: lightgrey !important;
-            border-width: 0.5px !important;
+         .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner table {
+            --hover: transparent !important;
+         }
+         
+         .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td.focused {
             background-color: var(--info) !important;
             color: white !important;
          }
-         
+
          .tab-pane .card {
             border-top-left-radius: 0;
          }
