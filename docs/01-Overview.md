@@ -22,8 +22,7 @@ The Dash Labs functionality is enabled by specifying an instance of `dash_labs.P
 import dash
 import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 ```
 
 > Note: it is recommended to import `dash_labs` as `dl`, and this is the convention that will be used throughout this document.
- 

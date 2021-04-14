@@ -1,7 +1,7 @@
 import dash
 import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 

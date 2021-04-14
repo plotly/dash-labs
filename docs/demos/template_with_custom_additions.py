@@ -4,7 +4,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 
 # import dash_core_components as dcc

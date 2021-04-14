@@ -15,7 +15,7 @@ import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 div = html.Div()
@@ -55,7 +55,7 @@ import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
@@ -87,7 +87,7 @@ import dash_labs as dl
 import dash_html_components as html
 import dash
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 @app.callback(
@@ -153,7 +153,7 @@ Here is an update to the previous example that uses the `tpl.button_input` compo
 import dash_labs as dl
 import dash
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 
@@ -191,7 +191,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcRow(title="Manual Update")
 
 @app.callback(
@@ -237,7 +237,7 @@ Note that the default value of `kind` for `tpl.markdown_output` is `dl.Output`, 
 import dash
 import dash_labs as dl
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 
 @app.callback(
@@ -274,7 +274,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 
 # import dash_core_components as dcc
@@ -363,7 +363,7 @@ feature_options = [
 ]
 
 # Build app and template
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(title="Iris Dataset")
 
 # Use parameterize to create components

@@ -17,7 +17,7 @@ feature_options = [
 ]
 
 # Build app and template
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(title="Iris Dataset")
 
 # Use parameterize to create components

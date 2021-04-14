@@ -4,7 +4,7 @@ from skimage import data
 
 img = data.camera()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Image Intensity Explorer", columns=4)
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
 

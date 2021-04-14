@@ -4,7 +4,7 @@ from dash import Dash
 from types import MethodType
 
 
-class Plugin:
+class FlexibleCallbacks:
     """
     Dash app plugin to enable advanced callback behaviors including:
       - Property grouping
@@ -16,7 +16,7 @@ class Plugin:
 
     >>> import dash
     >>> import dash_labs as dl
-    >>> app = dash.Dash(__name__, plugins=[dl.Plugin()])
+    >>> app = dash.Dash(__name__, plugins=[dl.FlexibleCallbacks()])
     """
 
     def __init__(self):

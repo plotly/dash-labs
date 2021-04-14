@@ -3,7 +3,7 @@ import dash_labs as dl
 import plotly.graph_objects as go
 import dash_core_components as dcc
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.FlatDiv()
 
 

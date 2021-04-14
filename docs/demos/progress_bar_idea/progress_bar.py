@@ -6,7 +6,7 @@ import dash_labs as dl
 from docs.demos.progress_bar_idea.background_callback import background_callback
 from flask_caching import Cache
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 cache = Cache(app.server, config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 tpl = dl.templates.FlatDiv()
 

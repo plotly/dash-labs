@@ -66,7 +66,7 @@ import dash
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Table Component Plugin")
 
 # serverside = False
@@ -111,7 +111,7 @@ import plotly.io as pio
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
     title="Table Component Plugin", sidebar_columns=6, figure_template=True
 )
@@ -180,7 +180,7 @@ import dash
 
 df = px.data.tips()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="DataTablePlugin")
 
 table_plugin = dl.component_plugins.DataTablePlugin(
@@ -217,7 +217,7 @@ from skimage import data
 
 img = data.camera()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Image Intensity Explorer", columns=4)
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
 
@@ -249,7 +249,7 @@ import plotly.express as px
 
 img = data.camera()
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
     title="Image Intensity Explorer",
     sidebar_columns=6,
@@ -298,7 +298,7 @@ import dash_labs as dl
 import numpy as np
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
 
@@ -338,7 +338,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 df = px.data.gapminder()
 df = df[[c for c in df.columns if not c.startswith("iso_")]]

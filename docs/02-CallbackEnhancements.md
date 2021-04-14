@@ -1,5 +1,5 @@
 # `@app.callback` Enhancements
-This section describes core enhancements to `@app.callback` that are provided by Dash Labs.
+This section describes core enhancements to `@app.callback` that are provided by the Dash Labs `FlexibleCallbacks` plugin.
 
 ## Positional or Keyword arguments
 In Dash 1, the `Input`/`State`/`Output` dependency objects are always provided to `@app.callback` as positional arguments (either positional arguments directly to `@app.callback`, or as lists to the `inputs`/`state`/`output` keyword arguments).  The order in which the dependency objects are provided dictates the order of the positional arguments that are passed to the decorated callback function.  This means that the names of the callback function arguments don't matter, only the order they are defined in.

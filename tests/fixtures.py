@@ -7,7 +7,7 @@ import dash_html_components as html
 import pytest
 from dash.dependencies import Input, Output, State
 from dash_labs.grouping import make_grouping_by_index
-from dash_labs import Plugin
+from dash_labs.plugins import FlexibleCallbacks
 
 # Helpers
 from dash_labs.templates.base import BaseTemplate
@@ -135,7 +135,7 @@ def dependency(request):
 
 @pytest.fixture
 def app():
-    return dash.Dash(plugins=[Plugin()])
+    return dash.Dash(plugins=[FlexibleCallbacks()])
 
 
 class ExampleTemplate(BaseTemplate):

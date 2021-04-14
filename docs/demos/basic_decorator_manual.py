@@ -4,7 +4,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 import dash_bootstrap_components as dbc
 
 tpl = dl.templates.DbcRow(title="Manual Update", theme=dbc.themes.SOLAR)

@@ -5,7 +5,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 df = px.data.tips()
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(

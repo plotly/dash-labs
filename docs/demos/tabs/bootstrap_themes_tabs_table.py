@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 df = px.data.gapminder()
 df = df[[c for c in df.columns if not c.startswith("iso_")]]
@@ -16,7 +16,7 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "cosmo"
 # theme_name = "cyborg"
 # theme_name = "darkly"
-theme_name = "flatly"
+# theme_name = "flatly"
 # theme_name = "journal"
 # theme_name = "litera"
 # theme_name = "lumen"
@@ -34,7 +34,7 @@ theme_name = "flatly"
 # theme_name = "united"
 # theme_name = "yeti"
 
-css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
+# css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # Or, use local file path to assets folder
 # css_url = "assets/custom_bootstrap.css"
 
@@ -43,8 +43,8 @@ tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
     tabs,
-    title=f"Dash Labs - {theme_name.title()} Theme",
-    theme=css_url,
+    # title=f"Dash Labs - {theme_name.title()} Theme",
+    title=f"Dash Labs - Default Theme",
     figure_template=True,
 )
 
@@ -54,7 +54,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     sort_mode="single",
     role="table",
     page_size=15,
-    serverside=True,
+    serverside=False,
     filterable=True,
 )
 

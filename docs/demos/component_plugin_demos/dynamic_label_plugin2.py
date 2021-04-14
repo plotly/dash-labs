@@ -4,7 +4,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 phase_plugin = dl.component_plugins.DynamicLabelPlugin(
     dl.Input(dcc.Slider(min=1, max=10, value=4), label="Phase: {}")

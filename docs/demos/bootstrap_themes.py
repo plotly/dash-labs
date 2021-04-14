@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import plotly.express as px
 import plotly.graph_objects as go
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())

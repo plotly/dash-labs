@@ -1,7 +1,7 @@
 import dash_labs as dl
 import dash
 
-app = dash.Dash(__name__, plugins=[dl.Plugin()])
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 
 
