@@ -15,7 +15,11 @@ Various demos are located in the [docs/demos](./docs/demos) directory.
 To install the tech preview, first clone this repository
 
 ```
-$ git clone git@github.com:plotly/dash-labs.git
-$ cd dash-labs
-$ pip install -e .
+$ pip dash-labs
+```
+
+To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
+
+```
+$ pip dash-bootstrap-components spectra colormath 
 ```

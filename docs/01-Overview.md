@@ -14,6 +14,12 @@ Dash Labs can be installed using `pip` with
 ```
 $ pip install dash-labs
 ```
+
+To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
+
+```
+$ pip dash-bootstrap-components spectra colormath 
+```
  
 # Activating Dash Labs Functionality
 The Dash Labs functionality is enabled by specifying an instance of `dash_labs.Plugin` when instantiating a Dash app.
