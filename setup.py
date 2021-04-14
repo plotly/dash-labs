@@ -32,8 +32,11 @@ setup(
     long_description=readme(),
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: 4 - Beta" "Programming Language :: Python :: 3.6",
+        "Development Status :: 4 - Beta",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Visualization",
         "Framework :: Dash",
     ],
