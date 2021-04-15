@@ -707,7 +707,6 @@ def _build_plotly_template_from_bootstrap_css_text(css_text):
     ]
     colorway = [role_colors[r] for r in colorway_roles]
     colorway = separate_colorway(colorway)
-    print("colorway", colorway)
 
     # Build grid color
     gridcolor = make_grid_color(plot_bgcolor, font_color, 0.08)
