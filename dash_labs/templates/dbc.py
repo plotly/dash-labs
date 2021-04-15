@@ -64,6 +64,11 @@ class BaseDbcTemplate(BaseTemplate):
             background-color: var(--info) !important;
             color: white !important;
          }
+                 
+         .dash-spreadsheet td.cell--selected {
+            background-color: var(--info) !important;
+            color: white !important;
+         }
 
          .tab-pane .card {
             border-top-left-radius: 0;
