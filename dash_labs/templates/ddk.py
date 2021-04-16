@@ -9,13 +9,15 @@ def import_ddk():
     try:
         import dash_design_kit as ddk
     except ImportError:
-        raise ImportError("""
+        raise ImportError(
+            """
 Module not found: dash_design_kit.
 To use templates powered by Dash Enterprise Design Kit, please ensure that you 
 have dash_design_kit installed in your app's Python environment. You can refer 
 to your organization's Dash Enterprise documentation for instructions on how 
 to do this.  If your organization is not yet a Dash Enterprise customer, 
-please visit https://plotly.com/get-demo/ to find out more!""")
+please visit https://plotly.com/get-demo/ to find out more!"""
+        )
 
     return ddk
 
