@@ -5,6 +5,23 @@ import dash_html_components as html
 from dash_labs.util import filter_kwargs, build_id
 
 
+def import_ddk():
+    try:
+        import dash_design_kit as ddk
+    except ImportError:
+        raise ImportError(
+            """
+Module not found: dash_design_kit.
+To use templates powered by Dash Enterprise Design Kit, please ensure that you 
+have dash_design_kit installed in your app's Python environment. You can refer 
+to your organization's Dash Enterprise documentation for instructions on how 
+to do this.  If your organization is not yet a Dash Enterprise customer, 
+please visit https://plotly.com/get-demo/ to find out more!"""
+        )
+
+    return ddk
+
+
 class BaseDDKTemplate(BaseTemplate):
     """
     Base class for templates based on Dash Design Kit
@@ -27,7 +44,7 @@ class BaseDDKTemplate(BaseTemplate):
 
     @classmethod
     def build_labeled_component(cls, component, label, label_id=None, role=None):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         # Subclass could use bootstrap or ddk
         if not label_id:
@@ -41,7 +58,7 @@ class BaseDDKTemplate(BaseTemplate):
 
     @classmethod
     def build_containered_component(cls, component, role=None):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         # Subclass could use bootstrap or ddk
         container_id = build_id("container")
@@ -51,7 +68,7 @@ class BaseDDKTemplate(BaseTemplate):
 
     @classmethod
     def _graph_class(cls):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         return ddk.Graph
 
@@ -62,7 +79,7 @@ class BaseDDKTemplate(BaseTemplate):
         return DataTable
 
     def _wrap_full_layout(self, layout):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         return ddk.App(
             children=layout,
@@ -85,7 +102,7 @@ class DdkCard(BaseDDKTemplate):
         self.height = height
 
     def _perform_layout(self):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         # No callbacks here. Must be constant or idempotent
         card_children = []
@@ -121,7 +138,7 @@ class DdkRow(BaseDDKTemplate):
         self.input_width = input_width
 
     def _perform_layout(self):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         # Input card
         input_card = ddk.ControlCard(
@@ -159,7 +176,7 @@ class DdkSidebar(BaseDDKTemplate):
         self.sidebar_width = sidebar_width
 
     def _perform_layout(self):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
 
         children = []
 
@@ -220,7 +237,7 @@ class DdkSidebarTabs(BaseDDKTemplate):
         super().__init__(**kwargs)
 
     def _perform_layout(self):
-        import dash_design_kit as ddk
+        ddk = import_ddk()
         import dash_core_components as dcc
 
         children = []
