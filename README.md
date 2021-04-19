@@ -15,11 +15,11 @@ Various demos are located in the [docs/demos](./docs/demos) directory.
 To install the tech preview, first clone this repository
 
 ```
-$ pip dash-labs
+$ pip install -U dash-labs
 ```
 
 To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
 
 ```
-$ pip dash-bootstrap-components spectra colormath 
+$ pip install -U dash-bootstrap-components spectra colormath 
 ```

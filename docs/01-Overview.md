@@ -18,7 +18,7 @@ $ pip install dash-labs
 To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
 
 ```
-$ pip dash-bootstrap-components spectra colormath requests tinycss2
+$ pip install dash-bootstrap-components spectra colormath requests tinycss2
 ```
  
 # Activating Dash Labs Functionality
