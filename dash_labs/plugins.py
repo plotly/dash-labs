@@ -63,7 +63,7 @@ class JobQueue:
         app.jobqueue_callback = MethodType(partial(jobqueue_callback), app)
 
 
-def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=None, interval=1000):
+def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, interval=1000):
     import dash
     import dash_labs as dl
     import dash_core_components as dcc
@@ -80,7 +80,7 @@ def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=No
         id=store_id, data=dict(user_id=user_id)
     )
 
-    cancel_prop_ids = tuple(".".join([component_id, component_property]) for component_id, component_property in cancel)
+    cancel_prop_ids = tuple(".".join([dep.component_id, dep.component_property]) for dep in cancel)
 
     # Initialize procs list on app
     procs = self._background_procs
@@ -111,7 +111,7 @@ def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=No
                         lambda x: dash.no_update, output
                     ),
                     in_progress=tuple([
-                        val for (id, prop, _, val) in in_progress
+                        val for (_, _, val) in running
                     ]),
                     interval_disabled=True
                 )
@@ -126,7 +126,7 @@ def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=No
                 return dict(
                     user_callback_output=result,
                     in_progress=tuple([
-                        val for (id, prop, _, val) in in_progress
+                        val for (_, _, val) in running
                     ]),
                     interval_disabled=True
                 )
@@ -141,7 +141,7 @@ def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=No
                         lambda x: dash.no_update, output
                     ),
                     in_progress = tuple([
-                        val for (id, prop, val, _) in in_progress
+                        val for (_, val, _) in running
                     ]),
                     interval_disabled=False,
                 )
@@ -150,15 +150,15 @@ def jobqueue_callback(self, args, output, in_progress=(), cancel=(), template=No
         return self.callback(
             args=dict(
                 n_intervals=dl.Input(interval_id, "n_intervals"),
-                cancel=tuple(dl.Input(id, prop) for id, prop in cancel),
+                cancel=tuple(dep for dep in cancel),
                 user_store_data=dl.Input(store_id, "data"),
                 user_callback_args=args,
             ),
             output=dict(
                 interval_disabled=dl.Output(interval_id, "disabled"),
                 in_progress = tuple([
-                    dl.Output(id, prop)
-                    for (id, prop, _, _) in in_progress
+                    dep
+                    for (dep, _, _) in running
                 ]),
                 user_callback_output=output
             ),

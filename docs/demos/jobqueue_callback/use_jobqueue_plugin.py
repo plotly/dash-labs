@@ -24,12 +24,12 @@ app.layout = html.Div([
 @app.jobqueue_callback(
     output=dl.Output("paragraph_id", "children"),
     args=dl.Input("button_id", "n_clicks"),
-    in_progress=[
-        ("loading_component", "in_progress", True, False),
-        ("button_id", "disabled", True, False),
-        ("cancel_button_id", "disabled", False, True),
+    running=[
+        (dl.Output("loading_component", "in_progress"), True, False),
+        (dl.Output("button_id", "disabled"), True, False),
+        (dl.Output("cancel_button_id", "disabled"), False, True),
     ],
-    cancel=[("cancel_button_id", "n_clicks")]
+    cancel=[dl.Input("cancel_button_id", "n_clicks")]
 )
 def callback(n_clicks):
     time.sleep(2)
