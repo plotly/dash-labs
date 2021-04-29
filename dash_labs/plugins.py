@@ -63,7 +63,7 @@ class JobQueue:
         app.jobqueue_callback = MethodType(partial(jobqueue_callback), app)
 
 
-def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, interval=1000):
+def jobqueue_callback(self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000):
     import dash
     import dash_labs as dl
     import dash_core_components as dcc
@@ -98,25 +98,32 @@ def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, 
                 key = [user_callback_args, user_id]
 
             result_key = json.dumps({"args": key})
+            progress_key = result_key + "-progress"
 
             should_cancel = any(
                 [trigger["prop_id"] in cancel_prop_ids for trigger in dash.callback_context.triggered]
             )
+            no_update_progress = map_grouping(
+                        lambda x: dash.no_update, progress.dependencies()
+            ) if progress else ()
             if should_cancel:
                 if result_key in procs:
                     for proc in procs.pop(result_key):
                         proc.kill()
                 return dict(
                     user_callback_output=map_grouping(
-                        lambda x: dash.no_update, output
+                        lambda x: dash.no_update, output.dependencies()
                     ),
                     in_progress=tuple([
                         val for (_, _, val) in running
                     ]),
+                    progress=no_update_progress,
                     interval_disabled=True
                 )
 
             result = self._flask_caching_cache.get(result_key)
+            progress_result = self._flask_caching_cache.get(progress_key)
+
             if result is not None:
                 if result_key in procs:
                     for proc in procs.pop(result_key):
@@ -128,21 +135,36 @@ def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, 
                     in_progress=tuple([
                         val for (_, _, val) in running
                     ]),
-                    interval_disabled=True
+                    progress=progress_result if progress_result else no_update_progress,
+                    interval_disabled=True,
+                )
+            elif progress_result:
+                return dict(
+                    user_callback_output=map_grouping(
+                        lambda x: dash.no_update, output.dependencies()
+                    ),
+                    in_progress=tuple([
+                        val for (_, val, _) in running
+                    ]),
+                    progress=progress_result,
+                    interval_disabled=False,
                 )
             else:
-                target = make_update_cache(fn, self._flask_caching_cache, result_key)
+                target = make_update_cache(
+                    fn, self._flask_caching_cache, result_key, progress_key if progress else None
+                )
                 p = Process(target=target, args=(user_callback_args,))
                 p.start()
                 procs.setdefault(result_key, []).append(p)
 
                 return dict(
                     user_callback_output=map_grouping(
-                        lambda x: dash.no_update, output
+                        lambda x: dash.no_update, output.dependencies()
                     ),
-                    in_progress = tuple([
+                    in_progress=tuple([
                         val for (_, val, _) in running
                     ]),
+                    progress=no_update_progress,
                     interval_disabled=False,
                 )
 
@@ -156,10 +178,11 @@ def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, 
             ),
             output=dict(
                 interval_disabled=dl.Output(interval_id, "disabled"),
-                in_progress = tuple([
+                in_progress=tuple([
                     dep
                     for (dep, _, _) in running
                 ]),
+                progress=progress,
                 user_callback_output=output
             ),
             template=template
@@ -168,14 +191,18 @@ def jobqueue_callback(self, args, output, running=(), cancel=(), template=None, 
     return wrapper
 
 
-def make_update_cache(fn, cache, result_key):
+def make_update_cache(fn, cache, result_key, progress_key=None):
+    def _set_progress(i, total):
+        cache.set(progress_key, (i, total))
+
     def _callback(user_callback_args):
+        maybe_progress = [_set_progress] if progress_key is not None else []
         if isinstance(user_callback_args, dict):
-            user_callback_output = fn(**user_callback_args)
-        elif isinstance(user_callback_args, (list)):
-            user_callback_output = fn(*user_callback_args)
+            user_callback_output = fn(*maybe_progress, **user_callback_args)
+        elif isinstance(user_callback_args, list):
+            user_callback_output = fn(*maybe_progress, *user_callback_args)
         else:
-            user_callback_output = fn(user_callback_args)
+            user_callback_output = fn(*maybe_progress, user_callback_args)
         cache.set(result_key, user_callback_output)
 
     return _callback

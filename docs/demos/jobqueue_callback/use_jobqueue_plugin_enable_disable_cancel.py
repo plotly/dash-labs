@@ -13,9 +13,7 @@ app = dash.Dash(__name__, plugins=[
 
 app.layout = html.Div([
     html.Div([
-        dcc.Loading(id="loading_component", children=[
-            html.P(id="paragraph_id", children=["Button not clicked"])
-        ])
+        html.P(id="paragraph_id", children=["Button not clicked"])
     ]),
     html.Button(id='button_id', children="Run Job!"),
     html.Button(id='cancel_button_id', children="Cancel Running Job!"),
@@ -25,18 +23,16 @@ app.layout = html.Div([
     output=dl.Output("paragraph_id", "children"),
     args=dl.Input("button_id", "n_clicks"),
     running=[
-        (dl.Output("loading_component", "in_progress"), True, False),
         (dl.Output("button_id", "disabled"), True, False),
         (dl.Output("cancel_button_id", "disabled"), False, True),
     ],
-    cancel=[dl.Input("cancel_button_id", "n_clicks")]
+    cancel=[dl.Input("cancel_button_id", "n_clicks")],
+    interval=300,
 )
 def callback(n_clicks):
-    time.sleep(2)
+    time.sleep(2.0)
     return [f"Clicked {n_clicks} times"]
 
 
 if __name__ == "__main__":
-    ("button_id", "disabled", True, False)
-
     app.run_server(debug=True)
