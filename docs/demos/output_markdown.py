@@ -1,8 +1,9 @@
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
+tpl = dl.templates.DbcSidebar(app, "App Title", sidebar_columns=6)
 
 
 @app.callback(
@@ -15,8 +16,7 @@ tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
 def markdown_preview(input_text):
     return input_text
 
-
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

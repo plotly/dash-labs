@@ -3,13 +3,15 @@ import dash_html_components as html
 
 
 class FlatDiv(BaseTemplate):
-    """
-    Trivial template that returns all input containers in a single flat Div,
-    inputs followed by outputs
-    """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, app):
+        """
+        Trivial template that groups all input containers in a single flat Div,
+        inputs followed by outputs
+
+        :param app: dash.Dash app instance
+        """
+        super().__init__(app)
 
     def _perform_layout(self):
         children = []

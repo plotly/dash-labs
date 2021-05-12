@@ -2,10 +2,11 @@ import dash
 import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar(title="Dash Labs App")
+tpl = dl.templates.DbcSidebar(app, title="Dash Labs App")
 
 # import dash_core_components as dcc
 @app.callback(
@@ -52,7 +53,7 @@ tpl.add_component(
     role="output",
 )
 
-app.layout = tpl.layout(app)
+dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

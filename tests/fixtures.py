@@ -174,10 +174,6 @@ class ExampleTemplate(BaseTemplate):
             ],
         )
 
-    @classmethod
-    def _wrap_full_layout(cls, layout):
-        return html.Div(id="app-div", children=[layout])
-
     def _configure_app(self, app):
         super()._configure_app(app)
         add_stylesheet = True

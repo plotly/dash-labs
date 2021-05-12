@@ -4,6 +4,7 @@ import dash_labs as dl
 import plotly.express as px
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import dash
 
@@ -18,7 +19,7 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar(title="Iris Dataset")
+tpl = dl.templates.DbcSidebar(app, title="Iris Dataset")
 
 # Use parameterize to create components
 @app.callback(

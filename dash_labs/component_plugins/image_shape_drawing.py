@@ -24,7 +24,7 @@ class GreyscaleImageROI(ComponentPlugin):
         import plotly.express as px
 
         if template is None:
-            template = FlatDiv()
+            template = FlatDiv(None)
 
         self.img = img
 

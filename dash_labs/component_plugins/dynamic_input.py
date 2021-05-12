@@ -11,7 +11,7 @@ class DynamicLabelPlugin(ComponentPlugin):
 
     def __init__(self, input_dependency, template=None):
         if template is None:
-            template = templates.FlatDiv()
+            template = templates.FlatDiv(None)
 
         self.input_dependency = input_dependency
         self.format_string = self.input_dependency.label

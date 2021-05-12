@@ -42,6 +42,7 @@ continents = list(df.continent.drop_duplicates())
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
+    app,
     tabs,
     # title=f"Dash Labs - {theme_name.title()} Theme",
     title=f"Dash Labs - Default Theme",
@@ -119,7 +120,7 @@ def callback(year, continent, logs, table_inputs, tab):
     )
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

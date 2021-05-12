@@ -1,5 +1,6 @@
 import dash
 import dash_labs as dl
+import dash_design_kit as ddk
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -14,7 +15,7 @@ continents = list(df.continent.drop_duplicates())
 # tabs = ["scatter", "hist", "table"]
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
-tpl = dl.templates.DdkSidebarTabs(tabs, title=f"Dash Labs - DDK Tabs", show_editor=True)
+tpl = dl.templates.DdkSidebarTabs(app, tabs, title=f"Dash Labs - DDK Tabs", show_editor=True)
 
 table_plugin = dl.component_plugins.DataTablePlugin(
     df.iloc[:0],
@@ -86,7 +87,7 @@ def callback(continent, year, logs, table_inputs, tab):
     )
 
 
-app.layout = tpl.layout(app)
+app.layout = ddk.App(children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

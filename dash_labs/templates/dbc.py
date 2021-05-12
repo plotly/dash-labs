@@ -23,6 +23,11 @@ class BaseDbcTemplate(BaseTemplate):
         BaseTemplate._inline_css
         + """
 
+         .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+         }
+
          .dash-spreadsheet .row {
             margin-left: 0;
             margin-right: 0;
@@ -121,17 +126,18 @@ class BaseDbcTemplate(BaseTemplate):
         """
     )
 
-    def __init__(self, theme=None, figure_template=False):
+    def __init__(self, app, theme=None, figure_template=False):
         """
+        :param app: dash.Dash app instance
         :param theme: Path to a bootstrap theme css file. If not provided, a default
             bootstrap theme will be used.
         :param figure_template: If True, generate a plotly.py figure template from the
             provided (or default) bootstrap theme. Figure templates will adopt the
             colors and fonts of the associated bootstrap theme css file.
         """
-        super().__init__()
         self.theme = theme
         self.figure_template = figure_template
+        super().__init__(app)
 
     # Methods designed to be overridden by subclasses
     @classmethod
@@ -317,6 +323,7 @@ class BaseDbcTemplate(BaseTemplate):
 class DbcCard(BaseDbcTemplate):
     def __init__(
         self,
+        app,
         title=None,
         columns=6,
         min_width=400,
@@ -327,6 +334,7 @@ class DbcCard(BaseDbcTemplate):
         """
         Template that places all components in a single card
 
+        :param app: dash.Dash app instance
         :param title: Card title
         :param columns: Responsive width of card in columns (out of 12 columns)
         :param min_width: Minimum card width in pixels
@@ -334,12 +342,12 @@ class DbcCard(BaseDbcTemplate):
             expand to contents
         :param margin: CSS margin around row
         """
-        super().__init__(**kwargs)
         self.title = title
         self.columns = columns
         self.height = height
         self.min_width = min_width
         self.margin = margin
+        super().__init__(app, **kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -382,6 +390,7 @@ class DbcCard(BaseDbcTemplate):
 class DbcRow(BaseDbcTemplate):
     def __init__(
         self,
+        app,
         title=None,
         row_height=None,
         input_cols=4,
@@ -392,6 +401,7 @@ class DbcRow(BaseDbcTemplate):
         """
         Template that places inputs and outputs in separate cards, arranged in a row
 
+        :param app: dash.Dash app instance
         :param title: Input card title
         :param input_cols: Responsive width of input card in columns (out of 12 columns)
         :param min_input_width: Minimum input card width in pixels
@@ -400,12 +410,12 @@ class DbcRow(BaseDbcTemplate):
             If None (defualt) each card will independently determine height based on
             contents.
         """
-        super().__init__(**kwargs)
         self.title = title
         self.row_height = row_height
         self.input_cols = input_cols
         self.min_input_width = min_input_width
         self.margin = margin
+        super().__init__(app, **kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -444,18 +454,19 @@ class DbcRow(BaseDbcTemplate):
 
 
 class DbcSidebar(BaseDbcTemplate):
-    def __init__(self, title=None, sidebar_columns=4, **kwargs):
+    def __init__(self, app, title=None, sidebar_columns=4, **kwargs):
         """
         Template that includes a title bar, places inputs in a sidebar, and outputs in
         a responsive card
 
+        :param app: dash.Dash app instance
         :param title: Title bar title string
         :param sidebar_columns: Responsive width of input card in columns
             (out of 12 columns)
         """
-        super().__init__(**kwargs)
         self.title = title
         self.sidebar_columns = sidebar_columns
+        super().__init__(app, **kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -498,19 +509,14 @@ class DbcSidebar(BaseDbcTemplate):
         children.append(row)
         return children
 
-    @classmethod
-    def _wrap_full_layout(cls, layout):
-        import dash_bootstrap_components as dbc
-
-        return dbc.Container(layout, fluid=True, style={"padding": 0})
-
 
 class DbcSidebarTabs(BaseDbcTemplate):
-    def __init__(self, tab_roles, title=None, sidebar_columns=4, **kwargs):
+    def __init__(self, app, tab_roles, title=None, sidebar_columns=4, **kwargs):
         """
         Template that includes a title bar, places inputs in a sidebar, and outputs in
         a set of tabs.
 
+        :param app: dash.Dash app instance
         :param tab_roles: List or dict of strings where each string specifies the name
             of the role corresponding to a single tab. If a list, the role name is
             also be used as the title of the corresponding tab. If a dict, the keys
@@ -534,7 +540,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
         first_tab = next(iter(self.tab_roles))
         self._tabs = dbc.Tabs(id=build_id("tabs"), active_tab=first_tab)
 
-        super().__init__(**kwargs)
+        super().__init__(app, **kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
@@ -584,12 +590,6 @@ class DbcSidebarTabs(BaseDbcTemplate):
         )
         children.append(row)
         return children
-
-    @classmethod
-    def _wrap_full_layout(cls, layout):
-        import dash_bootstrap_components as dbc
-
-        return dbc.Container(layout, fluid=True, style={"padding": 0})
 
     def tab_input(self, kind=Input):
         """

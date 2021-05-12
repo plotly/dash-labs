@@ -5,16 +5,17 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
-# tpl = dl.templates.FlatDiv()
-# tpl = dl.templates.HtmlCard(title="Dash Labs App", width="500px")
-# tpl = dl.templates.DbcCard(title="Dash Labs App", columns=6)
-# tpl = dl.templates.DbcRow(title="Dash Labs App")
-# tpl = dl.templates.DbcSidebar(title="Dash Labs App")
-# tpl = dl.templates.DdkCard(title="Dash Labs App", width=50)
-# tpl = dl.templates.DdkRow(title="Dash Labs App")
-# tpl = dl.templates.DdkSidebar(title="Dash Labs App")
+# tpl = dl.templates.FlatDiv(app)
+# tpl = dl.templates.HtmlCard(app, title="Dash Labs App", width="500px")
+# tpl = dl.templates.DbcCard(app, title="Dash Labs App", columns=6)
+# tpl = dl.templates.DbcRow(app, title="Dash Labs App")
+# tpl = dl.templates.DbcSidebar(app, title="Dash Labs App")
+# tpl = dl.templates.DdkCard(app, title="Dash Labs App", width=50)
+# tpl = dl.templates.DdkRow(app, title="Dash Labs App")
+# tpl = dl.templates.DdkSidebar(app, title="Dash Labs App")
 #
 # tpl = dl.templates.DbcSidebar(
+#     app,
 #     title="Dash Labs App",
 #     theme="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css",
 #     figure_template=True
@@ -23,13 +24,14 @@ app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 # import dash_bootstrap_components as dbc
 #
 # tpl = dl.templates.DbcSidebar(
+#     app,
 #     title="Dash Labs App",
 #     theme=dbc.themes.CYBORG,
 # )
 
 from my_theme import theme
 
-tpl = dl.templates.DdkSidebar(title="Dash Labs App", theme=theme)
+tpl = dl.templates.DdkSidebar(app, title="Dash Labs App")
 
 
 @app.callback(
@@ -52,7 +54,13 @@ def callback(fun, figure_title, phase, amplitude):
     return px.line(x=x, y=y).update_layout(title_text=figure_title)
 
 
-app.layout = tpl.layout(app)
+# For DDK templates
+import dash_design_kit as ddk
+app.layout = ddk.App(theme=theme, children=tpl.children)
+
+# # For DBC templates
+# import dash_bootstrap_components as dbc
+# app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

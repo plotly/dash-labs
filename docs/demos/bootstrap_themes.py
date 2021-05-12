@@ -4,6 +4,7 @@ import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
 import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
@@ -32,7 +33,7 @@ years = sorted(df.year.drop_duplicates())
 # css_url = "https://bootswatch.com/4/united/bootstrap.css"
 css_url = "https://bootswatch.com/4/yeti/bootstrap.css"
 
-tpl = dl.templates.DbcSidebar(title="Dash Labs App", theme=css_url)
+tpl = dl.templates.DbcSidebar(app, title="Dash Labs App", theme=css_url)
 
 
 @app.callback(
@@ -79,7 +80,7 @@ def callback(size, figure_title, year, color, logs):
     )
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=False)
