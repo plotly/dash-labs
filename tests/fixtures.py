@@ -188,4 +188,4 @@ class ExampleTemplate(BaseTemplate):
 
 @pytest.fixture
 def test_template():
-    return ExampleTemplate()
+    return ExampleTemplate(None)

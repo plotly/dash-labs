@@ -15,11 +15,11 @@ def test_configure_app_resources(app, test_template):
     assert num_stylesheets(app) == 0
 
     # Check stylesheet added upon template.layout
-    layout = test_template.layout(app)
+    test_template._configure_app(app)
     assert num_stylesheets(app) == 1
 
     # Check that configuration is idempotent
-    layout = test_template.layout(app)
+    test_template._configure_app(app)
     assert num_stylesheets(app) == 1
 
 
@@ -28,11 +28,11 @@ def test_configure_app_inline_css(app, test_template):
     assert num_css_class_entries(app) == 0
 
     # Check inline css added upon template.layout
-    layout = test_template.layout(app)
+    test_template._configure_app(app)
     assert num_css_class_entries(app) == 1
 
     # Check that adding inline css is idempotent
-    layout = test_template.layout(app)
+    test_template._configure_app(app)
     assert num_css_class_entries(app) == 1
 
 
@@ -45,6 +45,6 @@ def test_configure_app_with_none_css(app, test_template):
     type(test_template)._inline_css = None
 
     # Check that nothing crashes and css is not modified
-    layout = test_template.layout(app)
+    test_template._configure_app(app)
     assert num_css_class_entries(app) == 0
     assert app.index_string == original_index_string
