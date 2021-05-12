@@ -13,10 +13,11 @@ Here is a simple example of manually adding components to a `DbcCard` template
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=4)
 
 div = html.Div()
 button = html.Button(children="Click Me")
@@ -28,7 +29,7 @@ def callback(n_clicks):
 tpl.add_component(button, label="Button to click", role="input")
 tpl.add_component(div, role="output")
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -42,8 +43,10 @@ When a component is added to a template using `add_component`, it is associated 
 ### Component label
 When a component is added to a template using `add_component`, it may optionally be associated with a label string using the `label` argument. When provided, the template will wrap the provided component with a label in the component layout it produces.
 
-### Template `layout`
-Templates provide a `.layout(app)` method that returns a container that includes the components that were added to the template.  This container can be assigned to `app.layout`, or combined with other components to build `app.layout`.
+### Template `children`
+Templates provide a `.children` property that returns a container that includes the components that were added to the template.  This container is a regular Dash component that can be assigned to `app.layout`, or combined with other components to build `app.layout`.
+
+> Note: When using a template based on Dash Bootstrap Components, it's recommended to use `dbc.Container` as the top-level layout component, and to assign the template's children as the children of the `dbc.Container`. See https://dash-bootstrap-components.opensource.faculty.ai/docs/components/layout/ for more information.
 
 ## template and app.callback integration
 For convenience, `@app.callback` accepts an optional `template` argument. When provided, `@app.callback` will automatically add the provided input and output components to the template. Because of the information that `@app.callback` already has access to, it can choose reasonable defaults for each component's `role` and `label`.  Because the components will be added to the template, it becomes possible to construct components inline in the `@app.callback` definition, rather than constructing them above and assigning them to local variables.  With these conveniences, the example above becomes:
@@ -53,20 +56,21 @@ For convenience, `@app.callback` accepts an optional `template` argument. When p
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 @app.callback(
-   dl.Output(html.Div(), "children"),
-   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tpl
+    dl.Output(html.Div(), "children"),
+    dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+    template=tpl,
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -85,23 +89,23 @@ When a template is provided, and no `Output` dependency is provided, the templat
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 @app.callback(
-   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tpl
+    dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+    template=tpl,
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
 ```
 
 ![](https://i.imgur.com/eSRujx6.gif)
