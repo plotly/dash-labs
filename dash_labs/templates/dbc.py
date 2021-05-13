@@ -148,10 +148,7 @@ class BaseDbcTemplate(BaseTemplate):
             label_id = build_id("label")
 
         label_component = dbc.Label(
-            id=label_id,
-            children=[label],
-            style={"display": "block"},
-            className="h5",
+            id=label_id, children=[label], style={"display": "block"}, className="h5",
         )
         container_id = build_id("container")
         container = dbc.FormGroup(
@@ -380,11 +377,7 @@ class DbcCard(BaseDbcTemplate):
         if self.columns is not None:
             class_name_kwarg["className"] = f"col-{int(self.columns)}"
 
-        return dbc.Card(
-            style=card_style,
-            children=card_children,
-            **class_name_kwarg,
-        )
+        return dbc.Card(style=card_style, children=card_children, **class_name_kwarg,)
 
 
 class DbcRow(BaseDbcTemplate):
@@ -492,8 +485,7 @@ class DbcSidebar(BaseDbcTemplate):
             children=[
                 dbc.Col(
                     children=dbc.Card(
-                        children=self.get_containers("input"),
-                        body=True,
+                        children=self.get_containers("input"), body=True,
                     ),
                     style=sidebar_card_style,
                     md=self.sidebar_columns,
@@ -579,8 +571,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
             children=[
                 dbc.Col(
                     children=dbc.Card(
-                        children=self.get_containers("input"),
-                        body=True,
+                        children=self.get_containers("input"), body=True,
                     ),
                     style=sidebar_card_style,
                     md=self.sidebar_columns,

@@ -30,6 +30,7 @@ def greet(fun, figure_title, phase, amplitude, n_clicks):
         )
     )
 
+
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":

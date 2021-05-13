@@ -70,12 +70,7 @@ class BaseTemplate:
 
     @classmethod
     def build_argument_components(
-        cls,
-        component,
-        value_property=(),
-        label=None,
-        label_id=None,
-        role=None,
+        cls, component, value_property=(), label=None, label_id=None, role=None,
     ):
         # Get reference to dependency class object for role
         arg_component = component
@@ -89,10 +84,7 @@ class BaseTemplate:
                 label,
                 label_props,
             ) = cls.build_labeled_component(
-                arg_component,
-                label=initial_value,
-                label_id=label_id,
-                role=role,
+                arg_component, label=initial_value, label_id=label_id, role=role,
             )
             label_component = label
             label_props = label_props
@@ -100,8 +92,7 @@ class BaseTemplate:
             label_component = None
             label_props = None
             container_component, container_props = cls.build_containered_component(
-                arg_component,
-                role=role,
+                arg_component, role=role,
             )
 
         return ArgumentComponents(
@@ -276,9 +267,7 @@ class BaseTemplate:
         container = html.Div(
             id=container_id,
             style={"padding-top": 10},
-            children=[
-                html.Div(style={"display": "block"}, children=component),
-            ],
+            children=[html.Div(style={"display": "block"}, children=component),],
         )
         return container, "children"
 

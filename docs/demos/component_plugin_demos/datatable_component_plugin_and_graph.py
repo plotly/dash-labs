@@ -9,8 +9,7 @@ df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
-    app,
-    title="Table Component Plugin", sidebar_columns=6, figure_template=True
+    app, title="Table Component Plugin", sidebar_columns=6, figure_template=True
 )
 
 serverside = True

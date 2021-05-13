@@ -15,7 +15,9 @@ continents = list(df.continent.drop_duplicates())
 # tabs = ["scatter", "hist", "table"]
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
-tpl = dl.templates.DdkSidebarTabs(app, tabs, title=f"Dash Labs - DDK Tabs", show_editor=True)
+tpl = dl.templates.DdkSidebarTabs(
+    app, tabs, title=f"Dash Labs - DDK Tabs", show_editor=True
+)
 
 table_plugin = dl.component_plugins.DataTablePlugin(
     df.iloc[:0],
@@ -76,9 +78,7 @@ def callback(continent, year, logs, table_inputs, tab):
 
     hist_fig = px.histogram(
         year_df, x="lifeExp", color="continent", barnorm=""
-    ).update_layout(
-        title_text=title,
-    )
+    ).update_layout(title_text=title,)
 
     return (
         scatter_fig,

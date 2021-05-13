@@ -24,9 +24,7 @@ class DynamicLabelPlugin(ComponentPlugin):
 
         # Init args and output
         args = dict(value=self.input_dependency)
-        output = dict(
-            label_value=Output(self.label_id, self.label_prop),
-        )
+        output = dict(label_value=Output(self.label_id, self.label_prop),)
 
         super(DynamicLabelPlugin, self).__init__(args=args, output=output)
 

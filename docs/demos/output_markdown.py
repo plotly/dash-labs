@@ -16,6 +16,7 @@ tpl = dl.templates.DbcSidebar(app, "App Title", sidebar_columns=6)
 def markdown_preview(input_text):
     return input_text
 
+
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":

@@ -56,6 +56,7 @@ def callback(fun, figure_title, phase, amplitude):
 
 # For DDK templates
 import dash_design_kit as ddk
+
 app.layout = ddk.App(theme=theme, children=tpl.children)
 
 # # For DBC templates

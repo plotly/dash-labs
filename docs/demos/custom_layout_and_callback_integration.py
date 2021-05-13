@@ -30,9 +30,7 @@ tpl = dl.templates.DbcSidebar(app, title="Iris Dataset")
     template=tpl,
 )
 def iris(x, y):
-    return dcc.Graph(
-        figure=px.scatter(df, x=x, y=y, color="species"),
-    )
+    return dcc.Graph(figure=px.scatter(df, x=x, y=y, color="species"),)
 
 
 # Get references to the dropdowns and register a custom callback to prevent the user

@@ -197,9 +197,7 @@ class DataTablePlugin(ComponentPlugin):
                 )
             ),
             component_property=dict(
-                data="data",
-                columns="columns",
-                page_count="page_count",
+                data="data", columns="columns", page_count="page_count",
             ),
             role=self.role,
         )

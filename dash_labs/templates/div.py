@@ -3,7 +3,6 @@ import dash_html_components as html
 
 
 class FlatDiv(BaseTemplate):
-
     def __init__(self, app):
         """
         Trivial template that groups all input containers in a single flat Div,

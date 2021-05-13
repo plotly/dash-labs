@@ -14,11 +14,7 @@ continents = list(df.continent.drop_duplicates())
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
-    app,
-    tabs,
-    title=f"Dash Labs App",
-    theme=dbc.themes.DARKLY,
-    figure_template=True,
+    app, tabs, title=f"Dash Labs App", theme=dbc.themes.DARKLY, figure_template=True,
 )
 
 table_plugin = dl.component_plugins.DataTablePlugin(
@@ -32,12 +28,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 
 year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
     tpl.slider_input(
-        years[0],
-        years[-1],
-        step=5,
-        value=years[-1],
-        label="Year: {}",
-        tooltip=False,
+        years[0], years[-1], step=5, value=years[-1], label="Year: {}", tooltip=False,
     )
 )
 
@@ -97,9 +88,7 @@ def callback(year_args, continent, logs, table_inputs, tab):
 
     hist_fig = px.histogram(
         year_df, x="lifeExp", color="continent", barnorm=""
-    ).update_layout(
-        title_text=title,
-    )
+    ).update_layout(title_text=title,)
 
     return (
         scatter_fig,

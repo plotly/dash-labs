@@ -63,9 +63,7 @@ class ComponentPlugin:
         """
 
         @app.callback(
-            args=[self.args],
-            output=[self.output],
-            template=self.template,
+            args=[self.args], output=[self.output], template=self.template,
         )
         def callback(plugin_inputs):
             return [self.get_output_values(plugin_inputs)]
