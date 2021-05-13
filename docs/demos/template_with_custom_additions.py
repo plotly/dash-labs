@@ -53,7 +53,7 @@ tpl.add_component(
     role="output",
 )
 
-dbc.Container(fluid=True, children=tpl.children)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
