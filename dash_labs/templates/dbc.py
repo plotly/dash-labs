@@ -325,7 +325,7 @@ class DbcCard(BaseDbcTemplate):
         self,
         app,
         title=None,
-        columns=6,
+        columns=None,
         min_width=400,
         height=None,
         margin="10px 10px 10px 10px",
@@ -376,15 +376,15 @@ class DbcCard(BaseDbcTemplate):
         if self.min_width is not None:
             card_style["min-width"] = self.min_width
 
-        class_name_kwarg = {}
-        if self.columns is not None:
-            class_name_kwarg["className"] = f"col-{int(self.columns)}"
-
-        return dbc.Card(
+        card = dbc.Card(
             style=card_style,
             children=card_children,
-            **class_name_kwarg,
         )
+
+        if self.columns:
+            card = dbc.Col(card, md=self.columns)
+
+        return card
 
 
 class DbcRow(BaseDbcTemplate):
@@ -436,9 +436,9 @@ class DbcRow(BaseDbcTemplate):
         if self.row_height is not None:
             row_style["height"] = self.row_height
 
-        class_name_kwarg = {}
-        if self.input_cols is not None:
-            class_name_kwarg["className"] = f"col-{int(self.input_cols)}"
+        # class_name_kwarg = {}
+        # if self.input_cols is not None:
+        #     class_name_kwarg["className"] = f"col-{int(self.input_cols)}"
 
         return dbc.Row(
             style=row_style,
@@ -446,9 +446,13 @@ class DbcRow(BaseDbcTemplate):
                 dbc.Col(
                     children=dbc.Card(children=self.get_containers("input"), body=True),
                     style=input_card_style,
-                    **class_name_kwarg,
+                    md=self.input_cols,
+                    # **class_name_kwarg,
                 ),
-                dbc.Col(dbc.Card(children=output_card_children)),
+                dbc.Col(
+                    dbc.Card(children=output_card_children),
+                    md=12 - self.input_cols,
+                ),
             ],
         )
 
