@@ -109,7 +109,9 @@ def callback(year, continent, logs, table_inputs, tab):
 
     hist_fig = px.histogram(
         year_df, x="lifeExp", color="continent", barnorm=""
-    ).update_layout(title_text=title,)
+    ).update_layout(
+        title_text=title,
+    )
 
     return (
         scatter_fig,

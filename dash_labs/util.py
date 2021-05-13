@@ -32,7 +32,10 @@ def build_id(name=None, **kwargs):
     the same app.
     """
     uid = str(uuid.UUID(int=_uid_random.randint(0, 2 ** 128)))
-    return dict(uid=uid, **filter_kwargs(name=name, **kwargs),)
+    return dict(
+        uid=uid,
+        **filter_kwargs(name=name, **kwargs),
+    )
 
 
 def filter_kwargs(*args, **kwargs):

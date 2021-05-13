@@ -10,7 +10,10 @@ from ..fixtures import test_template
 def test_dropdown_builder(test_template):
     options = [{"label": s.upper(), "value": s} for s in ["a", "b", "c"]]
     component_dep = test_template.dropdown_input(
-        id="test-dropdown", options=options, value="b", opts=dict(disabled=True),
+        id="test-dropdown",
+        options=options,
+        value="b",
+        opts=dict(disabled=True),
     )
 
     assert isinstance(component_dep, Input)
@@ -46,7 +49,12 @@ def test_slider_builder(test_template):
 
     # But can be overridden with tooltip argument, and can override kind to State
     component_dep = test_template.slider_input(
-        min, max, id=id, value=val, kind=State, opts=dict(tooltip=None),
+        min,
+        max,
+        id=id,
+        value=val,
+        kind=State,
+        opts=dict(tooltip=None),
     )
 
     assert isinstance(component_dep, State)

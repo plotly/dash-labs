@@ -56,7 +56,10 @@ tpl = dl.templates.DbcSidebarTabs(
         ),
         tab=tpl.tab_input(),
     ),
-    output=[tpl.graph_output(role="Scatter"), tpl.graph_output(role="Histogram"),],
+    output=[
+        tpl.graph_output(role="Scatter"),
+        tpl.graph_output(role="Histogram"),
+    ],
     template=tpl,
 )
 def callback(year, continent, logs, tab):
@@ -89,7 +92,9 @@ def callback(year, continent, logs, tab):
 
     hist_fig = px.histogram(
         year_df, x="lifeExp", color="continent", barnorm=""
-    ).update_layout(title_text=title,)
+    ).update_layout(
+        title_text=title,
+    )
 
     return scatter_fig, hist_fig
 

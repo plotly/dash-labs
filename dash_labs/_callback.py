@@ -252,7 +252,9 @@ def callback(app, *args, **kwargs):
 
 
 def _callback(
-    app, *_args, **_kwargs,
+    app,
+    *_args,
+    **_kwargs,
 ):
     """
     Implementation of the dash-labs app.callback
@@ -295,7 +297,11 @@ def _callback(
 
         # Postprocess return value of wrapped function to validate returned groupings
         # and flatten values into linear list expected by Dash 1 callback
-        callback_fn = map_output_arguments(callback_fn, output_groupings, output_form,)
+        callback_fn = map_output_arguments(
+            callback_fn,
+            output_groupings,
+            output_form,
+        )
 
         # Register wrapped function with app.callback
         if _wrapped_callback is None:

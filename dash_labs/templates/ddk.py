@@ -30,7 +30,8 @@ class BaseDDKTemplate(BaseTemplate):
     _label_value_prop = "label"
 
     def __init__(
-        self, app,
+        self,
+        app,
     ):
         """
         :param app: dash.Dash app instance
@@ -106,7 +107,8 @@ class DdkCard(BaseDDKTemplate):
         card_children.extend(self.get_containers("input"))
 
         layout = ddk.ControlCard(
-            children=card_children, **filter_kwargs(width=self.width),
+            children=card_children,
+            **filter_kwargs(width=self.width),
         )
 
         return layout
@@ -130,7 +132,8 @@ class DdkRow(BaseDDKTemplate):
 
         # Input card
         input_card = ddk.ControlCard(
-            children=self.get_containers("input"), width=self.input_width,
+            children=self.get_containers("input"),
+            width=self.input_width,
         )
 
         output_card_children = []
@@ -139,7 +142,8 @@ class DdkRow(BaseDDKTemplate):
         output_card_children.extend(self.get_containers("output"))
 
         output_card = ddk.ControlCard(
-            children=output_card_children, width=100 - self.input_width,
+            children=output_card_children,
+            width=100 - self.input_width,
         )
 
         row_children = [input_card, output_card]
@@ -172,7 +176,11 @@ class DdkSidebar(BaseDDKTemplate):
 
         # Input card
         sidebar_children = []
-        sidebar_children.append(ddk.ControlCard(children=self.get_containers("input"),))
+        sidebar_children.append(
+            ddk.ControlCard(
+                children=self.get_containers("input"),
+            )
+        )
 
         sidebar = ddk.Sidebar(
             foldable=True,
@@ -231,7 +239,11 @@ class DdkSidebarTabs(BaseDDKTemplate):
 
         # Input card
         sidebar_children = []
-        sidebar_children.append(ddk.ControlCard(children=self.get_containers("input"),))
+        sidebar_children.append(
+            ddk.ControlCard(
+                children=self.get_containers("input"),
+            )
+        )
 
         sidebar = ddk.Sidebar(
             foldable=True,

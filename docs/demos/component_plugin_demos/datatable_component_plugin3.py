@@ -10,14 +10,19 @@ app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df=df, page_size=10, sort_mode="single", filterable=True, serverside=True,
+    df=df,
+    page_size=10,
+    sort_mode="single",
+    filterable=True,
+    serverside=True,
 )
 
 dropdown = dcc.Dropdown(options=[{"label": v, "value": v} for v in ["Male", "Female"]])
 
 
 @app.callback(
-    args=[dl.Input(dropdown, "value"), table_plugin.args], output=table_plugin.output,
+    args=[dl.Input(dropdown, "value"), table_plugin.args],
+    output=table_plugin.output,
 )
 def callback(gender, plugin_input):
     if gender:

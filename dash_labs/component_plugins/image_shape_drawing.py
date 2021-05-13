@@ -80,7 +80,8 @@ class GreyscaleImageROI(ComponentPlugin):
 
             new_image_fig = go.Figure(self.image_fig)
             new_image_fig.update_layout(
-                shapes=shapes, margin_t=top_margin,
+                shapes=shapes,
+                margin_t=top_margin,
             )
 
             if title is not None:

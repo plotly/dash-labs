@@ -35,7 +35,10 @@ def test_add_single_component_defaults(test_template):
 def test_add_component_options(test_template):
     button1 = html.Button(id="button1")
 
-    arg_comps1 = test_template.add_component(button1, component_property="n_clicks",)
+    arg_comps1 = test_template.add_component(
+        button1,
+        component_property="n_clicks",
+    )
 
     # Check inserted as input role
     assert len(test_template.roles["input"]) == 1
