@@ -11,7 +11,7 @@ import copy
 import plotly.io as pio
 
 
-class DbcTemplate(BaseTemplate):
+class BaseDbcTemplate(BaseTemplate):
     """
     Base class for templates based on the dash-bootstrap-components library
     """
@@ -320,7 +320,7 @@ class DbcTemplate(BaseTemplate):
         )
 
 
-class DbcCard(DbcTemplate):
+class DbcCard(BaseDbcTemplate):
     def __init__(
         self,
         app,
@@ -387,7 +387,7 @@ class DbcCard(DbcTemplate):
         return card
 
 
-class DbcRow(DbcTemplate):
+class DbcRow(BaseDbcTemplate):
     def __init__(
         self,
         app,
@@ -457,7 +457,7 @@ class DbcRow(DbcTemplate):
         )
 
 
-class DbcSidebar(DbcTemplate):
+class DbcSidebar(BaseDbcTemplate):
     def __init__(self, app, title=None, sidebar_columns=4, **kwargs):
         """
         Template that includes a title bar, places inputs in a sidebar, and outputs in
@@ -514,7 +514,7 @@ class DbcSidebar(DbcTemplate):
         return children
 
 
-class DbcSidebarTabs(DbcTemplate):
+class DbcSidebarTabs(BaseDbcTemplate):
     def __init__(self, app, tab_roles, title=None, sidebar_columns=4, **kwargs):
         """
         Template that includes a title bar, places inputs in a sidebar, and outputs in
