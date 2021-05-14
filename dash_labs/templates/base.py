@@ -49,8 +49,12 @@ class BaseTemplate:
     # self._roles dict is initialized properly
     _valid_roles = ("input", "output")
 
-    def __init__(self):
+    def __init__(self, app):
         self._roles = {role: OrderedDict() for role in self._valid_roles}
+
+        # Configure app props like CSS
+        if app is not None:
+            self._configure_app(app)
 
     @property
     def roles(self):
@@ -189,59 +193,25 @@ class BaseTemplate:
 
         return containers
 
-    def layout(self, app, full=True):
+    @property
+    def children(self):
         """
-        Build and return a component that aranges all of the components added to the
-        template.
-
-        May also configure application with additional css and scripts required by
+        Return a component that aranges all of the components that have been added to
         the template.
-
-        :param app: The dash.Dash app instance that will be used to display the
-            template
-        :param full: Some component toolkits require a top-level container component
-            that should be assigned to app.layout. For example, Dash Bootstrap
-            Components requires `dbc.Container` and Dash Design Kit requires ddk.App.
-             - If full=True (the default) the returned layout is wrapped in this
-               top-level component and so it may be directly assigned to app.layout.
-               In this case, the returned template should not be nested inside of a
-               larger app.
-             - If full=False, the returned layout is not wrapped in this top-level
-               component. This makes it possible to embed the returned layout in a
-               larger app, but it is the caller's responsibility to wrap the full app
-               in the appropriate top-level component.
 
         :return: Dash Component
         """
-        # Build structure
-        layout = self._perform_layout()
-        if full:
-            layout = self._wrap_full_layout(layout)
-
-        # Configure app props like CSS
-        self._configure_app(app)
-
-        return layout
+        return self._perform_layout()
 
     # Methods below this comment are designed to be customized by template subclasses
     # -------------------------------------------------------------------------------
     def _perform_layout(self):
         """
-        Build the layout, with the exception of any special top-level components
-        added by `_wrap_layout`.
+        Build the layout (will be provided to user as tpl.children property)
 
         :return: Dash Component
         """
         raise NotImplementedError
-
-    @classmethod
-    def _wrap_full_layout(cls, layout):
-        """
-        Wrap layout in a top-level component (e.g. Ddk.App or dbc.Container)
-        :param layout: layout component
-        :return: Top-level Dash Component
-        """
-        return layout
 
     def _configure_app(self, app):
         """
@@ -249,6 +219,8 @@ class BaseTemplate:
 
         e.g. install inline CSS / add external stylsheets
         """
+        # Needs to be idempotent in case multiple templates are associated with the
+        # same app
         if self._inline_css and self._inline_css not in app.index_string:
             new_css = "\n<style>{}</style>\n".format(self._inline_css)
             app.index_string = app.index_string.replace("{%css%}", "{%css%}" + new_css)

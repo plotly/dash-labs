@@ -8,8 +8,8 @@ class HtmlCard(BaseTemplate):
     card-like border.
     """
 
-    def __init__(self, title=None, width=None):
-        super().__init__()
+    def __init__(self, app, title=None, width=None):
+        super().__init__(app)
         self.title = title
         self.width = width
 

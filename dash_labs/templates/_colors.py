@@ -8,10 +8,10 @@ try:
 except ImportError:
     msg = (
         "Generating plotly.py figure templates from bootstrap theme files requires\n"
-        "the optional spectra package, which can be installed using pip...\n"
-        "    $ pip install spectra\n"
+        "the optional spectra and tinycss2 packages, which can be installed using pip...\n"
+        "    $ pip install spectra tinycss2\n"
         "or conda...\n"
-        "    $ conda install -c conda-forge spectra"
+        "    $ conda install -c conda-forge spectra tinycss2"
     )
     raise ValueError(msg)
 

@@ -31,12 +31,5 @@ def check_layout_body(layout_body, template):
 
 
 def check_layout(template):
-    app = dash.Dash()
-    layout = template.layout(app, full=False)
+    layout = template.children
     check_layout_body(layout, template)
-
-    full_layout = template.layout(app, full=True)
-    assert isinstance(full_layout, html.Div)
-    assert full_layout.id == "app-div"
-    assert len(full_layout.children) == 1
-    check_layout_body(full_layout.children[0], template)

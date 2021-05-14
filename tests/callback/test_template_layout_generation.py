@@ -48,5 +48,5 @@ def test_template_layout_generation(app, test_template):
     assert fn_wrapper._flat_output_deps[0] == expect_output_deps
 
     # Check generated layout
-    layout = test_template.layout(app, full=False)
+    layout = test_template.children
     check_layout_body(layout, test_template)

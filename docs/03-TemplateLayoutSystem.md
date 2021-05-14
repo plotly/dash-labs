@@ -13,10 +13,11 @@ Here is a simple example of manually adding components to a `DbcCard` template
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=4)
 
 div = html.Div()
 button = html.Button(children="Click Me")
@@ -28,7 +29,7 @@ def callback(n_clicks):
 tpl.add_component(button, label="Button to click", role="input")
 tpl.add_component(div, role="output")
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -42,8 +43,10 @@ When a component is added to a template using `add_component`, it is associated 
 ### Component label
 When a component is added to a template using `add_component`, it may optionally be associated with a label string using the `label` argument. When provided, the template will wrap the provided component with a label in the component layout it produces.
 
-### Template `layout`
-Templates provide a `.layout(app)` method that returns a container that includes the components that were added to the template.  This container can be assigned to `app.layout`, or combined with other components to build `app.layout`.
+### Template `children`
+Templates provide a `.children` property that returns a container that includes the components that were added to the template.  This container is a regular Dash component that can be assigned to `app.layout`, or combined with other components to build `app.layout`.
+
+> Note: When using a template based on Dash Bootstrap Components, it's recommended to use `dbc.Container` as the top-level layout component, and to assign the template's children as the children of the `dbc.Container`. See https://dash-bootstrap-components.opensource.faculty.ai/docs/components/layout/ for more information.  Similarly, when using a template based on Dash Design Kit, it's recommended to use `ddk.App` as the top-level layout component, and to assign the template's children as the children of the `ddk.App`.  
 
 ## template and app.callback integration
 For convenience, `@app.callback` accepts an optional `template` argument. When provided, `@app.callback` will automatically add the provided input and output components to the template. Because of the information that `@app.callback` already has access to, it can choose reasonable defaults for each component's `role` and `label`.  Because the components will be added to the template, it becomes possible to construct components inline in the `@app.callback` definition, rather than constructing them above and assigning them to local variables.  With these conveniences, the example above becomes:
@@ -53,20 +56,21 @@ For convenience, `@app.callback` accepts an optional `template` argument. When p
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 @app.callback(
-   dl.Output(html.Div(), "children"),
-   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tpl
+    dl.Output(html.Div(), "children"),
+    dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+    template=tpl,
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -85,23 +89,23 @@ When a template is provided, and no `Output` dependency is provided, the templat
 ```python
 import dash_labs as dl
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 @app.callback(
-   dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
-   template=tpl
+    dl.Input(html.Button(children="Click Me"), "n_clicks", label="Button to click"),
+    template=tpl,
 )
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
 ```
 
 ![](https://i.imgur.com/eSRujx6.gif)
@@ -150,12 +154,12 @@ Here is an update to the previous example that uses the `tpl.button_input` compo
 [demos/template_system4.py](demos/template_system4.py)
 
 ```python
+import dash_bootstrap_components as dbc
 import dash_labs as dl
 import dash
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Simple App", columns=6)
-
+tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 @app.callback(
     tpl.button_input("Click Me", label="Button to click"),
@@ -164,8 +168,7 @@ tpl = dl.templates.DbcCard(title="Simple App", columns=6)
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -190,9 +193,10 @@ import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcRow(title="Manual Update")
+tpl = dl.templates.DbcRow(app, title="Manual Update", theme=dbc.themes.SOLAR)
 
 @app.callback(
     args=dict(
@@ -215,7 +219,7 @@ def greet(fun, figure_title, phase, amplitude, n_clicks):
         )
     )
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -236,22 +240,22 @@ Note that the default value of `kind` for `tpl.markdown_output` is `dl.Output`, 
 ```python
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar("App Title", sidebar_columns=6)
+tpl = dl.templates.DbcSidebar(app, "App Title", sidebar_columns=6)
 
 @app.callback(
     output=tpl.markdown_output(),
     inputs=tpl.textarea_input(
-        "## Heading\n",
-        opts=dict(style={"width": "100%", "height": 400})
+        "## Heading\n", opts=dict(style={"width": "100%", "height": 400})
     ),
-    template=tpl
+    template=tpl,
 )
 def markdown_preview(input_text):
     return input_text
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -272,10 +276,11 @@ import dash
 import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar(title="Dash Labs App")
+tpl = dl.templates.DbcSidebar(app, title="Dash Labs App")
 
 # import dash_core_components as dcc
 @app.callback(
@@ -290,33 +295,37 @@ tpl = dl.templates.DbcSidebar(title="Dash Labs App")
 )
 def function_browser(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
-    return px.line(
-        x=xs, y=getattr(np, fun)(xs + phase) * amplitude
-    ).update_layout(title_text=figure_title)
-
+    return px.line(x=xs, y=getattr(np, fun)(xs + phase) * amplitude).update_layout(
+        title_text=figure_title
+    )
 
 # Add extra component to template
+tpl.add_component(dcc.Markdown(children="# First Group"), role="input", before="fun")
+
 tpl.add_component(
-    dcc.Markdown(children="# First Group"), role="input", before="fun"
+    dcc.Markdown(
+        children=[
+            "# Second Group\n"
+            "Specify the Phase and Amplitudue for the chosen function"
+        ]
+    ),
+    role="input",
+    before="phase",
 )
 
-tpl.add_component(dcc.Markdown(children=[
-    "# Second Group\n"
-    "Specify the Phase and Amplitudue for the chosen function"
-]), role="input", before="phase")
-
-
-tpl.add_component(dcc.Markdown(children=[
-    "# H2 Title\n",
-    "Here is the *main* plot"
-]), role="output", before=0)
+tpl.add_component(
+    dcc.Markdown(children=["# H2 Title\n", "Here is the *main* plot"]),
+    role="output",
+    before=0,
+)
 
 tpl.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
-    component_property="children", role="output"
+    component_property="children",
+    role="output",
 )
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -346,10 +355,13 @@ Notice how custom callbacks are applied to the dropdowns returned by `@app.callb
 [demos/custom_layout_and_callback_integration.py](./demos/custom_layout_and_callback_integration.py)
 
 ```python
+# Based on https://dash-bootstrap-components.opensource.faculty.ai/examples/iris/
+
 import dash_labs as dl
 import plotly.express as px
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import dash
 
@@ -364,7 +376,7 @@ feature_options = [
 
 # Build app and template
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar(title="Iris Dataset")
+tpl = dl.templates.DbcSidebar(app, title="Iris Dataset")
 
 # Use parameterize to create components
 @app.callback(
@@ -372,7 +384,7 @@ tpl = dl.templates.DbcSidebar(title="Iris Dataset")
         x=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_length")),
         y=dl.Input(dcc.Dropdown(options=feature_options, value="sepal_width")),
     ),
-    template=tpl
+    template=tpl,
 )
 def iris(x, y):
     return dcc.Graph(
@@ -408,15 +420,17 @@ x_container = tpl.roles["input"]["x"].container_component
 y_container = tpl.roles["input"]["y"].container_component
 output_component = tpl.roles["output"][0].container_component
 
-app.layout = html.Div([
-    html.H1("Iris Feature Explorer"),
-    html.H2("Select Features"),
-    x_container,
-    y_container,
-    html.Hr(),
-    html.H2("Feature Scatter Plot"),
-    output_component
-])
+app.layout = html.Div(
+    [
+        html.H1("Iris Feature Explorer"),
+        html.H2("Select Features"),
+        x_container,
+        y_container,
+        html.Hr(),
+        html.H2("Feature Scatter Plot"),
+        output_component,
+    ]
+)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

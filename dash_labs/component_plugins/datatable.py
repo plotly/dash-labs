@@ -56,7 +56,7 @@ class DataTablePlugin(ComponentPlugin):
         :param role: Template role that should be assigned to the constructed DataTable
         """
         if template is None:
-            template = FlatDiv()
+            template = FlatDiv(None)
 
         if columns is None:
             columns = list(df.columns)

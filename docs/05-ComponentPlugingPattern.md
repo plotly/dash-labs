@@ -62,12 +62,13 @@ Note that the DataFrame that is input to the DataTable is first filtered using a
 ```python
 import plotly.express as px
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import dash
 
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Table Component Plugin")
+tpl = dl.templates.DbcCard(app, title="Table Component Plugin")
 
 # serverside = False
 serverside = True
@@ -91,7 +92,7 @@ def callback(gender, plugin_input):
         filtered_df = df
     return table_plugin.get_output_values(plugin_input, filtered_df)
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -105,6 +106,7 @@ And here is an example of using the same plugin to display the contents of the t
 ```python
 import plotly.express as px
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import dash
 import plotly.io as pio
 
@@ -113,7 +115,7 @@ df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
-    title="Table Component Plugin", sidebar_columns=6, figure_template=True
+    app, title="Table Component Plugin", sidebar_columns=6, figure_template=True
 )
 
 serverside = True
@@ -155,8 +157,7 @@ def callback(gender, table_input):
 
     return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
 
-
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -176,12 +177,13 @@ Here is an example of this approach
 ```python
 import plotly.express as px
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import dash
 
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="DataTablePlugin")
+tpl = dl.templates.DbcCard(app, title="DataTablePlugin")
 
 table_plugin = dl.component_plugins.DataTablePlugin(
     df=df,
@@ -193,7 +195,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 )
 
 table_plugin.install_callback(app)
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -213,12 +215,13 @@ Here is an example that simply sets the title to the coordinates of the current 
 ```python
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 from skimage import data
 
 img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Image Intensity Explorer", columns=4)
+tpl = dl.templates.DbcCard(app, title="Image Intensity Explorer", columns=4)
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
 
 
@@ -228,8 +231,7 @@ def callback(inputs_value):
     title = "Bounds: {}".format(bounds)
     return img_plugin.get_output_values(inputs_value, title=title)
 
-
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -244,6 +246,7 @@ And here is an example that uses `get_image_slice` to extract the pixels within 
 ```python
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 from skimage import data
 import plotly.express as px
 
@@ -251,6 +254,7 @@ img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
+    app,
     title="Image Intensity Explorer",
     sidebar_columns=6,
     figure_template=True,
@@ -278,7 +282,7 @@ def callback(inputs_value):
     return [img_plugin.get_output_values(inputs_value, title=title), hist_figure]
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 
 if __name__ == "__main__":
@@ -295,13 +299,13 @@ Here is a component plugin that can be used to display a dynamic label for a com
 ```python
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
-tpl = dl.templates.DbcSidebar(title="Dynamic Label Plugin")
-
+tpl = dl.templates.DbcSidebar(app, title="Dynamic Label Plugin", figure_template=True)
 phase_plugin = dl.component_plugins.DynamicLabelPlugin(
     tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
@@ -317,9 +321,14 @@ phase_plugin = dl.component_plugins.DynamicLabelPlugin(
 def callback(fun, phase_inputs):
     phase = phase_plugin.get_value(phase_inputs)
     xs = np.linspace(-10, 10, 100)
-    fig = px.line(x=xs, y=getattr(np, fun)(xs + phase)).update_layout()
+    fig = px.line(x=xs, y=getattr(np, fun)(xs + phase), title="Function Value")
 
     return [fig, phase_plugin.get_output_values(phase_inputs)]
+
+app.layout = dbc.Container(fluid=True, children=tpl.children)
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
 ```
 
 ## Example of combining plugins
@@ -348,19 +357,33 @@ continents = list(df.continent.drop_duplicates())
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
-    tabs, title=f"Dash Labs App", theme=dbc.themes.DARKLY, figure_template=True,
+    app,
+    tabs,
+    title=f"Dash Labs App",
+    theme=dbc.themes.DARKLY,
+    figure_template=True,
 )
 
 table_plugin = dl.component_plugins.DataTablePlugin(
-    df.iloc[:0], sort_mode="single", role="table", 
-    page_size=15, serverside=True, filterable=True,
+    df.iloc[:0],
+    sort_mode="single",
+    role="table",
+    page_size=15,
+    serverside=True,
+    filterable=True,
 )
 
 year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
     tpl.slider_input(
-        years[0], years[-1], step=5, value=years[-1], label="Year: {}", tooltip=False,
+        years[0],
+        years[-1],
+        step=5,
+        value=years[-1],
+        label="Year: {}",
+        tooltip=False,
     )
 )
+
 
 @app.callback(
     args=dict(
@@ -379,8 +402,9 @@ year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
         year_label_plugin.output,
         dl.Output(
             dbc.Label(children="Current Tab: ", className="h5"),
-            "children", role="input"
-        )
+            "children",
+            role="input",
+        ),
     ],
     template=tpl,
 )
@@ -425,10 +449,11 @@ def callback(year_args, continent, logs, table_inputs, tab):
         hist_fig,
         table_plugin.get_output_values(table_inputs, df=year_df),
         year_label_plugin.get_output_values(year_args),
-        "Current Tab: " + tabs[tab]
+        "Current Tab: " + tabs[tab],
     )
 
-app.layout = tpl.layout(app)
+
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
