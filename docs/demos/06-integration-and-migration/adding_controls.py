@@ -21,7 +21,9 @@ continents = list(df.continent.drop_duplicates())
         ),
         continent=tpl.checklist_input(continents, value=continents, label="Continents"),
         logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale",
+            ["log(x)"],
+            value="log(x)",
+            label="Axis Scale",
         ),
     ),
     output=tpl.graph_output(),
@@ -37,7 +39,7 @@ def callback(year, continent, logs):
         return go.Figure()
 
     title = f"Life Expectancy ({year})"
-    scatter_fig = (
+    return (
         px.scatter(
             year_df,
             x="gdpPercap",
@@ -47,12 +49,12 @@ def callback(year, continent, logs):
             hover_name="country",
             log_x="log(x)" in logs,
             size_max=60,
-            title=title
+            title=title,
         )
         .update_layout(margin=dict(l=0, r=0, b=0))
         .update_traces(marker_opacity=0.8)
     )
-    return scatter_fig
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 

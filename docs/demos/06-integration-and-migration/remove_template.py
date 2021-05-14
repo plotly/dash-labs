@@ -8,7 +8,9 @@ import plotly.graph_objects as go
 
 # Make app and template
 app = dash.Dash(
-    __name__, plugins=[dl.plugins.FlexibleCallbacks()], external_stylesheets=[dbc.themes.FLATLY]
+    __name__,
+    plugins=[dl.plugins.FlexibleCallbacks()],
+    external_stylesheets=[dbc.themes.FLATLY],
 )
 
 # Load and preprocess dataset
@@ -18,7 +20,10 @@ continents = list(df.continent.drop_duplicates())
 
 # Make components
 year_slider = dcc.Slider(
-    min=years[0], max=years[-1], step=5, value=years[-1],
+    min=years[0],
+    max=years[-1],
+    step=5,
+    value=years[-1],
     tooltip={"placement": "bottom", "always_visible": True},
 )
 
@@ -51,7 +56,7 @@ def callback(year, continent, logs):
         return go.Figure()
 
     title = f"Life Expectancy ({year})"
-    scatter_fig = (
+    return (
         px.scatter(
             year_df,
             x="gdpPercap",
@@ -61,35 +66,51 @@ def callback(year, continent, logs):
             hover_name="country",
             log_x="log(x)" in logs,
             size_max=60,
-            title=title
+            title=title,
         )
         .update_layout(margin=dict(l=0, r=0, b=0))
         .update_traces(marker_opacity=0.8)
     )
-    return scatter_fig
 
 
-app.layout = dbc.Container(fluid=True, children=[
-    html.H2("Gapminder"),
-    html.Hr(),
-    dbc.Row([
-        dbc.Col(md=4, children=dbc.Card(body=True, children=[
-            dbc.FormGroup([
-                dbc.Label("Year", className="h5"),
-                year_slider,
-            ]),
-            dbc.FormGroup([
-                dbc.Label("Continent", className="h5"),
-                continent_checklist,
-            ]),
-            dbc.FormGroup([
-                dbc.Label("Axis Scale", className="h5"),
-                logs_checklist
-            ]),
-        ])),
-        dbc.Col(md=8, children=dbc.Card(body=True, children=graph)),
-    ])
-])
+app.layout = dbc.Container(
+    fluid=True,
+    children=[
+        html.H2("Gapminder"),
+        html.Hr(),
+        dbc.Row(
+            [
+                dbc.Col(
+                    md=4,
+                    children=dbc.Card(
+                        body=True,
+                        children=[
+                            dbc.FormGroup(
+                                [
+                                    dbc.Label("Year", className="h5"),
+                                    year_slider,
+                                ]
+                            ),
+                            dbc.FormGroup(
+                                [
+                                    dbc.Label("Continent", className="h5"),
+                                    continent_checklist,
+                                ]
+                            ),
+                            dbc.FormGroup(
+                                [
+                                    dbc.Label("Axis Scale", className="h5"),
+                                    logs_checklist,
+                                ]
+                            ),
+                        ],
+                    ),
+                ),
+                dbc.Col(md=8, children=dbc.Card(body=True, children=graph)),
+            ]
+        ),
+    ],
+)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
