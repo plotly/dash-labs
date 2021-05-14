@@ -51,7 +51,7 @@ def _layout_value(self):
     return layout
 
 
-class JobQueue:
+class LongCallback:
     def __init__(self, cache):
         self.cache = cache
 
@@ -60,10 +60,10 @@ class JobQueue:
         app._background_procs = {}
         app._flask_caching_cache = self.cache
 
-        app.jobqueue_callback = MethodType(partial(jobqueue_callback), app)
+        app.long_callback = MethodType(partial(long_callback), app)
 
 
-def jobqueue_callback(self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000):
+def long_callback(self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000):
     import dash
     import dash_labs as dl
     import dash_core_components as dcc
@@ -91,7 +91,6 @@ def jobqueue_callback(self, args, output, running=(), cancel=(), progress=(), te
 
     def wrapper(fn):
         def callback(n_intervals, cancel, user_store_data, user_callback_args):
-            print(dash.callback_context.triggered)
             if isinstance(user_callback_args, tuple):
                 key = [list(user_callback_args), user_id]
             else:

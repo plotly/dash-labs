@@ -8,7 +8,7 @@ from flask_caching import Cache
 
 cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 app = dash.Dash(__name__, plugins=[
-    dl.plugins.FlexibleCallbacks(), dl.plugins.HiddenComponents(), dl.plugins.JobQueue(cache)
+    dl.plugins.FlexibleCallbacks(), dl.plugins.HiddenComponents(), dl.plugins.LongCallback(cache)
 ])
 
 app.layout = html.Div([
@@ -19,7 +19,7 @@ app.layout = html.Div([
     html.Button(id='cancel_button_id', children="Cancel Running Job!"),
 ])
 
-@app.jobqueue_callback(
+@app.long_callback(
     output=dl.Output("paragraph_id", "children"),
     args=dl.Input("button_id", "n_clicks"),
     running=[
