@@ -1,5 +1,6 @@
 import plotly.express as px
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import dash
 import plotly.io as pio
 
@@ -8,7 +9,7 @@ df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
-    title="Table Component Plugin", sidebar_columns=6, figure_template=True
+    app, title="Table Component Plugin", sidebar_columns=6, figure_template=True
 )
 
 serverside = True
@@ -51,7 +52,7 @@ def callback(gender, table_input):
     return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -22,7 +22,7 @@ class ComponentPlugin:
         self._output = output
 
         if template is None:
-            template = FlatDiv()
+            template = FlatDiv(None)
         self.template = template
 
     def get_output_values(self, args_value):

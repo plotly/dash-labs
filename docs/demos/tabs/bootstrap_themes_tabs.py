@@ -1,5 +1,6 @@
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -36,6 +37,7 @@ theme_name = "darkly"
 css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 
 tpl = dl.templates.DbcSidebarTabs(
+    app,
     ["Scatter", "Histogram"],
     title=f"Dash Labs - {theme_name.title()} Theme",
     theme=css_url,
@@ -97,7 +99,7 @@ def callback(year, continent, logs, tab):
     return scatter_fig, hist_fig
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -3,11 +3,10 @@ import dash_labs as dl
 import numpy as np
 import dash_core_components as dcc
 import plotly.express as px
-
-app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 import dash_bootstrap_components as dbc
 
-tpl = dl.templates.DbcRow(title="Manual Update", theme=dbc.themes.SOLAR)
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
+tpl = dl.templates.DbcRow(app, title="Manual Update", theme=dbc.themes.SOLAR)
 
 
 @app.callback(
@@ -32,7 +31,7 @@ def greet(fun, figure_title, phase, amplitude, n_clicks):
     )
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -1,5 +1,6 @@
 import dash
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 from skimage import data
 import plotly.express as px
 
@@ -7,6 +8,7 @@ img = data.camera()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(
+    app,
     title="Image Intensity Explorer",
     sidebar_columns=6,
     figure_template=True,
@@ -35,7 +37,7 @@ def callback(inputs_value):
     return [img_plugin.get_output_values(inputs_value, title=title), hist_figure]
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 
 if __name__ == "__main__":

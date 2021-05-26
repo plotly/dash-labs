@@ -42,6 +42,7 @@ css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 
 tpl = dl.templates.DbcSidebarTabs(
+    app,
     tabs,
     title=f"Dash Labs - {theme_name.title()} Theme",
     figure_template=True,
@@ -118,7 +119,7 @@ def callback(year, continent, logs, table_inputs, tab):
     )
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

@@ -1,6 +1,15 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 0.2.0
+
+### Changes
+ - Replaced `tpl.layout(app)` method with `tpl.children` property ([#20](https://github.com/plotly/dash-labs/pull/20))
+
+### Documentation
+ - Added documentation chapter with additional examples of template usage
+
+
 ## 0.1.0
 
 This is the initial release of `dash-labs` which includes:

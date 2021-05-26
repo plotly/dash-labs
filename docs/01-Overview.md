@@ -12,13 +12,13 @@ Dash Labs began with several interdependent design goals:
 Dash Labs can be installed using `pip` with
 
 ```
-$ pip install dash-labs
+$ pip install -U dash-labs
 ```
 
 To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
 
 ```
-$ pip dash-bootstrap-components spectra colormath requests tinycss2
+$ pip install -U dash-bootstrap-components spectra colormath requests tinycss2
 ```
  
 # Activating Dash Labs Functionality

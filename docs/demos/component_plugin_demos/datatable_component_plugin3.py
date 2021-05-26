@@ -4,6 +4,7 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 
+
 df = px.data.tips()
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 

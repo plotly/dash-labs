@@ -1,11 +1,12 @@
 import plotly.express as px
 import dash_labs as dl
+import dash_bootstrap_components as dbc
 import dash
 
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcCard(title="Table Component Plugin", columns=8)
+tpl = dl.templates.DbcCard(app, title="Table Component Plugin", columns=8)
 
 # serverside = False
 serverside = True
@@ -35,7 +36,7 @@ def callback(gender, plugin_input):
     return table_plugin.get_output_values(plugin_input, filtered_df)
 
 
-app.layout = tpl.layout(app)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
