@@ -1,4 +1,6 @@
 from .flexible_callbacks import FlexibleCallbacks
 from .hidden_components import HiddenComponents
 from .long_callback import LongCallback
-from .long_callback.long_callback_celery import LongCallbackCelery
+from .long_callback.long_callback_celery import LongCallback2
+from .long_callback.backends.celery_backend import CeleryCallbackManager
+from .long_callback.backends.flask_caching_backend import FlaskCachingCallbackManager

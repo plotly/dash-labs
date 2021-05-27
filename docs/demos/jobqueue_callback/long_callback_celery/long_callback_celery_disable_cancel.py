@@ -10,7 +10,7 @@ celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 
 
 app = dash.Dash(__name__, plugins=[
-    dl.plugins.FlexibleCallbacks(), dl.plugins.HiddenComponents(), dl.plugins.LongCallbackCelery(celery_app)
+    dl.plugins.FlexibleCallbacks(), dl.plugins.HiddenComponents(), dl.plugins.LongCallback2(celery_app)
 ])
 
 app.layout = html.Div([
