@@ -1,4 +1,7 @@
-class CeleryCallbackManager:
+from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
+
+
+class CeleryCallbackManager(BaseLongCallbackManager):
     def __init__(self, celery_app):
         self.celery_app = celery_app
         self.callback_futures = dict()

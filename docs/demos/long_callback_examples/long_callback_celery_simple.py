@@ -18,7 +18,7 @@ long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
     dl.plugins.HiddenComponents(),
-    dl.plugins.LongCallback2(long_callback_manager)
+    dl.plugins.LongCallback(long_callback_manager)
 ])
 
 app.layout = html.Div([

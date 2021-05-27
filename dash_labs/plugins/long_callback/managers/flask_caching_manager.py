@@ -1,7 +1,8 @@
 from multiprocessing import Process
+from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 
-class FlaskCachingCallbackManager:
+class FlaskCachingCallbackManager(BaseLongCallbackManager):
     def __init__(self, flask_cache):
         self.flask_cache = flask_cache
         self.callback_futures = dict()

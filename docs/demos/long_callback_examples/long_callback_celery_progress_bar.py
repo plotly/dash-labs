@@ -4,11 +4,22 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_labs as dl
+from celery import Celery
+
 from flask_caching import Cache
 
-cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
+
+celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
+long_callback_manager = CeleryCallbackManager(celery_app)
+
+# flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+# long_callback_manager = FlaskCachingCallbackManager(flask_cache)
+
 app = dash.Dash(__name__, plugins=[
-    dl.plugins.FlexibleCallbacks(), dl.plugins.HiddenComponents(), dl.plugins.LongCallback(cache)
+    dl.plugins.FlexibleCallbacks(),
+    dl.plugins.HiddenComponents(),
+    dl.plugins.LongCallback(long_callback_manager)
 ])
 
 app.layout = html.Div([
@@ -32,7 +43,6 @@ app.layout = html.Div([
     ],
     cancel=[dl.Input("cancel_button_id", "n_clicks")],
     progress=dl.Output("progress_bar", ("value", "max")),
-    interval=300,
 )
 def callback(set_progress, n_clicks):
     total = 10
