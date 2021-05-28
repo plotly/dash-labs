@@ -9,11 +9,11 @@ import dash_labs as dl
 from celery import Celery
 from dash_labs.plugins import CeleryCallbackManager, FlaskCachingCallbackManager
 
-# celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
-# long_callback_manager = CeleryCallbackManager(celery_app)
+celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
+long_callback_manager = CeleryCallbackManager(celery_app)
 
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
+# flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+# long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),

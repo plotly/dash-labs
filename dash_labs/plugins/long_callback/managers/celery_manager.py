@@ -11,7 +11,7 @@ class CeleryCallbackManager(BaseLongCallbackManager):
 
     def cancel_future(self, key):
         if key in self.callback_futures:
-            future = self.callback_futures[key]
+            future = self.callback_futures.pop(key)
             self.celery_app.control.terminate(future.task_id)
             return True
         return False
@@ -55,7 +55,7 @@ class CeleryCallbackManager(BaseLongCallbackManager):
             return False
 
     def get_result(self, key):
-        future = self.get_future(key)
+        future = self.callback_futures.pop(key, None)
         if future:
             return future.get(timeout=1)
         else:

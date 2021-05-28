@@ -13,16 +13,19 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
 
     def cancel_future(self, key):
         if key in self.callback_futures:
-            future = self.callback_futures[key]
-            future.kill()
-            return True
+            future = self.callback_futures.pop(key, None)
+            self.flask_cache.set(key, "__undefined__")
+            if future:
+                future.kill()
+                future.join()
+                return True
         return False
 
     def terminate_unhealthy_future(self, key):
         return False
 
     def has_future(self, key):
-        return key in self.callback_futures
+        return self.callback_futures.get(key, None) is not None
 
     def get_future(self, key, default=None):
         return self.callback_futures.get(key, default)
@@ -35,6 +38,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return key + "-progress"
 
     def call_and_register_background_fn(self, key, background_fn, args):
+        self.cancel_future(key)
         future = Process(target=background_fn, args=(key, self._make_progress_key(key), args))
         future.start()
         self.callback_futures[key] = future
@@ -47,10 +51,15 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return None
 
     def result_ready(self, key):
-        return self.flask_cache.get(key) is not None
+        return self.flask_cache.get(key) not in (None, "__undefined__")
 
     def get_result(self, key):
-        return self.flask_cache.get(key)
+        result = self.flask_cache.get(key)
+        if result not in (None, "__undefined__"):
+            self.cancel_future(key)
+            return result
+        else:
+            return None
 
 
 def make_update_cache(fn, cache, progress):

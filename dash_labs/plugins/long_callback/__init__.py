@@ -77,6 +77,7 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
 
             if callback_manager.result_ready(result_key):
                 result = callback_manager.get_result(result_key)
+                print(result)
                 return dict(
                     user_callback_output=result,
                     in_progress=tuple([
