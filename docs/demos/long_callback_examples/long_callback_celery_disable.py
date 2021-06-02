@@ -1,18 +1,23 @@
 import time
-import plotly.express as px
 import dash
-import dash_core_components as dcc
 import dash_html_components as html
-from flask_caching import Cache
-
 import dash_labs as dl
-from celery import Celery
-
 from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 
+# ## Celery on RabbitMQ
+# from celery import Celery
 # celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
+# ## Celery on Redis
+# from celery import Celery
+# celery_app = Celery(
+#     __name__, broker='redis://localhost:6379/0', backend='redis://localhost:6379/1'
+# )
+# long_callback_manager = CeleryCallbackManager(celery_app)
+
+# ## FlaskCaching
+from flask_caching import Cache
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
