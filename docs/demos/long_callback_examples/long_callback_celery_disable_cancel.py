@@ -3,8 +3,6 @@ import dash
 import dash_html_components as html
 
 import dash_labs as dl
-from flask_caching import Cache
-
 from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 
 # ## Celery on RabbitMQ
