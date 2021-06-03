@@ -56,7 +56,9 @@ class BaseTemplate:
     _default_output_location = None
 
     def __init__(self, app):
-        self._locations = {location: OrderedDict() for location in self._valid_locations}
+        self._locations = {
+            location: OrderedDict() for location in self._valid_locations
+        }
 
         # Configure app props like CSS
         if app is not None:
