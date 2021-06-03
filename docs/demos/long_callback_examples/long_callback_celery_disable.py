@@ -18,21 +18,26 @@ from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 
 # ## FlaskCaching
 from flask_caching import Cache
+
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
-app = dash.Dash(__name__, plugins=[
-    dl.plugins.FlexibleCallbacks(),
-    dl.plugins.HiddenComponents(),
-    dl.plugins.LongCallback(long_callback_manager)
-])
+app = dash.Dash(
+    __name__,
+    plugins=[
+        dl.plugins.FlexibleCallbacks(),
+        dl.plugins.HiddenComponents(),
+        dl.plugins.LongCallback(long_callback_manager),
+    ],
+)
 
-app.layout = html.Div([
-    html.Div([
-        html.P(id="paragraph_id", children=["Button not clicked"])
-    ]),
-    html.Button(id='button_id', children="Run Job!"),
-])
+app.layout = html.Div(
+    [
+        html.Div([html.P(id="paragraph_id", children=["Button not clicked"])]),
+        html.Button(id="button_id", children="Run Job!"),
+    ]
+)
+
 
 @app.long_callback(
     output=dl.Output("paragraph_id", "children"),

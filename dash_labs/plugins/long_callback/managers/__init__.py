@@ -1,5 +1,6 @@
 from abc import ABC
 
+
 class BaseLongCallbackManager(ABC):
     def init(self, app):
         raise NotImplementedError

@@ -41,10 +41,7 @@ class CeleryCallbackManager(BaseLongCallbackManager):
         if future is not None:
             progress_info = future.info if future.state == "PROGRESS" else None
             if progress_info is not None:
-                return (
-                    progress_info["current"],
-                    progress_info["total"]
-                )
+                return (progress_info["current"], progress_info["total"])
         return None
 
     def result_ready(self, key):
@@ -66,7 +63,7 @@ def make_celery_fn(user_fn, celery_app, progress):
     @celery_app.task(bind=True)
     def _celery_fn(self, user_callback_args):
         def _set_progress(i, total):
-            self.update_state(state="PROGRESS", meta={'current': i, 'total': total})
+            self.update_state(state="PROGRESS", meta={"current": i, "total": total})
 
         maybe_progress = [_set_progress] if progress else []
         print(maybe_progress)
@@ -78,5 +75,5 @@ def make_celery_fn(user_fn, celery_app, progress):
         else:
             user_callback_output = user_fn(*maybe_progress, user_callback_args)
         return user_callback_output
-    return _celery_fn
 
+    return _celery_fn

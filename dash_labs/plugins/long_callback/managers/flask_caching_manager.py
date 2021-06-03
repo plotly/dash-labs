@@ -39,7 +39,9 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
 
     def call_and_register_background_fn(self, key, background_fn, args):
         self.cancel_future(key)
-        future = Process(target=background_fn, args=(key, self._make_progress_key(key), args))
+        future = Process(
+            target=background_fn, args=(key, self._make_progress_key(key), args)
+        )
         future.start()
         self.callback_futures[key] = future
 

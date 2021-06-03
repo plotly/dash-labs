@@ -15,24 +15,24 @@ class LongCallback:
         app.long_callback = MethodType(partial(long_callback), app)
 
 
-def long_callback(self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000):
+def long_callback(
+    self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000
+):
     import dash
     import dash_labs as dl
     import dash_core_components as dcc
     from dash_labs.grouping import map_grouping
 
     interval_id = dl.build_id("interval")
-    interval_component = dcc.Interval(
-        id=interval_id, interval=interval, disabled=True
-    )
+    interval_component = dcc.Interval(id=interval_id, interval=interval, disabled=True)
 
     user_id = str(uuid.uuid4())
     store_id = dl.build_id("store")
-    store_component = dcc.Store(
-        id=store_id, data=dict(user_id=user_id)
-    )
+    store_component = dcc.Store(id=store_id, data=dict(user_id=user_id))
 
-    cancel_prop_ids = tuple(".".join([dep.component_id, dep.component_property]) for dep in cancel)
+    cancel_prop_ids = tuple(
+        ".".join([dep.component_id, dep.component_property]) for dep in cancel
+    )
 
     callback_manager = self._long_callback_manager
 
@@ -53,11 +53,16 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
             result_key = json.dumps({"args": key})
 
             should_cancel = any(
-                [trigger["prop_id"] in cancel_prop_ids for trigger in dash.callback_context.triggered]
+                [
+                    trigger["prop_id"] in cancel_prop_ids
+                    for trigger in dash.callback_context.triggered
+                ]
             )
-            clear_progress = map_grouping(
-                        lambda x: None, progress.dependencies()
-            ) if progress else ()
+            clear_progress = (
+                map_grouping(lambda x: None, progress.dependencies())
+                if progress
+                else ()
+            )
 
             if should_cancel:
                 if callback_manager.has_future(result_key):
@@ -66,11 +71,9 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
                     user_callback_output=map_grouping(
                         lambda x: dash.no_update, output.dependencies()
                     ),
-                    in_progress=tuple([
-                        val for (_, _, val) in running
-                    ]),
+                    in_progress=tuple([val for (_, _, val) in running]),
                     progress=clear_progress,
-                    interval_disabled=True
+                    interval_disabled=True,
                 )
 
             progress_tuple = callback_manager.get_progress(result_key)
@@ -80,9 +83,7 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
                 print(result)
                 return dict(
                     user_callback_output=result,
-                    in_progress=tuple([
-                        val for (_, _, val) in running
-                    ]),
+                    in_progress=tuple([val for (_, _, val) in running]),
                     progress=clear_progress,
                     interval_disabled=True,
                 )
@@ -91,24 +92,22 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
                     user_callback_output=map_grouping(
                         lambda x: dash.no_update, output.dependencies()
                     ),
-                    in_progress=tuple([
-                        val for (_, val, _) in running
-                    ]),
+                    in_progress=tuple([val for (_, val, _) in running]),
                     progress=progress_tuple,
                     interval_disabled=False,
                 )
             else:
                 callback_manager.terminate_unhealthy_future(result_key)
                 if not callback_manager.has_future(result_key):
-                    callback_manager.call_and_register_background_fn(result_key, background_fn, user_callback_args)
+                    callback_manager.call_and_register_background_fn(
+                        result_key, background_fn, user_callback_args
+                    )
 
                 return dict(
                     user_callback_output=map_grouping(
                         lambda x: dash.no_update, output.dependencies()
                     ),
-                    in_progress=tuple([
-                        val for (_, val, _) in running
-                    ]),
+                    in_progress=tuple([val for (_, val, _) in running]),
                     progress=clear_progress,
                     interval_disabled=False,
                 )
@@ -123,14 +122,11 @@ def long_callback(self, args, output, running=(), cancel=(), progress=(), templa
             ),
             output=dict(
                 interval_disabled=dl.Output(interval_id, "disabled"),
-                in_progress=tuple([
-                    dep
-                    for (dep, _, _) in running
-                ]),
+                in_progress=tuple([dep for (dep, _, _) in running]),
                 progress=progress,
-                user_callback_output=output
+                user_callback_output=output,
             ),
-            template=template
+            template=template,
         )(callback)
 
     return wrapper

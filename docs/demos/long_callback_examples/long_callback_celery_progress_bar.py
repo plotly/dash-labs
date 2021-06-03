@@ -18,6 +18,7 @@ from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 
 # ## FlaskCaching
 from flask_caching import Cache
+
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
@@ -25,20 +26,27 @@ long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
-app = dash.Dash(__name__, plugins=[
-    dl.plugins.FlexibleCallbacks(),
-    dl.plugins.HiddenComponents(),
-    dl.plugins.LongCallback(long_callback_manager)
-])
+app = dash.Dash(
+    __name__,
+    plugins=[
+        dl.plugins.FlexibleCallbacks(),
+        dl.plugins.HiddenComponents(),
+        dl.plugins.LongCallback(long_callback_manager),
+    ],
+)
 
-app.layout = html.Div([
-    html.Div([
-        html.P(id="paragraph_id", children=["Button not clicked"]),
-        html.Progress(id="progress_bar"),
-    ]),
-    html.Button(id='button_id', children="Run Job!"),
-    html.Button(id='cancel_button_id', children="Cancel Running Job!"),
-])
+app.layout = html.Div(
+    [
+        html.Div(
+            [
+                html.P(id="paragraph_id", children=["Button not clicked"]),
+                html.Progress(id="progress_bar"),
+            ]
+        ),
+        html.Button(id="button_id", children="Run Job!"),
+        html.Button(id="cancel_button_id", children="Cancel Running Job!"),
+    ]
+)
 
 
 @app.long_callback(
@@ -47,8 +55,16 @@ app.layout = html.Div([
     running=[
         (dl.Output("button_id", "disabled"), True, False),
         (dl.Output("cancel_button_id", "disabled"), False, True),
-        (dl.Output("paragraph_id", "style"), {"visibility": "hidden"}, {"visibility": "visible"}),
-        (dl.Output("progress_bar", "style"), {"visibility": "visible"}, {"visibility": "hidden"}),
+        (
+            dl.Output("paragraph_id", "style"),
+            {"visibility": "hidden"},
+            {"visibility": "visible"},
+        ),
+        (
+            dl.Output("progress_bar", "style"),
+            {"visibility": "visible"},
+            {"visibility": "hidden"},
+        ),
     ],
     cancel=[dl.Input("cancel_button_id", "n_clicks")],
     progress=dl.Output("progress_bar", ("value", "max")),
