@@ -47,18 +47,16 @@ tpl = dl.templates.DbcSidebarTabs(
 
 @app.callback(
     args=dict(
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        year=tpl.slider_input(
-            years[0], years[-1], step=5, value=years[-1], label="Year"
-        ),
-        logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
+        year=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+        logs=tpl.new_checklist(
+            ["log(x)"], value="log(x)", label="Axis Scale", location="Scatter"
         ),
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(role="Scatter"),
-        tpl.graph_output(role="Histogram"),
+        tpl.new_graph(location="Scatter"),
+        tpl.new_graph(location="Histogram"),
     ],
     template=tpl,
 )

@@ -7,7 +7,7 @@ tpl = dl.templates.DbcCard(app, title="Simple App", columns=6)
 
 
 @app.callback(
-    tpl.button_input("Click Me", label="Button to click"),
+    tpl.new_button("Click Me", label="Button to click"),
     template=tpl,
 )
 def callback(n_clicks):

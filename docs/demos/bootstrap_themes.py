@@ -38,19 +38,17 @@ tpl = dl.templates.DbcSidebar(app, title="Dash Labs App", theme=css_url)
 
 @app.callback(
     args=dict(
-        size=tpl.dropdown_input(["pop", "gdpPercap", "lifeExp"], label="Size"),
-        color=tpl.dropdown_input(
+        size=tpl.new_dropdown(["pop", "gdpPercap", "lifeExp"], label="Size"),
+        color=tpl.new_dropdown(
             ["continent", "pop", "gdpPercap", "lifeExp"], label="Color"
         ),
-        figure_title=tpl.textbox_input("Life Expectency", label="Figure Title"),
-        year=tpl.slider_input(
-            years[0], years[-1], step=5, value=years[-1], label="Year"
-        ),
-        logs=tpl.checklist_input(
+        figure_title=tpl.new_textbox("Life Expectency", label="Figure Title"),
+        year=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+        logs=tpl.new_checklist(
             ["log(x)", "log(y)"], value="log(x)", label="Axis Scale"
         ),
     ),
-    output=tpl.graph_output(),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def callback(size, figure_title, year, color, logs):
@@ -83,4 +81,4 @@ def callback(size, figure_title, year, color, logs):
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)

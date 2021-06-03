@@ -8,16 +8,16 @@ app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 tpl = dl.templates.DbcSidebar(app, title="Dynamic Label Plugin", figure_template=True)
 phase_plugin = dl.component_plugins.DynamicLabelPlugin(
-    tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
+    tpl.new_slider(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
 
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function"),
         phase_inputs=phase_plugin.args,
     ),
-    output=[tpl.graph_output(), phase_plugin.output],
+    output=[tpl.new_graph(), phase_plugin.output],
     template=tpl,
 )
 def callback(fun, phase_inputs):

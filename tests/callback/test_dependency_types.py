@@ -162,9 +162,9 @@ def test_non_component_property_grouping(app, test_template):
     (
         input_picker,
         input_picker_dep,
-    ) = test_template.date_picker_range_input().extract_component()
+    ) = test_template.new_date_picker_range().extract_component()
 
-    output_picker, output_picker_dep = test_template.date_picker_range_input(
+    output_picker, output_picker_dep = test_template.new_date_picker_range(
         kind=dl.Output
     ).extract_component()
 

@@ -22,7 +22,7 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 
 @app.callback(
     args=[
-        tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
+        tpl.new_dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
         table_plugin.args,
     ],
     output=table_plugin.output,

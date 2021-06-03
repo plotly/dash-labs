@@ -390,14 +390,14 @@ year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
         continent=tpl.checklist_input(continents, value=continents, label="Continents"),
         year_args=year_label_plugin.args,
         logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="scatter"
+            ["log(x)"], value="log(x)", label="Axis Scale", location="scatter"
         ),
         table_inputs=table_plugin.args,
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(role="scatter"),
-        tpl.graph_output(role="hist"),
+        tpl.graph_output(location="scatter"),
+        tpl.graph_output(location="hist"),
         table_plugin.output,
         year_label_plugin.output,
         dl.Output(
@@ -409,7 +409,6 @@ year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
     template=tpl,
 )
 def callback(year_args, continent, logs, table_inputs, tab):
-
     # Get year value from plugin
     year = year_label_plugin.get_value(year_args)
     logs = logs or []
@@ -434,8 +433,8 @@ def callback(year_args, continent, logs, table_inputs, tab):
             log_x="log(x)" in logs,
             size_max=60,
         )
-        .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
-        .update_traces(marker_opacity=0.8)
+            .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
+            .update_traces(marker_opacity=0.8)
     )
 
     hist_fig = px.histogram(

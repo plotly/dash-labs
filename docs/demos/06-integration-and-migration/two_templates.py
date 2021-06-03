@@ -18,19 +18,19 @@ gapminder_tpl = dl.templates.DbcRow(app, figure_template=True)
 
 @app.callback(
     args=dict(
-        year=gapminder_tpl.slider_input(
+        year=gapminder_tpl.new_slider(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        continent=gapminder_tpl.checklist_input(
+        continent=gapminder_tpl.new_checklist(
             continents, value=continents, label="Continents"
         ),
-        logs=gapminder_tpl.checklist_input(
+        logs=gapminder_tpl.new_checklist(
             ["log(x)"],
             value="log(x)",
             label="Axis Scale",
         ),
     ),
-    output=gapminder_tpl.graph_output(),
+    output=gapminder_tpl.new_graph(),
     template=gapminder_tpl,
 )
 def gapminder_callback(year, continent, logs):
@@ -68,8 +68,8 @@ tips_tpl = dl.templates.DbcCard(app, figure_template=True)
 
 
 @app.callback(
-    args=tips_tpl.checklist_input(["No", "Yes"], value=["No", "Yes"], label="Smoker"),
-    output=tips_tpl.graph_output(),
+    args=tips_tpl.new_checklist(["No", "Yes"], value=["No", "Yes"], label="Smoker"),
+    output=tips_tpl.new_graph(),
     template=tips_tpl,
 )
 def tips_callback(smoker):

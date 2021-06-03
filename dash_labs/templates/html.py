@@ -8,6 +8,10 @@ class HtmlCard(BaseTemplate):
     card-like border.
     """
 
+    _valid_locations = ("bottom", "top")
+    _default_input_location = "bottom"
+    _default_output_location = "top"
+
     def __init__(self, app, title=None, width=None):
         super().__init__(app)
         self.title = title
@@ -19,9 +23,9 @@ class HtmlCard(BaseTemplate):
         if self.title:
             children.append(html.H2(self.title))
 
-        children.append(html.Div(self.get_containers("output")))
+        children.append(html.Div(self.get_containers("top")))
         children.append(html.Hr())
-        children.append(html.Div(self.get_containers("input")))
+        children.append(html.Div(self.get_containers("bottom")))
         layout = html.Div(
             style={
                 "width": self.width,

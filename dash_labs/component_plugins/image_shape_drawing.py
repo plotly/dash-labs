@@ -4,6 +4,7 @@ from dash_labs.templates import FlatDiv
 from .base import ComponentPlugin
 import plotly.graph_objects as go
 import dash
+from dash.development.base_component import Component
 
 
 class GreyscaleImageROI(ComponentPlugin):
@@ -19,6 +20,7 @@ class GreyscaleImageROI(ComponentPlugin):
         image_label=None,
         newshape=None,
         title=None,
+        location=Component.UNDEFINED,
         fig_update_callback=None,
     ):
         import plotly.express as px
@@ -50,11 +52,11 @@ class GreyscaleImageROI(ComponentPlugin):
         self.image_label = image_label
 
         # Initialize args component dependencies
-        args = template.graph_output(
+        args = template.new_graph(
             self.image_fig,
             component_property="relayoutData",
             kind=Input,
-            role="input",
+            location=location,
             id=self.image_graph_id,
             label=self.image_label,
         )

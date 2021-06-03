@@ -22,12 +22,14 @@ tpl = dl.templates.DbcCard(app, title="Simple App", columns=4)
 div = html.Div()
 button = html.Button(children="Click Me")
 
+
 @app.callback(dl.Output(div, "children"), dl.Input(button, "n_clicks"))
 def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
-tpl.add_component(button, label="Button to click", role="input")
-tpl.add_component(div, role="output")
+
+tpl.add_component(button, label="Button to click", location="input")
+tpl.add_component(div, location="output")
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -282,6 +284,7 @@ import plotly.express as px
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcSidebar(app, title="Dash Labs App")
 
+
 # import dash_core_components as dcc
 @app.callback(
     inputs=dict(
@@ -299,8 +302,10 @@ def function_browser(fun, figure_title, phase, amplitude):
         title_text=figure_title
     )
 
+
 # Add extra component to template
-tpl.add_component(dcc.Markdown(children="# First Group"), role="input", before="fun")
+tpl.add_component(dcc.Markdown(children="# First Group"), location="input",
+                  before="fun")
 
 tpl.add_component(
     dcc.Markdown(
@@ -309,20 +314,20 @@ tpl.add_component(
             "Specify the Phase and Amplitudue for the chosen function"
         ]
     ),
-    role="input",
+    location="input",
     before="phase",
 )
 
 tpl.add_component(
     dcc.Markdown(children=["# H2 Title\n", "Here is the *main* plot"]),
-    role="output",
+    location="output",
     before=0,
 )
 
 tpl.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
     component_property="children",
-    role="output",
+    location="output",
 )
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)

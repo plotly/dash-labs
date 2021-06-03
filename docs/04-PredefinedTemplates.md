@@ -270,6 +270,7 @@ tpl = dl.templates.DbcSidebarTabs(
     theme=css_url, figure_template=True
 )
 
+
 @app.callback(
     args=dict(
         continent=tpl.checklist_input(continents, value=continents, label="Continents"),
@@ -277,13 +278,13 @@ tpl = dl.templates.DbcSidebarTabs(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
         logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
+            ["log(x)"], value="log(x)", label="Axis Scale", location="Scatter"
         ),
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(role="Scatter"),
-        tpl.graph_output(role="Histogram"),
+        tpl.graph_output(location="Scatter"),
+        tpl.graph_output(location="Histogram"),
     ],
     template=tpl,
 )
@@ -308,8 +309,8 @@ def callback(year, continent, logs, tab):
             hover_name="country", log_x="log(x)" in logs,
             size_max=60,
         )
-        .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
-        .update_traces(marker_opacity=0.8)
+            .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
+            .update_traces(marker_opacity=0.8)
     )
 
     hist_fig = px.histogram(
@@ -319,6 +320,7 @@ def callback(year, continent, logs, tab):
     )
 
     return scatter_fig, hist_fig
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 

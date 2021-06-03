@@ -13,8 +13,8 @@ years = sorted(df.year.drop_duplicates())
 
 
 @app.callback(
-    args=tpl.slider_input(years[0], years[-1], step=5, value=years[-1], label="Year"),
-    output=tpl.graph_output(),
+    args=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def callback(year):

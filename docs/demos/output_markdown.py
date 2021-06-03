@@ -7,8 +7,8 @@ tpl = dl.templates.DbcSidebar(app, "App Title", sidebar_columns=6)
 
 
 @app.callback(
-    output=tpl.markdown_output(),
-    inputs=tpl.textarea_input(
+    output=tpl.new_markdown(),
+    args=tpl.new_textarea(
         "## Heading\n", opts=dict(style={"width": "100%", "height": 400})
     ),
     template=tpl,

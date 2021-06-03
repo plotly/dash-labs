@@ -53,7 +53,7 @@ tpl = dl.templates.DbcSidebarTabs(
 table_plugin = dl.component_plugins.DataTablePlugin(
     df.iloc[:0],
     sort_mode="single",
-    role="table",
+    location="table",
     page_size=15,
     serverside=False,
     filterable=True,
@@ -62,19 +62,17 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 
 @app.callback(
     args=dict(
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        year=tpl.slider_input(
-            years[0], years[-1], step=5, value=years[-1], label="Year"
-        ),
-        logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="scatter"
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
+        year=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+        logs=tpl.new_checklist(
+            ["log(x)"], value="log(x)", label="Axis Scale", location="scatter"
         ),
         table_inputs=table_plugin.args,
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(role="scatter"),
-        tpl.graph_output(role="hist"),
+        tpl.new_graph(location="scatter"),
+        tpl.new_graph(location="hist"),
         table_plugin.output,
     ],
     template=tpl,

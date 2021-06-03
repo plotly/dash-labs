@@ -11,10 +11,10 @@ tpl = dl.templates.dbc.DbcSidebar(app, title="Sample App")
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
-        figure_title=tpl.textbox_input("Initial Title", label="Figure Title"),
-        phase=tpl.slider_input(1, 10, label="Phase"),
-        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude"),
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function"),
+        figure_title=tpl.new_textbox("Initial Title", label="Figure Title"),
+        phase=tpl.new_slider(1, 10, label="Phase"),
+        amplitude=tpl.new_slider(1, 10, value=3, label="Amplitude"),
     ),
     template=tpl,
 )
@@ -27,7 +27,7 @@ def greet(fun, figure_title, phase, amplitude):
     )
 
 
-app.layout = dbc.Container(children=tpl.children)
+app.layout = dbc.Container(fluid=True, children=tpl.children)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

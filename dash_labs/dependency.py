@@ -24,7 +24,7 @@ class DashLabsDependency:
         component_id,
         component_property="value",
         label=Component.UNDEFINED,
-        role=Component.UNDEFINED,
+        location=Component.UNDEFINED,
         label_id=None,
     ):
         """
@@ -32,7 +32,7 @@ class DashLabsDependency:
         :param component_property: Grouping of component properties
         :param label: Template label for component
             (ignored if component_id is not a component)
-        :param role: Template role for component
+        :param location: Template location for component
             (ignored if component_id is not a component)
         :param label_id: Custom id to use for template label
             (ignored if component_id is not a component or label is not defined)
@@ -40,7 +40,7 @@ class DashLabsDependency:
         self.set_component_and_props(component_id, component_property)
         self.label = label
         self.label_id = label_id
-        self.role = role
+        self.location = location
 
     @property
     def id(self):
