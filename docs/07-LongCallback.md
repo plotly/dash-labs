@@ -2,13 +2,13 @@
 DashLabs introduces a new callback decorator called `@long_callback`. This decorator is designed to make it easier to create callback functions that take a long time to run, without locking up the Dash app or timing out.
 
 `@long_callback` is designed to support multiple backend executors.  Two backends are currently implemented:
- - FlaskCaching backend that runs callback logic in a separate process. This is the easiest backend to use for local development.
- - Celery backend that runs callback logic in a celery worker and returns results to the Dash app through RabbitMQ or Redis
+ - A [Flask-Caching](https://flask-caching.readthedocs.io/en/latest/) backend that runs callback logic in a separate process and stores the results in a Flask-Caching cache. This is the easiest backend to use for local development.
+ - A [Celery](https://docs.celeryproject.org/en/stable/getting-started/introduction.html) backend that runs callback logic in a celery worker and returns results to the Dash app through a Celery broker like RabbitMQ or Redis.
 
 The `@long_callback` decorator supports the same arguments as the normal `@callback` decorator, but also includes support for 3 additional arguments that will be discussion below: `running`, `cancel`, and `progress`.
 
-## Activating Long-callback 
-In Dash Labs, the long-callback functionality is activated using the `LongCallback` plugin.  To support multiple backends, the `LongCallback` plugin is, itself, configured with either a `FlaskCachingCallbackManager` or `CeleryCallbackManager` object.  Furthermore, in addition to the `LongCallback` plugin, the `FlexibleCallback` and `HiddenComponents` plugins must be enabled as well.  Here is an example of configuring an app to use the FlaskCaching backend.
+## Enabling long-callback support
+In Dash Labs, the `@long_callback` decorator is enabled using the `LongCallback` plugin.  To support multiple backends, the `LongCallback` plugin is, itself, configured with either a `FlaskCachingCallbackManager` or `CeleryCallbackManager` object.  Furthermore, in addition to the `LongCallback` plugin, the `FlexibleCallback` and `HiddenComponents` plugins must be enabled as well.  Here is an example of configuring an app to enable the `@long_callback` decorator using the Flask-Caching backend.
 
 ```python
 import dash
@@ -25,6 +25,11 @@ app = dash.Dash(__name__, plugins=[
     dl.plugins.HiddenComponents(),
     dl.plugins.LongCallback(long_callback_manager)
 ])
+```
+
+This configuration requires the `Flask-Caching` package which can be installed with:
+```
+$ pip install Flask-Caching
 ```
 
 ## Example 1: Simple background callback
@@ -73,9 +78,9 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/T7442iY.gif)
 
 ## Example 2: Disable button while callback is running
-In the previous example, there was no visual indication that the long callback was running. It was also possible to click the "Run Job!" button multiple times before the original job has the chance to complete.  This example addresses these shortcomings by disabling the button while the callback is running, and re-enabling it when the callback completes.
+In the previous example, there is no visual indication that the long callback was running. It is also possible to click the "Run Job!" button multiple times before the original job has the chance to complete.  This example addresses these shortcomings by disabling the button while the callback is running, and re-enabling it when the callback completes.
 
-This is accomplished using the `running` argument to `@long_callback`.  This argument accepts a `list` of 3-element tuples.  The first element of each tuple should be an `Output` dependency object referencing a property of a component in the app layout. The second elements is the values that the property should be set to while the callback is running, and the third element is the value the property should be set to when the callback completes.
+This is accomplished using the `running` argument to `@long_callback`.  This argument accepts a list of 3-element tuples.  The first element of each tuple should be an `Output` dependency object referencing a property of a component in the app layout. The second elements is the values that the property should be set to while the callback is running, and the third element is the value the property should be set to when the callback completes.
 
 This example uses `running` to set the `disabled` property of the button to `True` while the callback is running, and `False` when it completes.
 
