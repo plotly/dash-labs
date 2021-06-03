@@ -39,8 +39,8 @@ def iris(x, y):
 # from setting x and y to the same variable
 
 # Get the dropdown components that were created by parameterize
-x_component = tpl.roles["sidebar"]["x"].arg_component
-y_component = tpl.roles["sidebar"]["y"].arg_component
+x_component = tpl.locations["sidebar"]["x"].arg_component
+y_component = tpl.locations["sidebar"]["y"].arg_component
 
 
 # Define standalone function that computes what values to enable, reuse for both
@@ -61,9 +61,9 @@ app.callback(Output(y_component.id, "options"), [Input(x_component.id, "value")]
     filter_options
 )
 
-x_container = tpl.roles["sidebar"]["x"].container_component
-y_container = tpl.roles["sidebar"]["y"].container_component
-output_component = tpl.roles["main"][0].container_component
+x_container = tpl.locations["sidebar"]["x"].container_component
+y_container = tpl.locations["sidebar"]["y"].container_component
+output_component = tpl.locations["main"][0].container_component
 
 app.layout = html.Div(
     [

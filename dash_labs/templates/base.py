@@ -56,14 +56,14 @@ class BaseTemplate:
     _default_output_location = None
 
     def __init__(self, app):
-        self._roles = {location: OrderedDict() for location in self._valid_locations}
+        self._locations = {location: OrderedDict() for location in self._valid_locations}
 
         # Configure app props like CSS
         if app is not None:
             self._configure_app(app)
 
     @property
-    def roles(self):
+    def locations(self):
         """
         Dictionary from location to OrderedDict of ArgumentComponents instances.
 
@@ -72,7 +72,7 @@ class BaseTemplate:
 
         :return: dict from roles to OrderedDict of ArgumentComponents instances
         """
-        return self._roles
+        return self._locations
 
     @classmethod
     def build_argument_components(
@@ -172,8 +172,8 @@ class BaseTemplate:
             location=location,
         )
 
-        self._roles[location] = insert_into_ordered_dict(
-            odict=self._roles[location],
+        self._locations[location] = insert_into_ordered_dict(
+            odict=self._locations[location],
             value=arg_components,
             key=name,
             before=before,
@@ -196,7 +196,7 @@ class BaseTemplate:
 
         containers = []
         for location in locations:
-            for pc in self._roles.get(location, {}).values():
+            for pc in self._locations.get(location, {}).values():
                 containers.append(pc.container_component)
 
         return containers

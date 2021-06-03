@@ -56,7 +56,7 @@ def callback(fun, figure_title, phase, amplitude):
 
 
 # For html templates
-# app.layout = tpl.children
+# app.layout = html.Div(children=tpl.children)
 
 # For DDK templates
 # import dash_design_kit as ddk

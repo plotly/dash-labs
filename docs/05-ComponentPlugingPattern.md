@@ -77,9 +77,10 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     serverside=serverside, template=tpl
 )
 
+
 @app.callback(
     args=[
-        tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
+        tpl.new_dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
         table_plugin.args
     ],
     output=table_plugin.output,
@@ -91,6 +92,7 @@ def callback(gender, plugin_input):
     else:
         filtered_df = df
     return table_plugin.get_output_values(plugin_input, filtered_df)
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -108,54 +110,38 @@ import plotly.express as px
 import dash_labs as dl
 import dash_bootstrap_components as dbc
 import dash
-import plotly.io as pio
-
 
 df = px.data.tips()
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
-tpl = dl.templates.DbcSidebar(
-    app, title="Table Component Plugin", sidebar_columns=6, figure_template=True
-)
+tpl = dl.templates.DbcCard(app, title="Table Component Plugin", columns=8)
 
+# serverside = False
 serverside = True
 table_plugin = dl.component_plugins.DataTablePlugin(
     df=df,
     page_size=10,
-    template=tpl,
     sort_mode="single",
     filterable=True,
     serverside=serverside,
-    role="input"
+    template=tpl,
 )
-
 
 @app.callback(
     args=[
-        tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
+        tpl.new_dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
         table_plugin.args,
     ],
-    output=[table_plugin.output, tpl.graph_output()],
+    output=table_plugin.output,
     template=tpl,
 )
-def callback(gender, table_input):
+def callback(gender, plugin_input):
     if gender:
         filtered_df = df.query(f"sex == {repr(gender)}")
     else:
         filtered_df = df
+    return table_plugin.get_output_values(plugin_input, filtered_df)
 
-    dff = table_plugin.get_processed_dataframe(table_input, filtered_df)
-
-    colorway = pio.templates[pio.templates.default].layout.colorway
-    fig = px.scatter(
-        dff,
-        x="total_bill",
-        y="tip",
-        color="sex",
-        color_discrete_map={"Male": colorway[0], "Female": colorway[1]},
-    )
-
-    return [table_plugin.get_output_values(table_input, dff, preprocessed=True), fig]
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -165,7 +151,7 @@ if __name__ == "__main__":
 
 ![](https://i.imgur.com/yy6MQyB.gif)
 
-The `DataTablePlugin.get_processed_dataframe` method applies all serverside filtering and sorting to the input DataFrame, allowing the callback to use this data in a plotly express figure.  The example passes the preprocessed DataFrame, `dff`, to `get_output_values`. As a performance optimization, because we know that this DataFrame has already been preprocessed there is no nee for `get_output_values` to perform this preprocessing a second time.  Setting `preprocessed=True` tells `get_output_values` to skip the preprocessing step and display the input DataFrame as-is. 
+The `DataTablePlugin.get_processed_dataframe` method applies all serverside filtering and sorting to the input DataFrame, allowing the callback to use this data in a plotly express figure.  The example passes the preprocessed DataFrame, `dff`, to `get_output_values`. As a performance optimization, because we know that this DataFrame has already been preprocessed there is no need for `get_output_values` to perform this preprocessing a second time.  Setting `preprocessed=True` tells `get_output_values` to skip the preprocessing step and display the input DataFrame as-is. 
 
 ## Component plugin without callback definition
 The Component Plugin interface provides a convenience `install_callback` method that will automatically install a callback to enable the plugin's default behavior.  In the case of the `DataTablePlugin`, this shortcut can be used if the contents of the input `DataFrame` never need to change.
@@ -204,9 +190,9 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/66HhTr7.png)
 
 ## Component plugin example: Image shape drawing
-Here is a ComponentPlugin implementation of a shape drawing app similar to that described in https://dash.plotly.com/annotations. This Plugin displays a greyscale image in a plotly figure that is configured to draw rectangle shapes on drag.  The current rectangle can also be edited by clicking it to activate shape editing more.
+Here is a ComponentPlugin implementation of a shape drawing app similar to that described in https://dash.plotly.com/annotations. This Plugin displays a greyscale image in a plotly figure that is configured to draw rectangle shapes on drag.  The current rectangle can also be edited by clicking it to activate shape editing mode.
 
-The plugin proves helper methods to extract the current bounds (if any) of the active rectangle (`get_rect_bounds`), and to extract the selected slice of the original image (`get_image_slice`). The `get_output_values` method supports a `title` argument that can be used to add a custom title to the resulting figure.
+The plugin provides helper methods to extract the current bounds (if any) of the active rectangle (`get_rect_bounds`), and to extract the selected slice of the original image (`get_image_slice`). The `get_output_values` method supports a `title` argument that can be used to add a custom title to the resulting figure.
  
 Here is an example that simply sets the title to the coordinates of the current rectangle bounds
 
@@ -223,7 +209,6 @@ img = data.camera()
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 tpl = dl.templates.DbcCard(app, title="Image Intensity Explorer", columns=4)
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
-
 
 @app.callback(args=[img_plugin.args], output=img_plugin.output, template=tpl)
 def callback(inputs_value):
@@ -262,28 +247,26 @@ tpl = dl.templates.DbcSidebar(
 
 img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bounds:")
 
-
 @app.callback(
-    args=[img_plugin.args], output=[img_plugin.output, tpl.graph_output()], template=tpl
+    args=[img_plugin.args], output=[img_plugin.output, tpl.new_graph()], template=tpl
 )
 def callback(inputs_value):
     bounds = img_plugin.get_rect_bounds(inputs_value)
     img_slice = img_plugin.get_image_slice(inputs_value)
+    hist_figure = {}
     if img_slice is not None:
-        hist_figure = (
-            px.histogram(img_slice.ravel())
-            .update_layout(title_text="Intensity", showlegend=False)
-            .update_xaxes(range=[0, 255])
-        )
-    else:
-        hist_figure = {}
+        raveled_imge_slice = img_slice.ravel()
+        if len(raveled_imge_slice) > 0:
+            hist_figure = (
+                px.histogram(raveled_imge_slice)
+                .update_layout(title_text="Intensity", showlegend=False)
+                .update_xaxes(range=[0, 255])
+            )
 
     title = "Bounds: {}".format(bounds)
     return [img_plugin.get_output_values(inputs_value, title=title), hist_figure]
 
-
 app.layout = dbc.Container(fluid=True, children=tpl.children)
-
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -307,15 +290,15 @@ app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
 tpl = dl.templates.DbcSidebar(app, title="Dynamic Label Plugin", figure_template=True)
 phase_plugin = dl.component_plugins.DynamicLabelPlugin(
-    tpl.slider_input(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
+    tpl.new_slider(1, 10, value=4, label="Phase: {:.1f}", tooltip=False), template=tpl
 )
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function"),
         phase_inputs=phase_plugin.args,
     ),
-    output=[tpl.graph_output(), phase_plugin.output],
+    output=[tpl.new_graph(), phase_plugin.output],
     template=tpl,
 )
 def callback(fun, phase_inputs):
@@ -324,6 +307,7 @@ def callback(fun, phase_inputs):
     fig = px.line(x=xs, y=getattr(np, fun)(xs + phase), title="Function Value")
 
     return [fig, phase_plugin.get_output_values(phase_inputs)]
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -367,14 +351,14 @@ tpl = dl.templates.DbcSidebarTabs(
 table_plugin = dl.component_plugins.DataTablePlugin(
     df.iloc[:0],
     sort_mode="single",
-    role="table",
+    location="table",
     page_size=15,
     serverside=True,
     filterable=True,
 )
 
 year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
-    tpl.slider_input(
+    tpl.new_slider(
         years[0],
         years[-1],
         step=5,
@@ -384,31 +368,31 @@ year_label_plugin = dl.component_plugins.DynamicLabelPlugin(
     )
 )
 
-
 @app.callback(
     args=dict(
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
         year_args=year_label_plugin.args,
-        logs=tpl.checklist_input(
+        logs=tpl.new_checklist(
             ["log(x)"], value="log(x)", label="Axis Scale", location="scatter"
         ),
         table_inputs=table_plugin.args,
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(location="scatter"),
-        tpl.graph_output(location="hist"),
+        tpl.new_graph(location="scatter"),
+        tpl.new_graph(location="hist"),
         table_plugin.output,
         year_label_plugin.output,
         dl.Output(
             dbc.Label(children="Current Tab: ", className="h5"),
             "children",
-            role="input",
+            location="sidebar",
         ),
     ],
     template=tpl,
 )
 def callback(year_args, continent, logs, table_inputs, tab):
+
     # Get year value from plugin
     year = year_label_plugin.get_value(year_args)
     logs = logs or []
@@ -433,8 +417,8 @@ def callback(year_args, continent, logs, table_inputs, tab):
             log_x="log(x)" in logs,
             size_max=60,
         )
-            .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
-            .update_traces(marker_opacity=0.8)
+        .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
+        .update_traces(marker_opacity=0.8)
     )
 
     hist_fig = px.histogram(
@@ -450,7 +434,6 @@ def callback(year_args, continent, logs, table_inputs, tab):
         year_label_plugin.get_output_values(year_args),
         "Current Tab: " + tabs[tab],
     )
-
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 

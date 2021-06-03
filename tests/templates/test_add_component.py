@@ -10,9 +10,9 @@ def test_add_single_component_defaults(test_template):
     arg_comps = test_template.add_component(button, "input")
 
     # Check inserted as input role
-    assert len(test_template.roles["input"]) == 1
-    assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is arg_comps
+    assert len(test_template.locations["input"]) == 1
+    assert len(test_template.locations["output"]) == 0
+    assert test_template.locations["input"][0] is arg_comps
 
     # Check ParameterComponent properties
     assert arg_comps.arg_component is button
@@ -42,9 +42,9 @@ def test_add_component_options(test_template):
     )
 
     # Check inserted as input role
-    assert len(test_template.roles["input"]) == 1
-    assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is arg_comps1
+    assert len(test_template.locations["input"]) == 1
+    assert len(test_template.locations["output"]) == 0
+    assert test_template.locations["input"][0] is arg_comps1
 
     # Check ParameterComponent properties
     assert arg_comps1.arg_component is button1
@@ -97,14 +97,14 @@ def test_add_component_options(test_template):
     ]
 
     # Check inserted as input role
-    assert len(test_template.roles["input"]) == 3
-    assert len(test_template.roles["output"]) == 0
-    assert test_template.roles["input"][0] is arg_comps1
-    assert test_template.roles["input"]["button2_arg"] is arg_comps2
-    assert test_template.roles["input"][2] is arg_comps3
+    assert len(test_template.locations["input"]) == 3
+    assert len(test_template.locations["output"]) == 0
+    assert test_template.locations["input"][0] is arg_comps1
+    assert test_template.locations["input"]["button2_arg"] is arg_comps2
+    assert test_template.locations["input"][2] is arg_comps3
 
     # Check order of values
-    assert list(test_template.roles["input"]) == [0, "button2_arg", 2]
+    assert list(test_template.locations["input"]) == [0, "button2_arg", 2]
 
     # Check layout generation
     check_layout(test_template)
@@ -123,12 +123,12 @@ def test_add_components_by_role(test_template):
     pc4 = test_template.add_component(button4, "output", name="button4")
 
     # Check input / output keys
-    assert list(test_template.roles["input"]) == ["button1", 1]
-    assert list(test_template.roles["output"]) == [0, "button4"]
+    assert list(test_template.locations["input"]) == ["button1", 1]
+    assert list(test_template.locations["output"]) == [0, "button4"]
 
     # Check values
-    assert list(test_template.roles["input"].values()) == [pc1, pc3]
-    assert list(test_template.roles["output"].values()) == [pc2, pc4]
+    assert list(test_template.locations["input"].values()) == [pc1, pc3]
+    assert list(test_template.locations["output"].values()) == [pc2, pc4]
 
     # Check layout generation
     check_layout(test_template)
@@ -143,9 +143,9 @@ def test_add_by_custom_role(test_template):
     pc1 = test_template.add_component(button1, "input")
     pc2 = test_template.add_component(button2, "output")
     pc3 = test_template.add_component(button3, "custom")
-    assert list(test_template.roles["input"].values()) == [pc1]
-    assert list(test_template.roles["output"].values()) == [pc2]
-    assert list(test_template.roles["custom"].values()) == [pc3]
+    assert list(test_template.locations["input"].values()) == [pc1]
+    assert list(test_template.locations["output"].values()) == [pc2]
+    assert list(test_template.locations["custom"].values()) == [pc3]
 
     # Check validation when trying to add by unsupported custom role
     with pytest.raises(ValueError, match="bogus"):
@@ -163,7 +163,7 @@ def test_add_by_index_position(test_template):
     pc1 = test_template.add_component(button1, "output", name="arg1")
     pc3 = test_template.add_component(button3, "output")
     pc2 = test_template.add_component(button2, "output", name="arg2", before=1)
-    assert list(test_template.roles["output"].values()) == [pc1, pc2, pc3]
+    assert list(test_template.locations["output"].values()) == [pc1, pc2, pc3]
 
     # Check layout generation
     check_layout(test_template)
@@ -177,7 +177,7 @@ def test_add_by_name_position(test_template):
     pc1 = test_template.add_component(button1, "output", name="arg1")
     pc3 = test_template.add_component(button3, "output")
     pc2 = test_template.add_component(button2, "output", name="arg2", after="arg1")
-    assert list(test_template.roles["output"].values()) == [pc1, pc2, pc3]
+    assert list(test_template.locations["output"].values()) == [pc1, pc2, pc3]
 
     # Check layout generation
     check_layout(test_template)
