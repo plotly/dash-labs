@@ -15,7 +15,7 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "cerulean"
 # theme_name = "cosmo"
 # theme_name = "cyborg"
-# theme_name = "darkly"
+theme_name = "darkly"
 # theme_name = "flatly"
 # theme_name = "journal"
 # theme_name = "litera"
@@ -34,7 +34,7 @@ continents = list(df.continent.drop_duplicates())
 # theme_name = "united"
 # theme_name = "yeti"
 
-# css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
+css_url = f"https://bootswatch.com/4/{theme_name}/bootstrap.css"
 # Or, use local file path to assets folder
 # css_url = "assets/custom_bootstrap.css"
 
@@ -44,8 +44,7 @@ tabs = dict(scatter="Scatter", hist="Histogram", table="Table")
 tpl = dl.templates.DbcSidebarTabs(
     app,
     tabs,
-    # title=f"Dash Labs - {theme_name.title()} Theme",
-    title=f"Dash Labs - Default Theme",
+    title=f"Dash Labs - {theme_name.title()} Theme",
     figure_template=True,
 )
 
