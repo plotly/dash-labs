@@ -16,8 +16,8 @@ def callback(n_clicks):
     return "Clicked {} times".format(n_clicks)
 
 
-tpl.add_component(button, label="Button to click", role="input")
-tpl.add_component(div, role="output")
+tpl.add_component(button, label="Button to click", location="bottom")
+tpl.add_component(div, location="top")
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 

@@ -18,7 +18,7 @@ img_plugin = dl.component_plugins.GreyscaleImageROI(img, template=tpl, title="Bo
 
 
 @app.callback(
-    args=[img_plugin.args], output=[img_plugin.output, tpl.graph_output()], template=tpl
+    args=[img_plugin.args], output=[img_plugin.output, tpl.new_graph()], template=tpl
 )
 def callback(inputs_value):
     bounds = img_plugin.get_rect_bounds(inputs_value)

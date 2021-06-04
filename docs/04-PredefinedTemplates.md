@@ -1,7 +1,7 @@
 # Predefined templates
 This section describes the templates that are provided with Dash Labs.
 
-Here is a full example, specifying the `FlatDiv` template.  The following examples will only contain code for the template declaration and `app.layout` specification lines.
+Here is a full example, specifying the `FlatDiv` template.  The following examples will only describe code for the template declaration and `app.layout` specification lines.
 
 [demos/all_templates.py](./demos/all_templates.py)
 
@@ -13,18 +13,17 @@ import plotly.express as px
 
 app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
 
-# Make template
 tpl = dl.templates.FlatDiv(app)
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
-        figure_title=tpl.textbox_input("Initial Title", label="Figure Title"),
-        phase=tpl.slider_input(1, 10, label="Phase"),
-        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude"),
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function"),
+        figure_title=tpl.new_textbox("Initial Title", label="Figure Title"),
+        phase=tpl.new_slider(1, 10, label="Phase"),
+        amplitude=tpl.new_slider(1, 10, value=3, label="Amplitude"),
     ),
-    output=tpl.graph_output(),
-    template=tpl
+    output=tpl.new_graph(),
+    template=tpl,
 )
 def callback(fun, figure_title, phase, amplitude):
     xs = np.linspace(-10, 10, 100)
@@ -35,14 +34,7 @@ def callback(fun, figure_title, phase, amplitude):
     y = np_fn(xs + phase) * amplitude
     return px.line(x=x, y=y).update_layout(title_text=figure_title)
 
-
-# Make app layout
-import dash_html_components as html
-app.layout = html.Div(children=tpl.children)
-
-# For DDK templates
-import dash_design_kit as ddk
-app.layout = ddk.App(children=tpl.children)
+app.layout = tpl.children
 
 if __name__ == "__main__":
     app.run_server(debug=True)
@@ -189,7 +181,7 @@ app.layout = ddk.App(children=tpl.children)
 All of the `Dbc*` components can be themed using the Bootstrap themeing system. Simply pass the URL of a bootstrap theme css file as the `theme` argument of the template. Check out https://www.bootstrapcdn.com/bootswatch/ to browse available templates.
 
 #### Bootstrap figure theming
-Templates based on Dash Bootstrap Components have the ability to dynamically generate a plotly.py figure template from the bootstrap CSS theme file. This is enabled by setting `figure_template=True` in the constructor of a Dash Bootstrap Components template. 
+Templates based on Dash Bootstrap Components have the ability to dynamically generate a plotly.py [figure template](https://plotly.com/python/templates/) from the bootstrap CSS theme file. This is enabled by setting `figure_template=True` in the constructor of a Dash Bootstrap Components template. 
 
 
 ```python
@@ -235,11 +227,11 @@ app.layout = ddk.App(theme=theme, children=tpl.children)
 ## Sidebar Tabs Templates
 Dash Labs provides a more advanced template style that support displaying callback outputs across a collection of tabs.  These are `DbcSidebarTabs` and `DdkSidebarTabs` which use the Dash Bootstrap Components and Dash Design Kit libraries respectively.
 
-These template have a required `tabs` argument that should be set to either:
-  1. A list of tab titles. In this case the tab values will match the tab titles.
-  2. A dict from tab values to tab titles.
+These template have a required `tab_locations` argument that should be set to either:
+  1. A list of tab titles. In this case the tab location names will match the tab titles.
+  2. A dict from tab locations names to tab titles.
 
-Each tab value becomes a valid template `role`, making it possible to associate callback input and/or output components with individual tabs.
+Each tab value becomes a valid template `location`, making it possible to associate callback input and/or output components with individual tabs.
 
 These templates also provide a `tab_input` method that returns an `dl.Input` dependency associated with the active tab value.  This can be used to pass the active tab value into the callback function.
 
@@ -270,20 +262,21 @@ tpl = dl.templates.DbcSidebarTabs(
     theme=css_url, figure_template=True
 )
 
+
 @app.callback(
     args=dict(
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        year=tpl.slider_input(
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
+        year=tpl.new_slider(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale", role="Scatter"
+        logs=tpl.new_checklist(
+            ["log(x)"], value="log(x)", label="Axis Scale", location="Scatter"
         ),
         tab=tpl.tab_input(),
     ),
     output=[
-        tpl.graph_output(role="Scatter"),
-        tpl.graph_output(role="Histogram"),
+        tpl.new_graph(location="Scatter"),
+        tpl.new_graph(location="Histogram"),
     ],
     template=tpl,
 )
@@ -308,8 +301,8 @@ def callback(year, continent, logs, tab):
             hover_name="country", log_x="log(x)" in logs,
             size_max=60,
         )
-        .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
-        .update_traces(marker_opacity=0.8)
+            .update_layout(title_text=title, margin=dict(l=0, r=0, b=0))
+            .update_traces(marker_opacity=0.8)
     )
 
     hist_fig = px.histogram(
@@ -319,6 +312,7 @@ def callback(year, continent, logs, tab):
     )
 
     return scatter_fig, hist_fig
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -332,9 +326,9 @@ if __name__ == "__main__":
 Custom templates can be created by subclassing the `dl.template.base.BaseTemplate` class. Or, for a custom Bootstrap Components template, subclass `dl.teamplates.dbc.BaseDbcTemplate`. Similarly, to create a custom DDK template, subclass `dl.templates.ddk.BaseDdkTemplate`.
 
 Overriding a template may involve:
- 1. Customizing the components that are constructed by `tp.dropdown_input`, `tp.graph_output`, etc.
+ 1. Customizing the components that are constructed by `tp.new_dropdown`, `tp.new_graph`, etc.
  2. Specifying the representation of component labels.
  3. Specifying how a component and label are group together into a container.
- 4. Specifying how the input and output containers created in (3) are combined into a single layout container
+ 4. Specifying how the input and output containers created in (3) are combined into a single layout container.
  5. Providing custom inline CSS which gets inserted into `index.html`.
- 6. Providing custom roles (in addition to `"input"` and `"output"`).
+ 6. Providing custom locations.

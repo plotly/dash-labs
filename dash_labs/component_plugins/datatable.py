@@ -4,6 +4,7 @@ from dash_labs.dependency import Output, Input
 from dash_labs.util import build_id, filter_kwargs
 from .base import ComponentPlugin
 from dash_labs.templates import FlatDiv
+from dash.development.base_component import Component
 
 
 operators = [
@@ -32,7 +33,7 @@ class DataTablePlugin(ComponentPlugin):
         filterable=False,
         serverside=False,
         template=None,
-        role="output",
+        location=Component.UNDEFINED,
     ):
         """
 
@@ -53,7 +54,7 @@ class DataTablePlugin(ComponentPlugin):
             are sent to the client at startup and paging/sorting/filtering
             operations do not trigger a Python callback.
         :param template: Template to use to construct DataTable
-        :param role: Template role that should be assigned to the constructed DataTable
+        :param location: Template location that should be assigned to the constructed DataTable
         """
         if template is None:
             template = FlatDiv(None)
@@ -64,7 +65,7 @@ class DataTablePlugin(ComponentPlugin):
         self.page_size = page_size
         self.sort_mode = sort_mode
         self.filterable = filterable
-        self.role = role
+        self.location = location
 
         self.serverside = serverside
         self.page_count = self._compute_page_count(df)
@@ -201,7 +202,7 @@ class DataTablePlugin(ComponentPlugin):
                 columns="columns",
                 page_count="page_count",
             ),
-            role=self.role,
+            location=self.location,
         )
         return result
 
@@ -238,7 +239,7 @@ class DataTablePlugin(ComponentPlugin):
                 )
             ),
             component_property=dict(data="data", columns="columns"),
-            role=self.role,
+            location=self.location,
         )
 
     def _build_clientside_result(self, df):

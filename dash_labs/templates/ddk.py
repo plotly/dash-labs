@@ -39,7 +39,7 @@ class BaseDDKTemplate(BaseTemplate):
         super(BaseDDKTemplate, self).__init__(app)
 
     @classmethod
-    def build_labeled_component(cls, component, label, label_id=None, role=None):
+    def build_labeled_component(cls, component, label, label_id=None, location=None):
         ddk = import_ddk()
 
         # Subclass could use bootstrap or ddk
@@ -53,7 +53,7 @@ class BaseDDKTemplate(BaseTemplate):
         return container, "children", label_component, label_property
 
     @classmethod
-    def build_containered_component(cls, component, role=None):
+    def build_containered_component(cls, component, location=None):
         ddk = import_ddk()
 
         # Subclass could use bootstrap or ddk
@@ -76,9 +76,18 @@ class BaseDDKTemplate(BaseTemplate):
 
 
 class DdkCard(BaseDDKTemplate):
+
+    _valid_locations = ("bottom", "top")
+    _default_input_location = "bottom"
+    _default_output_location = "top"
+
     def __init__(self, app, title=None, width=None, height=None, **kwargs):
         """
         Template that places all components in a single card
+
+        Supported template locations:
+          - "bottom": Bottom region of the card (default for Input components)
+          - "top": Top region of the card (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Card title
@@ -100,11 +109,11 @@ class DdkCard(BaseDDKTemplate):
 
         card_children.append(
             html.Div(
-                style={"padding": 20}, children=html.Div(self.get_containers("output"))
+                style={"padding": 20}, children=html.Div(self.get_containers("top"))
             )
         )
         card_children.append(html.Hr(style={"width": "100%", "margin": "auto"}))
-        card_children.extend(self.get_containers("input"))
+        card_children.extend(self.get_containers("bottom"))
 
         layout = ddk.ControlCard(
             children=card_children,
@@ -115,48 +124,66 @@ class DdkCard(BaseDDKTemplate):
 
 
 class DdkRow(BaseDDKTemplate):
-    def __init__(self, app, title=None, input_width=30):
+
+    _valid_locations = ("left", "right")
+    _default_input_location = "left"
+    _default_output_location = "right"
+
+    def __init__(self, app, title=None, left_width=30):
         """
-        Template that places inputs and outputs in separate cards, arranged in a row
+        Template that places components in two cards, arranged in a row
+
+        Supported template locations:
+          - "left": Left card (default for Input components)
+          - "right": Right card (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Input card title
-        :param input_width: Input width proportion (out of 100)
+        :param left_width: Input width proportion (out of 100)
         """
         self.title = title
-        self.input_width = input_width
+        self.left_width = left_width
         super().__init__(app)
 
     def _perform_layout(self):
         ddk = import_ddk()
 
         # Input card
-        input_card = ddk.ControlCard(
-            children=self.get_containers("input"),
-            width=self.input_width,
+        left_card = ddk.ControlCard(
+            children=self.get_containers("left"),
+            width=self.left_width,
         )
 
-        output_card_children = []
+        right_card_children = []
         if self.title is not None:
-            output_card_children.append(ddk.CardHeader(title=self.title))
-        output_card_children.extend(self.get_containers("output"))
+            right_card_children.append(ddk.CardHeader(title=self.title))
+        right_card_children.extend(self.get_containers("right"))
 
         output_card = ddk.ControlCard(
-            children=output_card_children,
-            width=100 - self.input_width,
+            children=right_card_children,
+            width=100 - self.left_width,
         )
 
-        row_children = [input_card, output_card]
+        row_children = [left_card, output_card]
         layout = ddk.Row(row_children)
 
         return layout
 
 
 class DdkSidebar(BaseDDKTemplate):
+
+    _valid_locations = ("sidebar", "main")
+    _default_input_location = "sidebar"
+    _default_output_location = "main"
+
     def __init__(self, app, title=None, sidebar_width=300):
         """
-        Template that includes a title bar, places inputs in a sidebar, and outputs in
-        the main area of the app.
+        Template that includes a title bar, a sidebar, and a responsive card in the
+        main area of the app.
+
+        Supported template locations:
+          - "sidebar": Left sidebar (default for Input components)
+          - "main": Main area to the right of sidebar (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Title bar title string
@@ -178,7 +205,7 @@ class DdkSidebar(BaseDDKTemplate):
         sidebar_children = []
         sidebar_children.append(
             ddk.ControlCard(
-                children=self.get_containers("input"),
+                children=self.get_containers("sidebar"),
             )
         )
 
@@ -189,10 +216,10 @@ class DdkSidebar(BaseDDKTemplate):
         )
         children.append(sidebar)
 
-        output_card_children = []
-        output_card_children.extend(self.get_containers("output"))
+        main_card_children = []
+        main_card_children.extend(self.get_containers("main"))
 
-        output_card = ddk.ControlCard(output_card_children)
+        output_card = ddk.ControlCard(main_card_children)
 
         sidebar_companion = ddk.SidebarCompanion(output_card)
         children.append(sidebar_companion)
@@ -201,16 +228,24 @@ class DdkSidebar(BaseDDKTemplate):
 
 
 class DdkSidebarTabs(BaseDDKTemplate):
-    def __init__(self, app, tab_roles, title=None, sidebar_width=300, **kwargs):
+    _default_input_location = "sidebar"
+
+    def __init__(self, app, tab_locations, title=None, sidebar_width=300, **kwargs):
         """
-        Template that includes a title bar, places inputs in a sidebar, and outputs in
-        a set of tabs
+        Template that includes a title bar, a sidebar, and a set of tabs in the main
+        area of the app.
+
+        Supported template locations:
+          - "sidebar": Left sidebar (default for Input components)
+          - list of locations provided as the tab_locations argument to the template
+            constructor. Each location corresponds to a separate tab.
+            Note: there is no default location for Output components.
 
         :param app: dash.Dash app instance
-        :param tab_roles: List or dict of strings where each string specifies the name
-            of the role corresponding to a single tab. If a list, the role name is
+        :param tab_locations: List or dict of strings where each string specifies the name
+            of the location corresponding to a single tab. If a list, the location name is
             also be used as the title of the corresponding tab. If a dict, the keys
-            become the roles and the values become the tab labels
+            become the locations and the values become the tab labels
         :param title: Title bar title string
         :param sidebar_width: Sidebar width in pixels or as a css string
         """
@@ -218,13 +253,15 @@ class DdkSidebarTabs(BaseDDKTemplate):
 
         self.title = title
         self.sidebar_width = sidebar_width
-        if isinstance(tab_roles, (list, tuple)):
-            self.tab_roles = OrderedDict([(role, role) for role in tab_roles])
+        if isinstance(tab_locations, (list, tuple)):
+            self.tab_location = OrderedDict(
+                [(location, location) for location in tab_locations]
+            )
         else:
-            self.tab_roles = OrderedDict(tab_roles)
+            self.tab_location = OrderedDict(tab_locations)
 
-        self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
-        self._tabs = dcc.Tabs(id=build_id("tabs"), value=self._valid_roles[2])
+        self._valid_locations = ["sidebar"] + list(self.tab_location.keys())
+        self._tabs = dcc.Tabs(id=build_id("tabs"), value=self._valid_locations[2])
 
         super().__init__(app)
 
@@ -241,7 +278,7 @@ class DdkSidebarTabs(BaseDDKTemplate):
         sidebar_children = []
         sidebar_children.append(
             ddk.ControlCard(
-                children=self.get_containers("input"),
+                children=self.get_containers("sidebar"),
             )
         )
 
@@ -254,11 +291,11 @@ class DdkSidebarTabs(BaseDDKTemplate):
 
         self._tabs.children = [
             dcc.Tab(
-                value=role,
+                value=location,
                 label=title,
-                children=ddk.ControlCard(list(reversed(self.get_containers(role)))),
+                children=ddk.ControlCard(list(reversed(self.get_containers(location)))),
             )
-            for role, title in self.tab_roles.items()
+            for location, title in self.tab_location.items()
         ]
 
         sidebar_companion = ddk.SidebarCompanion(self._tabs)

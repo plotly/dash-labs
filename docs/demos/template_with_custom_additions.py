@@ -11,12 +11,12 @@ tpl = dl.templates.DbcSidebar(app, title="Dash Labs App")
 # import dash_core_components as dcc
 @app.callback(
     inputs=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function"),
-        figure_title=tpl.textbox_input("Initial Title", label="Figure Title"),
-        phase=tpl.slider_input(1, 10, value=3, label="Phase"),
-        amplitude=tpl.slider_input(1, 10, value=4, label="Amplitude"),
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function"),
+        figure_title=tpl.new_textbox("Initial Title", label="Figure Title"),
+        phase=tpl.new_slider(1, 10, value=3, label="Phase"),
+        amplitude=tpl.new_slider(1, 10, value=4, label="Amplitude"),
     ),
-    output=tpl.graph_output(),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def function_browser(fun, figure_title, phase, amplitude):
@@ -27,7 +27,9 @@ def function_browser(fun, figure_title, phase, amplitude):
 
 
 # Add extra component to template
-tpl.add_component(dcc.Markdown(children="# First Group"), role="input", before="fun")
+tpl.add_component(
+    dcc.Markdown(children="# First Group"), location="sidebar", before="fun"
+)
 
 tpl.add_component(
     dcc.Markdown(
@@ -36,21 +38,21 @@ tpl.add_component(
             "Specify the Phase and Amplitudue for the chosen function"
         ]
     ),
-    role="input",
+    location="sidebar",
     before="phase",
 )
 
 
 tpl.add_component(
     dcc.Markdown(children=["# H2 Title\n", "Here is the *main* plot"]),
-    role="output",
+    location="main",
     before=0,
 )
 
 tpl.add_component(
     dcc.Link("Made with Dash", href="https://dash.plotly.com/"),
     component_property="children",
-    role="output",
+    location="main",
 )
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)

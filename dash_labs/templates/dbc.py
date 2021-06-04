@@ -141,7 +141,7 @@ class BaseDbcTemplate(BaseTemplate):
 
     # Methods designed to be overridden by subclasses
     @classmethod
-    def build_labeled_component(cls, component, label, label_id=None, role=None):
+    def build_labeled_component(cls, component, label, label_id=None, location=None):
         import dash_bootstrap_components as dbc
 
         if not label_id:
@@ -160,7 +160,7 @@ class BaseDbcTemplate(BaseTemplate):
         return container, "children", label_component, "children"
 
     @classmethod
-    def build_containered_component(cls, component, role=None):
+    def build_containered_component(cls, component, location=None):
         import dash_bootstrap_components as dbc
 
         container_id = build_id("container")
@@ -208,16 +208,16 @@ class BaseDbcTemplate(BaseTemplate):
 
     # component dependency constructors
     @classmethod
-    def button_input(
+    def new_button(
         cls,
         children,
         color="secondary",
         size="md",
         outline=False,
         label=Component.UNDEFINED,
-        role=Component.UNDEFINED,
-        component_property="n_clicks",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="n_clicks",
         id=None,
         opts=None,
     ):
@@ -230,19 +230,19 @@ class BaseDbcTemplate(BaseTemplate):
             ),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def dropdown_input(
+    def new_dropdown(
         cls,
         options,
         value=Component.UNDEFINED,
         clearable=False,
         label=Component.UNDEFINED,
-        role=Component.UNDEFINED,
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -266,17 +266,17 @@ class BaseDbcTemplate(BaseTemplate):
             dbc.Select(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def textbox_input(
+    def new_textbox(
         cls,
         value=None,
         label=Component.UNDEFINED,
-        role=Component.UNDEFINED,
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -290,18 +290,18 @@ class BaseDbcTemplate(BaseTemplate):
             dbc.Input(value=value, **filter_kwargs(opts, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def checklist_input(
+    def new_checklist(
         cls,
         options,
         value=None,
         label=Component.UNDEFINED,
-        role=Component.UNDEFINED,
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -316,11 +316,16 @@ class BaseDbcTemplate(BaseTemplate):
             dbc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
 
 class DbcCard(BaseDbcTemplate):
+
+    _valid_locations = ("bottom", "top")
+    _default_input_location = "bottom"
+    _default_output_location = "top"
+
     def __init__(
         self,
         app,
@@ -333,6 +338,10 @@ class DbcCard(BaseDbcTemplate):
     ):
         """
         Template that places all components in a single card
+
+        Supported template locations:
+          - "bottom": Bottom region of the card (default for Input components)
+          - "top": Top region of the card (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Card title
@@ -358,12 +367,12 @@ class DbcCard(BaseDbcTemplate):
             card_children.append(dbc.CardHeader(self.title, className="h4"))
 
         card_body_children = []
-        output_containers = self.get_containers("output")
-        input_containers = self.get_containers("input")
-        card_body_children.extend(output_containers)
-        if output_containers and input_containers:
+        top_containers = self.get_containers("top")
+        bottom_containers = self.get_containers("bottom")
+        card_body_children.extend(top_containers)
+        if top_containers and bottom_containers:
             card_body_children.append(html.Hr())
-        card_body_children.extend(input_containers)
+        card_body_children.extend(bottom_containers)
 
         card_children.append(dbc.CardBody(children=card_body_children))
 
@@ -388,47 +397,56 @@ class DbcCard(BaseDbcTemplate):
 
 
 class DbcRow(BaseDbcTemplate):
+
+    _valid_locations = ("left", "right")
+    _default_input_location = "left"
+    _default_output_location = "right"
+
     def __init__(
         self,
         app,
         title=None,
         row_height=None,
-        input_cols=4,
-        min_input_width="300px",
+        left_cols=4,
+        min_left_width="300px",
         margin="10px 0 10px 0",
         **kwargs,
     ):
         """
-        Template that places inputs and outputs in separate cards, arranged in a row
+        Template that places components in two cards, arranged in a row
+
+        Supported template locations:
+          - "left": Left card (default for Input components)
+          - "right": Right card (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Input card title
-        :param input_cols: Responsive width of input card in columns (out of 12 columns)
-        :param min_input_width: Minimum input card width in pixels
+        :param left_cols: Responsive width of left card in columns (out of 12 columns)
+        :param min_left_width: Minimum width (in pixels) of left card
         :param margin: CSS margin around row
         :param row_height: Fixed height of cards in the row in pixels.
-            If None (defualt) each card will independently determine height based on
+            If None (default) each card will independently determine height based on
             contents.
         """
         self.title = title
         self.row_height = row_height
-        self.input_cols = input_cols
-        self.min_input_width = min_input_width
+        self.left_cols = left_cols
+        self.min_left_width = min_left_width
         self.margin = margin
         super().__init__(app, **kwargs)
 
     def _perform_layout(self):
         import dash_bootstrap_components as dbc
 
-        output_card_children = []
+        right_card_children = []
         if self.title:
-            output_card_children.append(dbc.CardHeader(self.title, className="h4"))
+            right_card_children.append(dbc.CardHeader(self.title, className="h4"))
 
-        output_card_children.append(dbc.CardBody(self.get_containers("output")))
+        right_card_children.append(dbc.CardBody(self.get_containers("right")))
 
-        input_card_style = {}
-        if self.min_input_width is not None:
-            input_card_style["min-width"] = self.min_input_width
+        left_card_style = {}
+        if self.min_left_width is not None:
+            left_card_style["min-width"] = self.min_left_width
 
         row_style = {}
         if self.margin:
@@ -436,32 +454,36 @@ class DbcRow(BaseDbcTemplate):
         if self.row_height is not None:
             row_style["height"] = self.row_height
 
-        # class_name_kwarg = {}
-        # if self.input_cols is not None:
-        #     class_name_kwarg["className"] = f"col-{int(self.input_cols)}"
-
         return dbc.Row(
             style=row_style,
             children=[
                 dbc.Col(
-                    children=dbc.Card(children=self.get_containers("input"), body=True),
-                    style=input_card_style,
-                    md=self.input_cols,
-                    # **class_name_kwarg,
+                    children=dbc.Card(children=self.get_containers("left"), body=True),
+                    style=left_card_style,
+                    md=self.left_cols,
                 ),
                 dbc.Col(
-                    dbc.Card(children=output_card_children),
-                    md=12 - self.input_cols,
+                    dbc.Card(children=right_card_children),
+                    md=12 - self.left_cols,
                 ),
             ],
         )
 
 
 class DbcSidebar(BaseDbcTemplate):
+
+    _valid_locations = ("sidebar", "main")
+    _default_input_location = "sidebar"
+    _default_output_location = "main"
+
     def __init__(self, app, title=None, sidebar_columns=4, **kwargs):
         """
-        Template that includes a title bar, places inputs in a sidebar, and outputs in
-        a responsive card
+        Template that includes a title bar, a sidebar, and a responsive card in the
+        main area of the app.
+
+        Supported template locations:
+          - "sidebar": Left sidebar (default for Input components)
+          - "main": Main area to the right of sidebar (default for Output components)
 
         :param app: dash.Dash app instance
         :param title: Title bar title string
@@ -496,16 +518,14 @@ class DbcSidebar(BaseDbcTemplate):
             children=[
                 dbc.Col(
                     children=dbc.Card(
-                        children=self.get_containers("input"),
+                        children=self.get_containers("sidebar"),
                         body=True,
                     ),
                     style=sidebar_card_style,
                     md=self.sidebar_columns,
                 ),
                 dbc.Col(
-                    children=dbc.Card(
-                        children=self.get_containers("output"), body=True
-                    ),
+                    children=dbc.Card(children=self.get_containers("main"), body=True),
                     md=12 - self.sidebar_columns,
                 ),
             ],
@@ -515,18 +535,26 @@ class DbcSidebar(BaseDbcTemplate):
 
 
 class DbcSidebarTabs(BaseDbcTemplate):
-    def __init__(self, app, tab_roles, title=None, sidebar_columns=4, **kwargs):
+    _default_input_location = "sidebar"
+
+    def __init__(self, app, tab_locations, title=None, sidebar_columns=4, **kwargs):
         """
-        Template that includes a title bar, places inputs in a sidebar, and outputs in
-        a set of tabs.
+        Template that includes a title bar, a sidebar, and a set of tabs in the main
+        area of the app.
+
+        Supported template locations:
+          - "sidebar": Left sidebar (default for Input components)
+          - list of locations provided as the tab_locations argument to the template
+            constructor. Each location corresponds to a separate tab.
+            Note: there is no default location for Output components.
 
         :param app: dash.Dash app instance
-        :param tab_roles: List or dict of strings where each string specifies the name
-            of the role corresponding to a single tab. If a list, the role name is
+        :param tab_locations: List or dict of strings where each string specifies the name
+            of the location corresponding to a single tab. If a list, the location name is
             also be used as the title of the corresponding tab. If a dict, the keys
-            become the roles and the values become the tab labels
+            become the locations and the values become the tab labels
         :param title: Title bar title string
-        :param sidebar_columns: Responsive width of input card in columns
+        :param sidebar_columns: Responsive width of sidebar in columns
             (out of 12 columns)
         """
         import dash_bootstrap_components as dbc
@@ -534,14 +562,16 @@ class DbcSidebarTabs(BaseDbcTemplate):
         # Set valid roles before constructor
         self.title = title
         self.sidebar_columns = sidebar_columns
-        if isinstance(tab_roles, (list, tuple)):
-            self.tab_roles = OrderedDict([(role, role) for role in tab_roles])
+        if isinstance(tab_locations, (list, tuple)):
+            self.tab_locations = OrderedDict(
+                [(location, location) for location in tab_locations]
+            )
         else:
-            self.tab_roles = OrderedDict(tab_roles)
+            self.tab_locations = OrderedDict(tab_locations)
 
-        self._valid_roles = ["input", "output"] + list(self.tab_roles.keys())
+        self._valid_locations = ["sidebar"] + list(self.tab_locations.keys())
 
-        first_tab = next(iter(self.tab_roles))
+        first_tab = next(iter(self.tab_locations))
         self._tabs = dbc.Tabs(id=build_id("tabs"), active_tab=first_tab)
 
         super().__init__(app, **kwargs)
@@ -568,13 +598,14 @@ class DbcSidebarTabs(BaseDbcTemplate):
             dbc.Tab(
                 [
                     dbc.Card(
-                        children=list(reversed(self.get_containers(role))), body=True
+                        children=list(reversed(self.get_containers(location))),
+                        body=True,
                     ),
                 ],
-                tab_id=role,
+                tab_id=location,
                 label=title,
             )
-            for role, title in self.tab_roles.items()
+            for location, title in self.tab_locations.items()
         ]
 
         row = dbc.Row(
@@ -583,7 +614,7 @@ class DbcSidebarTabs(BaseDbcTemplate):
             children=[
                 dbc.Col(
                     children=dbc.Card(
-                        children=self.get_containers("input"),
+                        children=self.get_containers("sidebar"),
                         body=True,
                     ),
                     style=sidebar_card_style,
@@ -664,7 +695,7 @@ def _get_role_colors(rule_props):
         "dark": "#343a40",
     }
 
-    # Override with role colors for current theme
+    # Override with location colors for current theme
     for prop, val in rule_props[":root"].items():
         if prop.startswith("--"):
             maybe_color = prop.lstrip("-")

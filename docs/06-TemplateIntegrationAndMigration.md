@@ -21,22 +21,28 @@ df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())
 
 @app.callback(
-    args=tpl.slider_input(
-        years[0], years[-1], step=5, value=years[-1], label="Year"
-    ),
-    output=tpl.graph_output(),
+    args=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def callback(year):
     # Let parameterize infer output component
     year_df = df[df.year == year]
     title = f"Life Expectancy ({year})"
-    return px.scatter(
-        year_df, x="gdpPercap", y="lifeExp", size="pop", color="continent",
-        hover_name="country", size_max=60, title=title
-    ).update_layout(
-        margin=dict(l=0, r=0, b=0), height=400
-    ).update_traces(marker_opacity=0.8)
+    return (
+        px.scatter(
+            year_df,
+            x="gdpPercap",
+            y="lifeExp",
+            size="pop",
+            color="continent",
+            hover_name="country",
+            size_max=60,
+            title=title,
+        )
+        .update_layout(margin=dict(l=0, r=0, b=0), height=400)
+        .update_traces(marker_opacity=0.8)
+    )
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -67,18 +73,17 @@ df = px.data.gapminder()
 years = sorted(df.year.drop_duplicates())
 continents = list(df.continent.drop_duplicates())
 
-
 @app.callback(
     args=dict(
-        year=tpl.slider_input(
-            years[0], years[-1], step=5, value=years[-1], label="Year"
-        ),
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        logs=tpl.checklist_input(
-            ["log(x)"], value="log(x)", label="Axis Scale",
+        year=tpl.new_slider(years[0], years[-1], step=5, value=years[-1], label="Year"),
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
+        logs=tpl.new_checklist(
+            ["log(x)"],
+            value="log(x)",
+            label="Axis Scale",
         ),
     ),
-    output=tpl.graph_output(),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def callback(year, continent, logs):
@@ -91,19 +96,21 @@ def callback(year, continent, logs):
         return go.Figure()
 
     title = f"Life Expectancy ({year})"
-    return px.scatter(
-        year_df,
-        x="gdpPercap",
-        y="lifeExp",
-        size="pop",
-        color="continent",
-        hover_name="country",
-        log_x="log(x)" in logs,
-        size_max=60,
-        title=title
-    ).update_layout(
-        margin=dict(l=0, r=0, b=0)
-    ).update_traces(marker_opacity=0.8)
+    return (
+        px.scatter(
+            year_df,
+            x="gdpPercap",
+            y="lifeExp",
+            size="pop",
+            color="continent",
+            hover_name="country",
+            log_x="log(x)" in logs,
+            size_max=60,
+            title=title,
+        )
+        .update_layout(margin=dict(l=0, r=0, b=0))
+        .update_traces(marker_opacity=0.8)
+    )
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 
@@ -114,13 +121,13 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/7dVGJmm.png)
 
 # Switching template
-Adding additional component controls to the `DbcCard` template works, but it soon results in an awkward card that is very tall. Let's switch to the `DbcRow` template.  This template creats a DBC `Row` consisting of a `Card` to hold the inputs and a `Card` to hold the outputs. The only change required to the code above is in the definition of the template.
+Adding additional component controls to the `DbcCard` template works, but it soon results in an awkward card that is very tall. Let's switch to the `DbcRow` template.  This template creates a DBC `Row` consisting of a `Card` to hold the inputs and a `Card` to hold the outputs. The only change required to the code above is in the definition of the template.
 
 [demos/06-integration-and-migration/switch_templates.py](./demos/06-integration-and-migration/switch_templates.py)
 
 ```python
 ...
-tpl = dl.templates.DbcRow(app, title="Gapminder", input_cols=4, figure_template=True)
+tpl = dl.templates.DbcRow(app, title="Gapminder", left_cols=4, figure_template=True)
 ...
 ```
 
@@ -155,19 +162,19 @@ gapminder_tpl = dl.templates.DbcRow(app, figure_template=True)
 
 @app.callback(
     args=dict(
-        year=gapminder_tpl.slider_input(
+        year=gapminder_tpl.new_slider(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        continent=gapminder_tpl.checklist_input(
+        continent=gapminder_tpl.new_checklist(
             continents, value=continents, label="Continents"
         ),
-        logs=gapminder_tpl.checklist_input(
+        logs=gapminder_tpl.new_checklist(
             ["log(x)"],
             value="log(x)",
             label="Axis Scale",
         ),
     ),
-    output=gapminder_tpl.graph_output(),
+    output=gapminder_tpl.new_graph(),
     template=gapminder_tpl,
 )
 def gapminder_callback(year, continent, logs):
@@ -203,8 +210,8 @@ tips_df = px.data.tips()
 tips_tpl = dl.templates.DbcCard(app, figure_template=True)
 
 @app.callback(
-    args=tips_tpl.checklist_input(["No", "Yes"], value=["No", "Yes"], label="Smoker"),
-    output=tips_tpl.graph_output(),
+    args=tips_tpl.new_checklist(["No", "Yes"], value=["No", "Yes"], label="Smoker"),
+    output=tips_tpl.new_graph(),
     template=tips_tpl,
 )
 def tips_callback(smoker):
@@ -251,11 +258,92 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/VtbovBh.gif)
 
 
+# Multiple callbacks
+This example show how a template can be used with multiple callbacks.  A single template instance can be passed as an argument to `@app.callback` multiple times, and the components passed to each use of `@app.callback` will be added to the template.
+
+Here is an example of using a template to create an app with two callbacks.  The first callback constructs a figure displaying the Gapminder dataset, with a slider to select the year to display.  The second callback inputs the `clickData` of the first figure, and uses that to construct a line graph for the country that was most recently clicked.
+
+To reference a component in multiple callbacks, the component should be assigned a custom `id` when it is created using the `tpl.new_*` component builder.  This `id` can then be used in an `Input`, `State`, or `Output` dependency object in another callback.  In this example, the first graph is assigned an `id` of `"gap-minder-graph"` when it is created using the `tpl.new_graph` component builder in the first callback.  The `id` is then referenced in the second callback using an `Input` dependency object.
+
+```python
+import dash
+import dash_labs as dl
+import dash_bootstrap_components as dbc
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Make app and template
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
+tpl = dl.templates.DbcCard(app, "Gapminder", figure_template=True)
+
+# Load and preprocess dataset
+df = px.data.gapminder()
+years = sorted(df.year.drop_duplicates())
+
+@app.callback(
+    args=tpl.new_slider(
+        years[0],
+        years[-1],
+        step=5,
+        value=years[-1],
+        label="Year",
+        id="slider",
+    ),
+    output=tpl.new_graph(id="gap-minder-graph"),
+    template=tpl,
+)
+def callback(year):
+    # Let parameterize infer output component
+    year_df = df[df.year == year]
+    title = f"Life Expectancy ({year})"
+    return (
+        px.scatter(
+            year_df,
+            x="gdpPercap",
+            y="lifeExp",
+            size="pop",
+            color="continent",
+            hover_name="country",
+            size_max=60,
+            title=title,
+            custom_data=["country"],
+        )
+        .update_layout(margin=dict(l=0, r=0, b=0), height=400)
+        .update_traces(marker_opacity=0.8)
+    )
+
+@app.callback(
+    args=[dl.Input("gap-minder-graph", "clickData"), dl.Input("slider", "value")],
+    output=tpl.new_graph(),
+    template=tpl,
+)
+def callback(click_data, year):
+    if click_data:
+        country = click_data["points"][0]["customdata"][0]
+        country_df = df[df["country"] == country]
+        return (
+            px.line(country_df, x="year", y="lifeExp", title=country)
+            .add_vline(year, line_color="lightgray")
+            .update_layout(height=300)
+            .update_yaxes(range=[30, 100])
+        )
+    else:
+        return go.Figure(layout_height=300).update_yaxes(range=[30, 100])
+
+app.layout = dbc.Container(fluid=True, children=tpl.children)
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
+```
+
+![](https://i.imgur.com/YcTSk4e.gif)
+
 # Migrate away from templates
 Finally, here is an example of the steps needed to remove the use of templates in an app.
 
 **Before:**
 [demos/06-integration-and-migration/switch_templates.py](./demos/06-integration-and-migration/switch_templates.py)
+
 ```python
 import dash
 import dash_labs as dl
@@ -275,15 +363,15 @@ continents = list(df.continent.drop_duplicates())
 
 @app.callback(
     args=dict(
-        year=tpl.slider_input(
+        year=tpl.new_slider(
             years[0], years[-1], step=5, value=years[-1], label="Year"
         ),
-        continent=tpl.checklist_input(continents, value=continents, label="Continents"),
-        logs=tpl.checklist_input(
+        continent=tpl.new_checklist(continents, value=continents, label="Continents"),
+        logs=tpl.new_checklist(
             ["log(x)"], value="log(x)", label="Axis Scale",
         ),
     ),
-    output=tpl.graph_output(),
+    output=tpl.new_graph(),
     template=tpl,
 )
 def callback(year, continent, logs):
@@ -309,6 +397,7 @@ def callback(year, continent, logs):
     ).update_layout(
         margin=dict(l=0, r=0, b=0)
     ).update_traces(marker_opacity=0.8)
+
 
 app.layout = dbc.Container(fluid=True, children=tpl.children)
 

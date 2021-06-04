@@ -131,7 +131,7 @@ def test_state_kwarg_only(app, test_template):
 
     # Check dependencies
     # Input
-    input_param_components = test_template.roles["input"]
+    input_param_components = test_template.locations["input"]
     arg_component = input_param_components["test_input"].arg_component
     arg_props = input_param_components["test_input"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "state")
@@ -140,7 +140,7 @@ def test_state_kwarg_only(app, test_template):
     assert fn_wrapper._flat_state_deps[0] == expected_deps[0]
 
     # Slider
-    input_param_components = test_template.roles["input"]
+    input_param_components = test_template.locations["input"]
     arg_component = input_param_components["test_slider"].arg_component
     arg_props = input_param_components["test_slider"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "input")
@@ -149,7 +149,7 @@ def test_state_kwarg_only(app, test_template):
     assert fn_wrapper._flat_input_deps[0] == expected_deps[0]
 
     # Markdown Output
-    output_param_components = test_template.roles["output"]
+    output_param_components = test_template.locations["output"]
     arg_component = output_param_components["test_output_markdown"].arg_component
     arg_props = output_param_components["test_output_markdown"].arg_property
     expected_deps = flat_deps(arg_component, arg_props, "output")
@@ -162,9 +162,9 @@ def test_non_component_property_grouping(app, test_template):
     (
         input_picker,
         input_picker_dep,
-    ) = test_template.date_picker_range_input().extract_component()
+    ) = test_template.new_date_picker_range().extract_component()
 
-    output_picker, output_picker_dep = test_template.date_picker_range_input(
+    output_picker, output_picker_dep = test_template.new_date_picker_range(
         kind=dl.Output
     ).extract_component()
 

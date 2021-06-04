@@ -11,13 +11,13 @@ tpl = dl.templates.DbcRow(app, title="Manual Update", theme=dbc.themes.SOLAR)
 
 @app.callback(
     args=dict(
-        fun=tpl.dropdown_input(["sin", "cos", "exp"], label="Function", kind=dl.State),
-        figure_title=tpl.textbox_input(
+        fun=tpl.new_dropdown(["sin", "cos", "exp"], label="Function", kind=dl.State),
+        figure_title=tpl.new_textbox(
             "Initial Title", label="Figure Title", kind=dl.State
         ),
-        phase=tpl.slider_input(1, 10, label="Phase", kind=dl.State),
-        amplitude=tpl.slider_input(1, 10, value=3, label="Amplitude", kind=dl.State),
-        n_clicks=tpl.button_input("Update", label=None),
+        phase=tpl.new_slider(1, 10, label="Phase", kind=dl.State),
+        amplitude=tpl.new_slider(1, 10, value=3, label="Amplitude", kind=dl.State),
+        n_clicks=tpl.new_button("Update", label=None),
     ),
     template=tpl,
 )

@@ -40,33 +40,41 @@ class BaseTemplate:
     }
     """
 
-    # Tuple of the roles supported by this template. Subclasses may override this
+    # Tuple of the locations supported by this template. Subclasses should override this
     # as a class attribute (as is the case here), or as an instance attribute if the
     # available roles are dependent on constructor arguments.
     #
     # If overriding as an instance attribute, be sure to set the value of the
     # _valid_roles attribute before calling the superclass constructor so that the
     # self._roles dict is initialized properly
-    _valid_roles = ("input", "output")
+    _valid_locations = ()
+
+    # Default template location for `Input` and 'State' dependencies
+    _default_input_location = None
+
+    # Default template location for `Output` dependencies
+    _default_output_location = None
 
     def __init__(self, app):
-        self._roles = {role: OrderedDict() for role in self._valid_roles}
+        self._locations = {
+            location: OrderedDict() for location in self._valid_locations
+        }
 
         # Configure app props like CSS
         if app is not None:
             self._configure_app(app)
 
     @property
-    def roles(self):
+    def locations(self):
         """
-        Dictionary from role to OrderedDict of ArgumentComponents instances.
+        Dictionary from location to OrderedDict of ArgumentComponents instances.
 
         Each component added to the template is wrapped in an ArgumentComponents
-        instance and stored in the OrderedDict corresponding to the component's role
+        instance and stored in the OrderedDict corresponding to the component's location
 
         :return: dict from roles to OrderedDict of ArgumentComponents instances
         """
-        return self._roles
+        return self._locations
 
     @classmethod
     def build_argument_components(
@@ -75,9 +83,9 @@ class BaseTemplate:
         value_property=(),
         label=None,
         label_id=None,
-        role=None,
+        location=None,
     ):
-        # Get reference to dependency class object for role
+        # Get reference to dependency class object for location
         arg_component = component
         arg_props = value_property
 
@@ -92,7 +100,7 @@ class BaseTemplate:
                 arg_component,
                 label=initial_value,
                 label_id=label_id,
-                role=role,
+                location=location,
             )
             label_component = label
             label_props = label_props
@@ -101,7 +109,7 @@ class BaseTemplate:
             label_props = None
             container_component, container_props = cls.build_containered_component(
                 arg_component,
-                role=role,
+                location=location,
             )
 
         return ArgumentComponents(
@@ -116,7 +124,7 @@ class BaseTemplate:
     def add_component(
         self,
         component,
-        role="input",
+        location,
         label=None,
         label_id=None,
         name=None,
@@ -128,31 +136,33 @@ class BaseTemplate:
         Add a component to the template
 
         :param component: The Dash component instance to add to the template
-        :param role: The role of the component within the template. All templates
-            support the "input" and "output" roles, but individual templates may
-            support additional roles.
+        :param location: The location of the component within the template. Individual
+            templates document their supported location values in the constructor
+            docstring.
         :param label: (optional) A string label for the component
         :param label_id: (optional) A custom component id to use for the created
             label component (if any)
         :param name: (optional) A string name for the component. Must be unique for
-            all components within the same role. If not provided, name is effectively
-            the positional index of component within role.
+            all components within the same location. If not provided, name is effectively
+            the positional index of component within location.
         :param component_property: (optional) A component property to be stored in the
             ArgumentComponents instance for the added component
         :param before: (optional) String name, or positional index, of existing
-            component within the same role that this component should be inserted
+            component within the same location that this component should be inserted
             before.
         :param after: (optional) String name, or positional index, of existing
-            component within the same role that this component should be inserted
+            component within the same location that this component should be inserted
             after.
         :return: ArgumentComponents instance representing the component and label
             within the template
         """
-        if role not in self._valid_roles:
+        if location not in self._valid_locations:
             raise ValueError(
-                "Invalid role {role} provided for template of type {typ}\n"
-                "    Supported roles: {roles}".format(
-                    role=repr(role), typ=type(self), roles=self._valid_roles
+                "Invalid location {location} provided for template of type {typ}\n"
+                "    Supported locations: {locations}".format(
+                    location=repr(location),
+                    typ=type(self),
+                    locations=self._valid_locations,
                 )
             )
 
@@ -161,11 +171,11 @@ class BaseTemplate:
             value_property=component_property,
             label=label,
             label_id=label_id,
-            role=role,
+            location=location,
         )
 
-        self._roles[role] = insert_into_ordered_dict(
-            odict=self._roles[role],
+        self._locations[location] = insert_into_ordered_dict(
+            odict=self._locations[location],
             value=arg_components,
             key=name,
             before=before,
@@ -173,22 +183,22 @@ class BaseTemplate:
         )
         return arg_components
 
-    def get_containers(self, roles=None):
+    def get_containers(self, locations=None):
         """
         Get list of Dash components that contain the components added to the template
 
-        :param roles: String name of single role to include, or list of
+        :param locations: String name of single location to include, or list of
             roles to include. If None (default), include components from all roles
         :return: flat list of container components
         """
-        if roles is None:
-            roles = self._valid_roles
-        elif isinstance(roles, str):
-            roles = [roles]
+        if locations is None:
+            locations = self._valid_locations
+        elif isinstance(locations, str):
+            locations = [locations]
 
         containers = []
-        for role in roles:
-            for pc in self._roles.get(role, {}).values():
+        for location in locations:
+            for pc in self._locations.get(location, {}).values():
                 containers.append(pc.container_component)
 
         return containers
@@ -226,7 +236,7 @@ class BaseTemplate:
             app.index_string = app.index_string.replace("{%css%}", "{%css%}" + new_css)
 
     @classmethod
-    def build_labeled_component(cls, component, label, label_id=None, role=None):
+    def build_labeled_component(cls, component, label, label_id=None, location=None):
         """
         Wrap input component in a labeled container
 
@@ -234,7 +244,7 @@ class BaseTemplate:
         :param label: Label string
         :param label_id: (optional) component of component that will store the label
             string
-        :param role: Component role
+        :param location: Component location
         :return: tuple of (
             container: Dash component containing input component and label component
             container_property: Property of container component containing the input
@@ -259,13 +269,13 @@ class BaseTemplate:
         return container, "children", label_component, "children"
 
     @classmethod
-    def build_containered_component(cls, component, role=None):
+    def build_containered_component(cls, component, location=None):
         """
         Alternative to bulid_labeled_component for use without label. Used to
         provided unitform spacing across labeled and unlabeled components
 
         :param component: Component to wrap in container
-        :param role: Component role
+        :param location: Component location
         :return: tuple of (
             container: Dash component containing input component
             container_property: Property of container component containing the input
@@ -292,49 +302,36 @@ class BaseTemplate:
 
         :return: Dash Component
         """
-        return cls.div_output(**filter_kwargs(children=children))
+        return cls.new_div(**filter_kwargs(children=children))
 
     # Component dependency constructors
     # ---------------------------------
     # Subclasses are welcome to override component dependency constructors, and to add
     # new constructors. The following conventions should be followed
     #
-    #  1. The final underscore suffix should match the default role of the component.
-    #     e.g. all of the examples below have either a _input or _output suffix, which
-    #     matches the default value of the role argument.  The default suffix/role
-    #     should be chosen based on whether the component is most commonly used as an
-    #     input or output to a callback function.  Callers can override this behavior
-    #     using the role and kind arguments.
+    #  1. Methods should be prefixed by `new_`
     #
-    #     If there are common uses for the component type in multiple roles,
-    #     multiple methods may be defined, with a suffix for each role.
-    #
-    #  2. The default value of the kind argument should be consistent with the default
-    #     role (e.g. kind=dl.Input for role="input" and kind=hl.Output for
-    #     role="output"). The return value of the method should always match the class
-    #     passed as the kind argument.
-    #
-    #  3. The default value of component_property should be a grouping of properties
+    #  2. The default value of component_property should be a grouping of properties
     #     from the type of component returned that are most likely to be used as
     #     the input or output properties of the callback for that component.
     #
-    #  4  The opts dict argument should be passed through as keyword arguments to the
+    #  3. The opts dict argument should be passed through as keyword arguments to the
     #     constructor of the underlying component.
     #
-    #  5. The optional argument should be used to override the id of the constructed
+    #  4. The optional argument should be used to override the id of the constructed
     #     component.
     #
-    #  6. The component_property, label, and role arguments should be passed through
+    #  5. The component_property, label, and location arguments should be passed through
     #     to the return dependency object.
     #
     @classmethod
-    def div_output(
+    def new_div(
         cls,
         children=None,
         label=Component.UNDEFINED,
-        role="output",
-        component_property="children",
         kind=Output,
+        location=Component.UNDEFINED,
+        component_property="children",
         id=None,
         opts=None,
     ):
@@ -342,17 +339,17 @@ class BaseTemplate:
             html.Div(**filter_kwargs(opts, children=children, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def markdown_output(
+    def new_markdown(
         cls,
         children=None,
         label=Component.UNDEFINED,
-        role="output",
-        component_property="children",
         kind=Output,
+        location=Component.UNDEFINED,
+        component_property="children",
         id=None,
         opts=None,
     ):
@@ -360,17 +357,17 @@ class BaseTemplate:
             dcc.Markdown(**filter_kwargs(opts, children=children, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def textarea_input(
+    def new_textarea(
         cls,
         value=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -378,17 +375,17 @@ class BaseTemplate:
             dcc.Textarea(**filter_kwargs(opts, value=value, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def button_input(
+    def new_button(
         cls,
         children,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="n_clicks",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="n_clicks",
         id=None,
         opts=None,
     ):
@@ -396,19 +393,19 @@ class BaseTemplate:
             html.Button(children=children, **filter_kwargs(opts, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def dropdown_input(
+    def new_dropdown(
         cls,
         options,
         value=Component.UNDEFINED,
         clearable=False,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -426,11 +423,11 @@ class BaseTemplate:
             ),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def slider_input(
+    def new_slider(
         cls,
         min,
         max,
@@ -438,9 +435,9 @@ class BaseTemplate:
         step=None,
         tooltip=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -464,17 +461,17 @@ class BaseTemplate:
             ),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def textbox_input(
+    def new_textbox(
         cls,
         value=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -482,18 +479,18 @@ class BaseTemplate:
             dcc.Input(value=value, **filter_kwargs(opts, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def checklist_input(
+    def new_checklist(
         cls,
         options,
         value=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="value",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
         id=None,
         opts=None,
     ):
@@ -507,22 +504,18 @@ class BaseTemplate:
             dcc.Checklist(options=options, **filter_kwargs(opts, value=value, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def _graph_class(cls):
-        return dcc.Graph
-
-    @classmethod
-    def graph_output(
+    def new_graph(
         cls,
         figure=None,
         config=None,
         label=Component.UNDEFINED,
-        role="output",
-        component_property="figure",
         kind=Output,
+        location=Component.UNDEFINED,
+        component_property="figure",
         id=None,
         opts=None,
     ):
@@ -532,23 +525,17 @@ class BaseTemplate:
             ),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def _datatable_class(cls):
-        from dash_table import DataTable
-
-        return DataTable
-
-    @classmethod
-    def date_picker_single_input(
+    def new_date_picker_single(
         cls,
         date=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property="date",
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property="date",
         id=None,
         opts=None,
     ):
@@ -559,18 +546,18 @@ class BaseTemplate:
             dcc.DatePickerSingle(date=date, **filter_kwargs(opts, id=id)),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
 
     @classmethod
-    def date_picker_range_input(
+    def new_date_picker_range(
         cls,
         start_date=None,
         end_date=None,
         label=Component.UNDEFINED,
-        role="input",
-        component_property=("start_date", "end_date"),
         kind=Input,
+        location=Component.UNDEFINED,
+        component_property=("start_date", "end_date"),
         id=None,
         opts=None,
     ):
@@ -586,5 +573,16 @@ class BaseTemplate:
             ),
             component_property=component_property,
             label=label,
-            role=role,
+            location=location,
         )
+
+    # Methods specifying default classes for various components
+    @classmethod
+    def _graph_class(cls):
+        return dcc.Graph
+
+    @classmethod
+    def _datatable_class(cls):
+        from dash_table import DataTable
+
+        return DataTable

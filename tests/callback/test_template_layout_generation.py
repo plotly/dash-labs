@@ -21,7 +21,7 @@ def test_template_layout_generation(app, test_template):
 
     # Check dependencies
     # Slider
-    input_param_components = test_template.roles["input"]
+    input_param_components = test_template.locations["input"]
     arg_component = input_param_components["test_slider"].arg_component
     arg_props = input_param_components["test_slider"].arg_property
     assert isinstance(arg_component, dcc.Slider)
@@ -30,7 +30,7 @@ def test_template_layout_generation(app, test_template):
     assert fn_wrapper._flat_input_deps[0] == expect_input_deps
 
     # Input Component as State
-    input_param_components = test_template.roles["input"]
+    input_param_components = test_template.locations["input"]
     arg_component = input_param_components["test_input"].arg_component
     arg_props = input_param_components["test_input"].arg_property
     assert isinstance(arg_component, dcc.Input)
@@ -39,7 +39,7 @@ def test_template_layout_generation(app, test_template):
     assert fn_wrapper._flat_state_deps[0] == expect_input_deps
 
     # Markdown Output
-    output_param_components = test_template.roles["output"]
+    output_param_components = test_template.locations["output"]
     arg_component = output_param_components["test_output_markdown"].arg_component
     arg_props = output_param_components["test_output_markdown"].arg_property
     assert isinstance(arg_component, dcc.Markdown)

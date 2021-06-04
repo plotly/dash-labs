@@ -20,16 +20,16 @@ table_plugin = dl.component_plugins.DataTablePlugin(
     sort_mode="single",
     filterable=True,
     serverside=serverside,
-    role="input",
+    location="sidebar",
 )
 
 
 @app.callback(
     args=[
-        tpl.dropdown_input(["Male", "Female"], label="Patron Gender", clearable=True),
+        tpl.new_dropdown(["Male", "Female"], label="Patron Gender", clearable=True),
         table_plugin.args,
     ],
-    output=[table_plugin.output, tpl.graph_output()],
+    output=[table_plugin.output, tpl.new_graph()],
     template=tpl,
 )
 def callback(gender, table_input):

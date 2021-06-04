@@ -48,7 +48,7 @@ class CallbackWrapper:
         return self.fn(*args, **kwargs)
 
 
-def _normalize_inputs(inputs, state):
+def _normalize_inputs(inputs, state, template):
     # Handle positional inputs/state as int dict
     if inputs == [] and isinstance(state, dict):
         inputs = {}
@@ -108,9 +108,9 @@ def _normalize_inputs(inputs, state):
                 if dep.label is Component.UNDEFINED:
                     dep.label = name
 
-                # Update default role if undefined
-                if dep.role is Component.UNDEFINED:
-                    dep.role = "input"
+                # Update default location if undefined
+                if dep.location is Component.UNDEFINED and template is not None:
+                    dep.location = template._default_input_location
 
         all_inputs[name] = pattern
 
@@ -156,8 +156,8 @@ def _normalize_output(output, template):
                 if dep.label is Component.UNDEFINED:
                     dep.label = None
 
-                if dep.role is Component.UNDEFINED:
-                    dep.role = "output"
+                if dep.location is Component.UNDEFINED and template is not None:
+                    dep.location = template._default_output_location
 
         all_output[name] = pattern
 
@@ -176,7 +176,7 @@ def _add_arg_components_to_template(vals, template):
                 template.add_component(
                     component=dep.component_id,
                     component_property=dep.component_property,
-                    role=dep.role,
+                    location=dep.location,
                     label=dep.label,
                     label_id=dep.label_id,
                     **opts,
@@ -272,7 +272,7 @@ def _callback(
 
     # Combine inputs and stated and normalize into an OrderedDict. List/tuple inputs
     # have integer keys, which dict inputs have keyword argument names as keys.
-    all_inputs, input_form = _normalize_inputs(inputs, state)
+    all_inputs, input_form = _normalize_inputs(inputs, state, template)
 
     # Likewise, normalize outputs into an OrderedDict
     all_outputs, output_form = _normalize_output(output, template)

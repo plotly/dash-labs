@@ -139,7 +139,9 @@ def app():
 
 
 class ExampleTemplate(BaseTemplate):
-    _valid_roles = ("input", "output", "custom")
+    _valid_locations = ("input", "output", "custom")
+    _default_input_location = "input"
+    _default_output_location = "output"
 
     _inline_css = """
         .test-css-class {
@@ -147,7 +149,7 @@ class ExampleTemplate(BaseTemplate):
          }\n"""
 
     @classmethod
-    def build_labeled_component(cls, component, label, label_id=None, role=None):
+    def build_labeled_component(cls, component, label, label_id=None, location=None):
         # Subclass could use bootstrap or ddk
         if not label_id:
             label_id = build_id("label")
@@ -156,7 +158,7 @@ class ExampleTemplate(BaseTemplate):
         return container, "children", label_component, "children"
 
     @classmethod
-    def build_containered_component(cls, component, role=None):
+    def build_containered_component(cls, component, location=None):
         """
         Alternative to bulid_labeled_component for use without label, but for
         Unitform spacing with it

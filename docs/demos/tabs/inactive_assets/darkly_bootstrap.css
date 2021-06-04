@@ -261,7 +261,7 @@ select {
   text-transform: none;
 }
 
-[role="button"] {
+[location="button"] {
   cursor: pointer;
 }
 
