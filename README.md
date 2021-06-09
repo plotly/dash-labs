@@ -8,6 +8,8 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
   - [03-TemplateLayoutSystem.md](https://github.com/plotly/dash-labs/blob/main/docs/03-TemplateLayoutSystem.md)
   - [04-PredefinedTemplates.md](https://github.com/plotly/dash-labs/blob/main/docs/04-PredefinedTemplates.md)
   - [05-ComponentPlugingPattern.md](https://github.com/plotly/dash-labs/blob/main/docs/05-ComponentPlugingPattern.md)
+  - [06-TemplateIntegrationAndMigration.md](https://github.com/plotly/dash-labs/blob/main/docs/06-TemplateIntegrationAndMigration.md)
+  - [07-LongCallback.md](https://github.com/plotly/dash-labs/blob/main/docs/07-LongCallback.md)
 
 Various demos are located in the [docs/demos](./docs/demos) directory.
 
