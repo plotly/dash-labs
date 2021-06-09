@@ -63,6 +63,41 @@ def test_slider_builder(test_template):
 
     assert getattr(component, "tooltip", None) is None
 
+def test_range_slider_builder(test_template):
+    min, max, step, val, id = 1, 10, 0.5, [2, 5], "test-rangeslider"
+    component_dep = test_template.new_range_slider(
+        min, max, id=id, value=val, opts=dict(disabled=True)
+    )
+
+    assert isinstance(component_dep, Input)
+    assert component_dep.component_property == "value"
+    component = component_dep.component_id
+
+    assert isinstance(component, dcc.RangeSlider)
+    assert component.id == "test-rangeslider"
+    assert component.min == min
+    assert component.max == max
+    assert component.value == val
+    assert component.disabled is True
+
+    # Template enables persistent tooltips by default
+    assert isinstance(component.tooltip, dict)
+
+    # But can be overridden with tooltip argument, and can override kind to State
+    component_dep = test_template.new_range_slider(
+        min,
+        max,
+        id=id,
+        value=val,
+        kind=State,
+        opts=dict(tooltip=None),
+    )
+
+    assert isinstance(component_dep, State)
+    assert component_dep.component_property == "value"
+    component = component_dep.component_id
+
+    assert getattr(component, "tooltip", None) is None
 
 def test_input_builder(test_template):
     component_dep = test_template.new_textbox(

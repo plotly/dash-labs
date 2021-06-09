@@ -465,6 +465,44 @@ class BaseTemplate:
         )
 
     @classmethod
+    def new_range_slider(
+            cls,
+            min,
+            max,
+            value=Component.UNDEFINED,
+            step=None,
+            tooltip=None,
+            label=Component.UNDEFINED,
+            kind=Input,
+            location=Component.UNDEFINED,
+            component_property="value",
+            id=None,
+            opts=None,
+    ):
+        if tooltip is None:
+            tooltip = (opts or {}).pop(
+                "tooltip", {"placement": "bottom", "always_visible": True}
+            )
+        elif tooltip is True:
+            tooltip = {"placement": "bottom", "always_visible": True}
+        else:
+            tooltip = None
+
+        if value is Component.UNDEFINED:
+            value = [min, max]
+
+        return kind(
+            dcc.RangeSlider(
+                min=min,
+                max=max,
+                **filter_kwargs(opts, tooltip=tooltip, step=step, value=value, id=id)
+            ),
+            component_property=component_property,
+            label=label,
+            location=location,
+        )
+
+    @classmethod
     def new_textbox(
         cls,
         value=None,
