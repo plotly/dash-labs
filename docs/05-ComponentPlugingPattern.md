@@ -189,6 +189,39 @@ if __name__ == "__main__":
 
 ![](https://i.imgur.com/66HhTr7.png)
 
+## Component plugin without template
+A component plugins configured with `install_callback` can also be used without a template.  In this case, the Dash components created by the component plugin should be accessed using the `.args_components` and `output_components` properties.  Both of these properties return a list of Dash components, and in the example below they are concatenated together as the `children` property of a top-level `Div` component. 
+
+[demos/component_plugin_demos/datatable_component_no_template.py](./demos/component_plugin_demos/datatable_component_no_template.py)
+
+```python
+import plotly.express as px
+import dash_labs as dl
+import dash_html_components as html
+import dash
+
+df = px.data.tips()
+
+app = dash.Dash(__name__, plugins=[dl.plugins.FlexibleCallbacks()])
+
+table_plugin = dl.component_plugins.DataTablePlugin(
+    df=df,
+    page_size=10,
+    sort_mode="single",
+    filterable=True,
+    serverside=False,
+)
+
+table_plugin.install_callback(app)
+
+app.layout = html.Div(children=
+    table_plugin.args_components + table_plugin.output_components
+)
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
+```
+
 ## Component plugin example: Image shape drawing
 Here is a ComponentPlugin implementation of a shape drawing app similar to that described in https://dash.plotly.com/annotations. This Plugin displays a greyscale image in a plotly figure that is configured to draw rectangle shapes on drag.  The current rectangle can also be edited by clicking it to activate shape editing mode.
 
