@@ -1,15 +1,18 @@
 from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
+import pickle
+import base64
 
 
 class CeleryCallbackManager(BaseLongCallbackManager):
-    def __init__(self, celery_app):
+    def __init__(self, celery_app, cache_by=None):
+        super().__init__(cache_by)
         self.celery_app = celery_app
         self.callback_futures = dict()
 
     def init(self, app):
         pass
 
-    def cancel_future(self, key):
+    def delete_future(self, key):
         if key in self.callback_futures:
             future = self.callback_futures.pop(key)
             self.celery_app.control.terminate(future.task_id)
@@ -20,7 +23,7 @@ class CeleryCallbackManager(BaseLongCallbackManager):
         if key in self.callback_futures:
             future = self.callback_futures[key]
             if future.status != "PENDING":
-                return self.cancel_future(key)
+                return self.delete_future(key)
         return False
 
     def has_future(self, key):
@@ -52,9 +55,14 @@ class CeleryCallbackManager(BaseLongCallbackManager):
             return False
 
     def get_result(self, key):
-        future = self.callback_futures.pop(key, None)
+        future = self.callback_futures.get(key, None)
         if future:
-            return future.get(timeout=1)
+            result = future.get(timeout=1)
+            result = pickle.loads(base64.decodebytes(result.encode()))
+            # Clear result if not caching
+            if self.cache_by is None:
+                self.delete_future(key)
+            return result
         else:
             return None
 
@@ -66,14 +74,13 @@ def make_celery_fn(user_fn, celery_app, progress):
             self.update_state(state="PROGRESS", meta={"current": i, "total": total})
 
         maybe_progress = [_set_progress] if progress else []
-        print(maybe_progress)
-
         if isinstance(user_callback_args, dict):
             user_callback_output = user_fn(*maybe_progress, **user_callback_args)
         elif isinstance(user_callback_args, list):
             user_callback_output = user_fn(*maybe_progress, *user_callback_args)
         else:
             user_callback_output = user_fn(*maybe_progress, user_callback_args)
-        return user_callback_output
+
+        return base64.encodebytes(pickle.dumps(user_callback_output)).decode()
 
     return _celery_fn

@@ -1,11 +1,16 @@
 from abc import ABC
+import inspect
 
 
 class BaseLongCallbackManager(ABC):
+    def __init__(self, cache_by):
+        # Handle default clear_cache
+        self.cache_by = cache_by
+
     def init(self, app):
         raise NotImplementedError
 
-    def cancel_future(self, key):
+    def delete_future(self, key):
         raise NotImplementedError
 
     def terminate_unhealthy_future(self, key):
@@ -17,7 +22,7 @@ class BaseLongCallbackManager(ABC):
     def get_future(self, key, default=None):
         raise NotImplementedError
 
-    def make_background_fn(self, fn, progress=False):
+    def make_background_fn(self, fn, progress):
         raise NotImplementedError
 
     def call_and_register_background_fn(self, key, background_fn, args):
@@ -31,3 +36,21 @@ class BaseLongCallbackManager(ABC):
 
     def get_result(self, key):
         raise NotImplementedError
+
+    def build_cache_key(self, fn, args):
+        fn_source = inspect.getsource(fn)
+        hash_dict = dict(args=args, fn_source=fn_source)
+
+        if self.cache_by is not None:
+            # Caching enabled
+            for i, cache_item in enumerate(self.cache_by):
+                if isinstance(cache_item, str):
+                    if cache_item == "session":
+                        pass
+                    elif cache_item == "git":
+                        pass
+
+                # Call cache function
+                hash_dict[f"cache_key_{i}"] = cache_item()
+
+        return str(hash(str(hash_dict)))

@@ -3,24 +3,34 @@ import dash
 import dash_html_components as html
 import dash_labs as dl
 from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
+from uuid import uuid4
+
+launch_uid = uuid4()
 
 # ## Celery on RabbitMQ
 # from celery import Celery
 # celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-# ## Celery on Redis
-# from celery import Celery
-# celery_app = Celery(
-#     __name__, broker='redis://localhost:6379/0', backend='redis://localhost:6379/1'
+## Celery on Redis
+from celery import Celery
+
+celery_app = Celery(
+    __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
+)
+long_callback_manager = CeleryCallbackManager(
+    celery_app,
+    # cache_by=[lambda: launch_uid]
+)
+
+# # ## FlaskCaching
+# from flask_caching import Cache
+# flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+# long_callback_manager = FlaskCachingCallbackManager(
+#     flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
+#     # flask_cache, clear_cache=True
 # )
-# long_callback_manager = CeleryCallbackManager(celery_app)
 
-# ## FlaskCaching
-from flask_caching import Cache
-
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
 app = dash.Dash(
     __name__,
@@ -40,7 +50,7 @@ app.layout = html.Div(
 
 
 @app.long_callback(
-    output=dl.Output("paragraph_id", "children"),
+    output=(dl.Output("paragraph_id", "children"), dl.Output("button_id", "n_clicks")),
     args=dl.Input("button_id", "n_clicks"),
     running=[
         (dl.Output("button_id", "disabled"), True, False),
@@ -48,7 +58,7 @@ app.layout = html.Div(
 )
 def callback(n_clicks):
     time.sleep(2.0)
-    return [f"Clicked {n_clicks} times"]
+    return ([f"Clicked {n_clicks} times"], (n_clicks or 0) % 4)
 
 
 if __name__ == "__main__":
