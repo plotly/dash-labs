@@ -317,8 +317,11 @@ def callback(n_clicks):
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
 ```
+
+![](https://i.imgur.com/ficfv7g.gif)
+
+Here you can see that it takes a few seconds to run the callback function, but the cached results are used after `n_clicks` cycles back around to 0.  By interacting with the app in a separate tab, you can see that the cache results are shared across user sessions.
 
 ### cache_by function workflows
 Various `cache_by` functions can be used to accomplish a variety of caching policies. Here are a few examples:
