@@ -1,6 +1,6 @@
 from abc import ABC
 import inspect
-
+import hashlib
 
 class BaseLongCallbackManager(ABC):
     def __init__(self, cache_by):
@@ -53,4 +53,4 @@ class BaseLongCallbackManager(ABC):
                 # Call cache function
                 hash_dict[f"cache_key_{i}"] = cache_item()
 
-        return str(hash(str(hash_dict)))
+        return hashlib.sha1(str(hash_dict).encode("utf-8")).hexdigest()
