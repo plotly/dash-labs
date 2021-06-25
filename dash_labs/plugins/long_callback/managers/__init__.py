@@ -5,6 +5,9 @@ import hashlib
 class BaseLongCallbackManager(ABC):
     def __init__(self, cache_by):
         # Handle default clear_cache
+        if not isinstance(cache_by, list):
+            cache_by = [cache_by]
+
         self.cache_by = cache_by
 
     def init(self, app):
