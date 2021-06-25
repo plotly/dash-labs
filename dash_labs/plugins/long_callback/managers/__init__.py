@@ -2,6 +2,7 @@ from abc import ABC
 import inspect
 import hashlib
 
+
 class BaseLongCallbackManager(ABC):
     def __init__(self, cache_by):
         # Handle default clear_cache

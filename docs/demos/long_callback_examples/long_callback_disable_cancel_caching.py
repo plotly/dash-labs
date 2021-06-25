@@ -25,9 +25,7 @@ from flask_caching import Cache
 
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
 long_callback_manager = FlaskCachingCallbackManager(
-    flask_cache,
-    clear_cache=True,
-    cache_by=[lambda: launch_uid]
+    flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
 )
 
 app = dash.Dash(

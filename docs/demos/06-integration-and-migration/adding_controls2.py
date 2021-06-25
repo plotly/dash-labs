@@ -16,7 +16,9 @@ continents = list(df.continent.drop_duplicates())
 
 @app.callback(
     args=dict(
-        year_range=tpl.new_range_slider(min=years[0], max=years[-1], step=5, label="Year"),
+        year_range=tpl.new_range_slider(
+            min=years[0], max=years[-1], step=5, label="Year"
+        ),
         continent=tpl.new_checklist(continents, value=continents, label="Continents"),
         logs=tpl.new_checklist(
             ["log(x)"],
@@ -31,7 +33,7 @@ def callback(year_range, continent, logs):
     # Let parameterize infer output component
     # filter years and calculate mean
     year_df = df[(df.year >= year_range[0]) & (df.year <= year_range[-1])]
-    year_df = year_df.groupby(['country', 'continent']).mean().reset_index()
+    year_df = year_df.groupby(["country", "continent"]).mean().reset_index()
     if continent:
         year_df = year_df[year_df.continent.isin(continent)]
 
