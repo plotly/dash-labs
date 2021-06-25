@@ -466,18 +466,18 @@ class BaseTemplate:
 
     @classmethod
     def new_range_slider(
-            cls,
-            min,
-            max,
-            value=Component.UNDEFINED,
-            step=None,
-            tooltip=None,
-            label=Component.UNDEFINED,
-            kind=Input,
-            location=Component.UNDEFINED,
-            component_property="value",
-            id=None,
-            opts=None,
+        cls,
+        min,
+        max,
+        value=Component.UNDEFINED,
+        step=None,
+        tooltip=None,
+        label=Component.UNDEFINED,
+        kind=Input,
+        location=Component.UNDEFINED,
+        component_property="value",
+        id=None,
+        opts=None,
     ):
         if tooltip is None:
             tooltip = (opts or {}).pop(
