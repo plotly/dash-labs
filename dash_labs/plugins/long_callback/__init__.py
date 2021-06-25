@@ -47,9 +47,9 @@ def long_callback(
             if result_key is None:
                 # Build result cache key from inputs
                 result_key = callback_manager.build_cache_key(
-                    background_fn, user_callback_args
+                    fn, user_callback_args
                 )
-                print(f"create result_key: {result_key}")
+                print(f"create result_key: {result_key}, from {user_callback_args}")
                 user_store_data["cache_result_key"] = result_key
 
             should_cancel = any(
