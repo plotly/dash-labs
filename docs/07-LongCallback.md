@@ -242,13 +242,98 @@ if __name__ == "__main__":
 
 ![](https://i.imgur.com/0tRGCH8.gif)
 
+## Caching results with long_callback
+The `long_callback` decorator can optionally [memoize](https://en.wikipedia.org/wiki/Memoization) callback function results through caching, and it provides a flexible API for configuring when cached results may be reused.
+
+ > Note: The current caching configuration API is fairly low-level, and in the future we expect that it will be useful to provide several preconfigured caching profiles.
+
+### How it works
+Here is a high-level description of how caching works in `long_callback`. Conceptually, you can imagine a dictionary is associated with each decorated callback function.  Each time the decorated function is called, the input arguments to the function (and potentially other information about the environment) are [hashed](https://en.wikipedia.org/wiki/Hash_function) to generate a key. The `long_callback` decorator then checks the dictionary to see if there is already a value stored using this key.  If so, the decorated function is not called, and the cached result is returned.  If not, the function is called and the result is stored in the dictionary using the associated key.
+
+The built-in [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache) decorator uses a Python `dict` just like this.  The situation is slightly more complicated with Dash for two reasons:
+ 1. We might want the cache to persist across server restarts.
+ 2. When an app is served using multiple processes (e.g. multiple gunicorn workers on a single server, or multiple servers behind a load balancer), we might want to shared cached values across all of these processes. 
+
+For these reasons, a simple Python `dict` is not a suitable storage container for caching Dash callbacks.  Instead, `long_callback` uses the current Flask-Caching or Celery callback manager to store cached results.  
+
+### Caching flexibility requirements
+To support caching in a variety of development and production use cases, `long_callback` may be configured by one or more zero-argument functions, where the return values of these functions are combined with the function input arguments when generating the cache key.  Several common use-cases will be described below.
+
+### Enabling caching
+Caching is enabled by providing one or more zero-argument functions to the `cache_by` argument of `long_callback`.  These functions are called each time the status of a `long_callback` function is checked, and their return values are hashed as part of the cache key.    
+
+Here is an example using the Flask-Caching callback manager.  The `clear_cache` argument controls whether the cache is reset at startup. In this example, the `cache_by` argument is set to a `lambda` function that returns a fixed UUID that is randomly generated during app initialization. The implication of this `cache_by` function is that the cache is shared across all invocations of the callback across all user sessions that are handled by a single server instance. Each time a server process is restarted, the cache is cleared an a new UUID is generated.
+
+```python
+import time
+from uuid import uuid4
+import dash
+import dash_html_components as html
+
+import dash_labs as dl
+from dash_labs.plugins import FlaskCachingCallbackManager
+
+# ## FlaskCaching
+from flask_caching import Cache
+launch_uid = uuid4()
+flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+long_callback_manager = FlaskCachingCallbackManager(
+    flask_cache,
+    clear_cache=True, 
+    cache_by=[lambda: launch_uid]
+)
+
+app = dash.Dash(
+    __name__,
+    plugins=[
+        dl.plugins.FlexibleCallbacks(),
+        dl.plugins.HiddenComponents(),
+        dl.plugins.LongCallback(long_callback_manager),
+    ],
+)
+
+app.layout = html.Div(
+    [
+        html.Div([html.P(id="paragraph_id", children=["Button not clicked"])]),
+        html.Button(id="button_id", children="Run Job!"),
+        html.Button(id="cancel_button_id", children="Cancel Running Job!"),
+    ]
+)
+
+
+@app.long_callback(
+    output=(dl.Output("paragraph_id", "children"), dl.Output("button_id", "n_clicks")),
+    args=dl.Input("button_id", "n_clicks"),
+    running=[
+        (dl.Output("button_id", "disabled"), True, False),
+        (dl.Output("cancel_button_id", "disabled"), False, True),
+    ],
+    cancel=[dl.Input("cancel_button_id", "n_clicks")],
+)
+def callback(n_clicks):
+    time.sleep(2.0)
+    return [f"Clicked {n_clicks} times"], (n_clicks or 0) % 4
+
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
+
+```
+
+### cache_by function workflows
+Various `cache_by` functions can be used to accomplish a variety of caching policies. Here are a few examples:
+ - A `cache_by` function could return the file modification time of a dataset to automatically invalidate the cache when an input dataset changes.
+ - In a Heroku or Dash Enterprise deployment setting, a `cache_by` function could return the git hash of the app, making it possible to persist the cache across redeploys, but invalidate it when the app's source changes.
+ - In a Dash Enterprise setting, the `cache_by` function could return user meta-data to prevent cached values from being shared across users. 
+ 
+
 ## Celery configuration
 Here is an example of configuring the `LongCallback` plugin to use Celery as the execution backend rather than a background process with FlaskCaching.
 
 ```python
 import dash
 import dash_labs as dl
-from dash_labs.plugins import CeleryCallbackManager, FlaskCachingCallbackManager
+from dash_labs.plugins import CeleryCallbackManager
 
 ## Celery on RabbitMQ
 from celery import Celery
