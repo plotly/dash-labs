@@ -1,7 +1,6 @@
 from functools import partial
 from types import MethodType
 import uuid
-import json
 
 
 class LongCallback:
@@ -23,6 +22,8 @@ def long_callback(
     import dash_core_components as dcc
     from dash_labs.grouping import map_grouping
 
+    callback_manager = self._long_callback_manager
+
     interval_id = dl.build_id("interval")
     interval_component = dcc.Interval(id=interval_id, interval=interval, disabled=True)
 
@@ -34,23 +35,20 @@ def long_callback(
         ".".join([dep.component_id, dep.component_property]) for dep in cancel
     )
 
-    callback_manager = self._long_callback_manager
-
     # Add hidden components to app so we don't need to put them in the layout
     hidden_components = self._extra_hidden_components
     hidden_components.extend([interval_component, store_component])
 
     def wrapper(fn):
-
         background_fn = callback_manager.make_background_fn(fn, progress=bool(progress))
 
         def callback(n_intervals, cancel, user_store_data, user_callback_args):
-            if isinstance(user_callback_args, tuple):
-                key = [list(user_callback_args), user_id]
-            else:
-                key = [user_callback_args, user_id]
-
-            result_key = json.dumps({"args": key})
+            result_key = user_store_data.get("cache_result_key", None)
+            if result_key is None:
+                # Build result cache key from inputs
+                result_key = callback_manager.build_cache_key(fn, user_callback_args)
+                print(f"create result_key: {result_key}, from {user_callback_args}")
+                user_store_data["cache_result_key"] = result_key
 
             should_cancel = any(
                 [
@@ -64,52 +62,52 @@ def long_callback(
                 else ()
             )
 
-            if should_cancel:
+            if should_cancel and result_key is not None:
                 if callback_manager.has_future(result_key):
-                    callback_manager.cancel_future(result_key)
+                    callback_manager.delete_future(result_key)
                 return dict(
-                    user_callback_output=map_grouping(
-                        lambda x: dash.no_update, output.dependencies()
-                    ),
+                    user_callback_output=map_grouping(lambda x: dash.no_update, output),
                     in_progress=tuple([val for (_, _, val) in running]),
                     progress=clear_progress,
                     interval_disabled=True,
+                    user_store_data=user_store_data,
                 )
 
             progress_tuple = callback_manager.get_progress(result_key)
 
             if callback_manager.result_ready(result_key):
                 result = callback_manager.get_result(result_key)
-                print(result)
+                # Clear result key
+                user_store_data["cache_result_key"] = None
                 return dict(
                     user_callback_output=result,
                     in_progress=tuple([val for (_, _, val) in running]),
                     progress=clear_progress,
                     interval_disabled=True,
+                    user_store_data=user_store_data,
                 )
             elif progress_tuple:
                 return dict(
-                    user_callback_output=map_grouping(
-                        lambda x: dash.no_update, output.dependencies()
-                    ),
+                    user_callback_output=map_grouping(lambda x: dash.no_update, output),
                     in_progress=tuple([val for (_, val, _) in running]),
                     progress=progress_tuple,
                     interval_disabled=False,
+                    user_store_data=user_store_data,
                 )
             else:
                 callback_manager.terminate_unhealthy_future(result_key)
                 if not callback_manager.has_future(result_key):
+                    print(f"launch for result_key: {result_key}")
                     callback_manager.call_and_register_background_fn(
                         result_key, background_fn, user_callback_args
                     )
 
                 return dict(
-                    user_callback_output=map_grouping(
-                        lambda x: dash.no_update, output.dependencies()
-                    ),
+                    user_callback_output=map_grouping(lambda x: dash.no_update, output),
                     in_progress=tuple([val for (_, val, _) in running]),
                     progress=clear_progress,
                     interval_disabled=False,
+                    user_store_data=user_store_data,
                 )
 
         # Add interval component to inputs
@@ -117,7 +115,7 @@ def long_callback(
             args=dict(
                 n_intervals=dl.Input(interval_id, "n_intervals"),
                 cancel=tuple(dep for dep in cancel),
-                user_store_data=dl.Input(store_id, "data"),
+                user_store_data=dl.State(store_id, "data"),
                 user_callback_args=args,
             ),
             output=dict(
@@ -125,6 +123,7 @@ def long_callback(
                 in_progress=tuple([dep for (dep, _, _) in running]),
                 progress=progress,
                 user_callback_output=output,
+                user_store_data=dl.Output(store_id, "data"),
             ),
             template=template,
         )(callback)

@@ -1,9 +1,10 @@
 import time
+from uuid import uuid4
 import dash
 import dash_html_components as html
+
 import dash_labs as dl
 from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
-from uuid import uuid4
 
 launch_uid = uuid4()
 
@@ -12,25 +13,20 @@ launch_uid = uuid4()
 # celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-## Celery on Redis
-from celery import Celery
-
-celery_app = Celery(
-    __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
-)
-long_callback_manager = CeleryCallbackManager(
-    celery_app,
-    # cache_by=[lambda: launch_uid]
-)
-
-# # ## FlaskCaching
-# from flask_caching import Cache
-# flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-# long_callback_manager = FlaskCachingCallbackManager(
-#     flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
-#     # flask_cache, clear_cache=True
+# ## Celery on Redis
+# from celery import Celery
+# celery_app = Celery(
+#     __name__, broker='redis://localhost:6379/0', backend='redis://localhost:6379/1'
 # )
+# long_callback_manager = CeleryCallbackManager(celery_app)
 
+# ## FlaskCaching
+from flask_caching import Cache
+
+flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
+long_callback_manager = FlaskCachingCallbackManager(
+    flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
+)
 
 app = dash.Dash(
     __name__,
@@ -45,6 +41,7 @@ app.layout = html.Div(
     [
         html.Div([html.P(id="paragraph_id", children=["Button not clicked"])]),
         html.Button(id="button_id", children="Run Job!"),
+        html.Button(id="cancel_button_id", children="Cancel Running Job!"),
     ]
 )
 
@@ -54,11 +51,13 @@ app.layout = html.Div(
     args=dl.Input("button_id", "n_clicks"),
     running=[
         (dl.Output("button_id", "disabled"), True, False),
+        (dl.Output("cancel_button_id", "disabled"), False, True),
     ],
+    cancel=[dl.Input("cancel_button_id", "n_clicks")],
 )
 def callback(n_clicks):
     time.sleep(2.0)
-    return ([f"Clicked {n_clicks} times"], (n_clicks or 0) % 4)
+    return [f"Clicked {n_clicks} times"], (n_clicks or 0) % 4
 
 
 if __name__ == "__main__":
