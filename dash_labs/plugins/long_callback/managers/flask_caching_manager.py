@@ -1,6 +1,6 @@
 import flask
 import flask_caching
-from multiprocess import Process
+import platform
 from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 
@@ -9,6 +9,25 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         self, flask_cache, cache_by=None, cache_timeout=None
     ):
         super().__init__(cache_by)
+
+        # Handle process class import
+        if platform.system() == "Windows":
+            try:
+                from multiprocess import Process
+            except ImportError:
+                raise ImportError("""\
+    When running on Windows, the long_callback decorator requires the
+    multiprocess package which can be install using pip...
+
+        $ pip install multiprocess
+
+    or conda.
+
+        $ conda install -c conda-forge multiprocess\n""")
+        else:
+            from multiprocessing import Process
+        self.Process = Process
+
         self.flask_cache = flask_cache
         self.callback_futures = dict()
         self.cache_timeout = cache_timeout
@@ -46,7 +65,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
 
     def call_and_register_background_fn(self, key, background_fn, args):
         self.delete_future(key)
-        future = Process(
+        future = self.Process(
             target=background_fn, args=(key, self._make_progress_key(key), args)
         )
         future.start()
