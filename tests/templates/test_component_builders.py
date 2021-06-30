@@ -63,6 +63,7 @@ def test_slider_builder(test_template):
 
     assert getattr(component, "tooltip", None) is None
 
+
 def test_range_slider_builder(test_template):
     min, max, step, val, id = 1, 10, 0.5, [2, 5], "test-rangeslider"
     component_dep = test_template.new_range_slider(
@@ -98,6 +99,7 @@ def test_range_slider_builder(test_template):
     component = component_dep.component_id
 
     assert getattr(component, "tooltip", None) is None
+
 
 def test_input_builder(test_template):
     component_dep = test_template.new_textbox(

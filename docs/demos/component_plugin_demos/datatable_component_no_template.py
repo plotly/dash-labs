@@ -17,8 +17,8 @@ table_plugin = dl.component_plugins.DataTablePlugin(
 
 table_plugin.install_callback(app)
 
-app.layout = html.Div(children=
-    table_plugin.args_components + table_plugin.output_components
+app.layout = html.Div(
+    children=table_plugin.args_components + table_plugin.output_components
 )
 
 if __name__ == "__main__":
