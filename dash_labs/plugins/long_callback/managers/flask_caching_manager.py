@@ -6,23 +6,15 @@ from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 class FlaskCachingCallbackManager(BaseLongCallbackManager):
     def __init__(
-        self, flask_cache, clear_cache=None, cache_by=None, cache_timeout=None
+        self, flask_cache, cache_by=None, cache_timeout=None
     ):
         super().__init__(cache_by)
         self.flask_cache = flask_cache
         self.callback_futures = dict()
-
-        # Handle default clear_cache
-        if clear_cache is None:
-            # Clear cache at startup if not caching
-            clear_cache = cache_by is None
-        self.clear_cache = clear_cache
         self.cache_timeout = cache_timeout
 
     def init(self, app):
         self.flask_cache.init_app(app.server)
-        if self.clear_cache:
-            self.flask_cache.clear()
 
     def delete_future(self, key):
         if key in self.callback_futures:
