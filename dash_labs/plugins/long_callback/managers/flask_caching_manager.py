@@ -1,4 +1,6 @@
-from multiprocessing import Process
+import flask
+import flask_caching
+from multiprocess import Process
 from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 
@@ -31,7 +33,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return self.callback_futures.get(key, default)
 
     def make_background_fn(self, fn, progress=False):
-        return make_update_cache(fn, self.flask_cache, progress)
+        return make_update_cache(fn, self.flask_cache.config, progress)
 
     @staticmethod
     def _make_progress_key(key):
@@ -64,9 +66,14 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
             return None
 
 
-def make_update_cache(fn, cache, progress):
+def make_update_cache(fn, cache_config, progress):
     def _callback(result_key, progress_key, user_callback_args):
+        # Create cach from config, using a dummy flask app instance
+        cache = flask_caching.Cache(config=cache_config)
+        cache.init_app(flask.Flask(__name__))
+
         def _set_progress(i, total):
+            pass
             cache.set(progress_key, (i, total))
 
         maybe_progress = [_set_progress] if progress else []
