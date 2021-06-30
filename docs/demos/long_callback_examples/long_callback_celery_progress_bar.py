@@ -20,7 +20,7 @@ from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 from flask_caching import Cache
 
 flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache, clear_cache=True)
+long_callback_manager = FlaskCachingCallbackManager(flask_cache)
 
 app = dash.Dash(
     __name__,
