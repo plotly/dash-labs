@@ -2,20 +2,20 @@ import time
 import dash
 import dash_html_components as html
 import dash_labs as dl
-from dash_labs.plugins import CeleryCallbackManager, FlaskCachingCallbackManager
+from dash_labs.plugins import CeleryCallbackManager, DiskcacheCachingCallbackManager
 
 # ## Celery on RabbitMQ
 # from celery import Celery
 # celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-## Celery on Redis
-from celery import Celery
-
-celery_app = Celery(
-    __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
-)
-long_callback_manager = CeleryCallbackManager(celery_app, cache_by=[lambda: True])
+# ## Celery on Redis
+# from celery import Celery
+#
+# celery_app = Celery(
+#     __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
+# )
+# long_callback_manager = CeleryCallbackManager(celery_app, cache_by=[lambda: True])
 
 # # ## FlaskCaching
 # from flask_caching import Cache
@@ -24,6 +24,11 @@ long_callback_manager = CeleryCallbackManager(celery_app, cache_by=[lambda: True
 # long_callback_manager = FlaskCachingCallbackManager(
 #     flask_cache, clear_cache=True, cache_by=[lambda: True]
 # )
+
+# ## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(
     __name__,

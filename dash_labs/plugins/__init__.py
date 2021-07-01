@@ -2,5 +2,4 @@ from .flexible_callbacks import FlexibleCallbacks
 from .hidden_components import HiddenComponents
 from .long_callback import LongCallback
 from .long_callback.managers.celery_manager import CeleryCallbackManager
-from .long_callback.managers.flask_caching_manager import FlaskCachingCallbackManager
 from .long_callback.managers.diskcache_manager import DiskcacheCachingCallbackManager
