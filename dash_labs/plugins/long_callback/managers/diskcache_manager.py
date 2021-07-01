@@ -1,4 +1,3 @@
-import diskcache
 import platform
 from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
@@ -7,6 +6,7 @@ class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
     def __init__(
         self, cache, cache_by=None, expire=None
     ):
+        import diskcache
         if not isinstance(cache, diskcache.Cache):
             raise ValueError("First argument must be a diskcache.Cache object")
         super().__init__(cache_by)
