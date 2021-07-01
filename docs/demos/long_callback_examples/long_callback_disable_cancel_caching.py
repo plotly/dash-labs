@@ -22,9 +22,12 @@ launch_uid = uuid4()
 
 # ## Diskcache
 import diskcache
+
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheCachingCallbackManager(
-    cache, cache_by=[lambda: launch_uid], expire=60,
+    cache,
+    cache_by=[lambda: launch_uid],
+    expire=60,
 )
 
 app = dash.Dash(

@@ -18,6 +18,7 @@ from dash_labs.plugins import DiskcacheCachingCallbackManager, CeleryCallbackMan
 
 ## Diskcache
 import diskcache
+
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheCachingCallbackManager(cache)
 

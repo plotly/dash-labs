@@ -3,10 +3,9 @@ from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 
 class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
-    def __init__(
-        self, cache, cache_by=None, expire=None
-    ):
+    def __init__(self, cache, cache_by=None, expire=None):
         import diskcache
+
         if not isinstance(cache, diskcache.Cache):
             raise ValueError("First argument must be a diskcache.Cache object")
         super().__init__(cache_by)
@@ -16,7 +15,8 @@ class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
             try:
                 from multiprocess import Process
             except ImportError:
-                raise ImportError("""\
+                raise ImportError(
+                    """\
     When running on Windows, the long_callback decorator requires the
     multiprocess package which can be install using pip...
 
@@ -24,7 +24,8 @@ class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
 
     or conda.
 
-        $ conda install -c conda-forge multiprocess\n""")
+        $ conda install -c conda-forge multiprocess\n"""
+                )
         else:
             from multiprocessing import Process
         self.Process = Process
