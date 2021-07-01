@@ -25,7 +25,7 @@ from dash_labs.plugins import CeleryCallbackManager, DiskcacheCachingCallbackMan
 #     flask_cache, clear_cache=True, cache_by=[lambda: True]
 # )
 
-# ## Diskcache
+## Diskcache
 import diskcache
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheCachingCallbackManager(cache)
