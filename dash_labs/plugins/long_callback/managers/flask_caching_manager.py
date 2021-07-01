@@ -56,8 +56,14 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
     def get_future(self, key, default=None):
         return self.callback_futures.get(key, default)
 
+    def get_cache_or_config(self):
+        if platform.system() == "Windows":
+            return self.flask_cache.config
+        else:
+            return self.flask_cache
+
     def make_background_fn(self, fn, progress=False):
-        return make_update_cache(fn, self.flask_cache.config, progress, self.cache_timeout)
+        return make_update_cache(fn, self.get_cache_or_config(), progress, self.cache_timeout)
 
     @staticmethod
     def _make_progress_key(key):
@@ -97,11 +103,19 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return result
 
 
-def make_update_cache(fn, cache_config, progress, timeout):
+def make_cache_from_cache_or_config(cache_or_config):
+    if isinstance(cache_or_config, flask_caching.Cache):
+        return cache_or_config
+    else:
+        cache = flask_caching.Cache(config=cache_or_config)
+        cache.init_app(flask.Flask(__name__))
+        return cache
+
+
+def make_update_cache(fn, cache_or_config, progress, timeout):
     def _callback(result_key, progress_key, user_callback_args):
         # Create cach from config, using a dummy flask app instance
-        cache = flask_caching.Cache(config=cache_config)
-        cache.init_app(flask.Flask(__name__))
+        cache = make_cache_from_cache_or_config(cache_or_config)
 
         def _set_progress(i, total):
             cache.set(progress_key, (i, total), timeout=timeout)
