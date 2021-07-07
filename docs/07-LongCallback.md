@@ -178,9 +178,9 @@ if __name__ == "__main__":
 ![](https://i.imgur.com/EzzLimH.gif)
 
 ## Example 4: Progress bar
-This example uses the `progress` argument to the `@long_callback` decorator to update a progress bar while the callback is running.  The `progress` argument should be set to an `Output` dependency object that references a tuple of two properties of a component in the app's layout. The first property will be set to the current iteration of the task that the decorated function is executing, and the second property will be set to the total number of iterations.
+This example uses the `progress` argument to the `@long_callback` decorator to update a progress bar while the callback is running.  The `progress` argument should be set to an `Output` dependency grouping that references properties of components in the app's layout.
 
-When a dependency object is assigned to the `progress` argument of `@long_callback`, the decorated function will be called with a new special argument as the first argument to the function.  This special argument, named `set_progress` in the example below, is a function handle that the decorated function should call in order to provide updates to the app on its current progress.  The `set_progress` function accepts two positional argument, which correspond to the two properties specified in the `Output` dependency object passed to the `progress` argument of `@long_callback`.  The first argument to `set_progress` should be the current iteration of the task that the decorated function is executing, and the second argument should be the total number of iterations.
+When a dependency grouping is assigned to the `progress` argument of `@long_callback`, the decorated function will be called with a new special argument as the first argument to the function.  This special argument, named `set_progress` in the example below, is a function handle that the decorated function should call in order to provide updates to the app on its current progress.  The `set_progress` function accepts a single argument, which correspond to the grouping of properties specified in the `Output` dependency grouping passed to the `progress` argument of `@long_callback`.
 
 ```python
 import time
@@ -208,7 +208,6 @@ app.layout = html.Div([
     html.Button(id='cancel_button_id', children="Cancel Running Job!"),
 ])
 
-
 @app.long_callback(
     output=dl.Output("paragraph_id", "children"),
     args=dl.Input("button_id", "n_clicks"),
@@ -225,9 +224,94 @@ def callback(set_progress, n_clicks):
     total = 10
     for i in range(total):
         time.sleep(0.5)
-        set_progress(str(i + 1), str(total))
-    # Set progress back to indeterminate state for next time
-    set_progress(None, None)
+        set_progress((str(i + 1), str(total)))
+
+    return [f"Clicked {n_clicks} times"]
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
+```
+
+![](https://i.imgur.com/0tRGCH8.gif)
+
+## Example 5: Progress bar chart graph
+The `progress` argument to the `@long_callback` decorator can be used to update arbitrary component properties.  This example creates and updates a plotly bar graph to display the current calculation status.  This example also uses the `progress_default` argument to `long_callback` to specify a grouping of values that should be assigned to the components specified by the `progress` argument when the callback is not in progress. If `progress_default` is not provided, all the dependency properties specified in `progress` will be set to `None` when the callback is not running.  In this case, `progress_default` is set to a figure with a zero width bar. 
+
+```python
+import time
+import dash
+import dash_html_components as html
+import dash_core_components as dcc
+import dash_labs as dl
+from dash_labs.plugins import DiskcacheCachingCallbackManager
+import plotly.graph_objects as go
+
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheCachingCallbackManager(cache)
+
+def make_progress_graph(progress, total):
+    progress_graph = (
+        go.Figure(data=[go.Bar(x=[progress])])
+        .update_xaxes(range=[0, total])
+        .update_yaxes(
+            showticklabels=False,
+        )
+        .update_layout(height=100, margin=dict(t=20, b=40))
+    )
+    return progress_graph
+
+app = dash.Dash(
+    __name__,
+    plugins=[
+        dl.plugins.FlexibleCallbacks(),
+        dl.plugins.HiddenComponents(),
+        dl.plugins.LongCallback(long_callback_manager),
+    ],
+)
+
+app.layout = html.Div(
+    [
+        html.Div(
+            [
+                html.P(id="paragraph_id", children=["Button not clicked"]),
+                dcc.Graph(id="progress_bar_graph", figure=make_progress_graph(0, 10)),
+            ]
+        ),
+        html.Button(id="button_id", children="Run Job!"),
+        html.Button(id="cancel_button_id", children="Cancel Running Job!"),
+    ]
+)
+
+@app.long_callback(
+    output=dl.Output("paragraph_id", "children"),
+    args=dl.Input("button_id", "n_clicks"),
+    running=[
+        (dl.Output("button_id", "disabled"), True, False),
+        (dl.Output("cancel_button_id", "disabled"), False, True),
+        (
+            dl.Output("paragraph_id", "style"),
+            {"visibility": "hidden"},
+            {"visibility": "visible"},
+        ),
+        (
+            dl.Output("progress_bar_graph", "style"),
+            {"visibility": "visible"},
+            {"visibility": "hidden"},
+        ),
+    ],
+    cancel=[dl.Input("cancel_button_id", "n_clicks")],
+    progress=dl.Output("progress_bar_graph", "figure"),
+    progress_default=make_progress_graph(0, 10),
+    interval=1000,
+)
+def callback(set_progress, n_clicks):
+    total = 10
+    for i in range(total):
+        time.sleep(0.5)
+        set_progress(make_progress_graph(i, 10))
+
     return [f"Clicked {n_clicks} times"]
 
 
@@ -235,7 +319,7 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 ```
 
-![](https://i.imgur.com/0tRGCH8.gif)
+![](https://i.imgur.com/ACCUwbD.gif)
 
 ## Caching results with long_callback
 The `long_callback` decorator can optionally [memoize](https://en.wikipedia.org/wiki/Memoization) callback function results through caching, and it provides a flexible API for configuring when cached results may be reused.
