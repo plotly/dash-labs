@@ -4,7 +4,7 @@ import dash
 import dash_html_components as html
 
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
+from dash_labs.plugins import CeleryCallbackManager, DiskcacheCachingCallbackManager
 
 launch_uid = uuid4()
 
@@ -20,12 +20,14 @@ launch_uid = uuid4()
 # )
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-# ## FlaskCaching
-from flask_caching import Cache
+# ## Diskcache
+import diskcache
 
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(
-    flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheCachingCallbackManager(
+    cache,
+    cache_by=[lambda: launch_uid],
+    expire=60,
 )
 
 app = dash.Dash(

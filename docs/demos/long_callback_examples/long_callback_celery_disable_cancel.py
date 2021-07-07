@@ -3,7 +3,7 @@ import dash
 import dash_html_components as html
 
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
+from dash_labs.plugins import DiskcacheCachingCallbackManager, CeleryCallbackManager
 
 # ## Celery on RabbitMQ
 # from celery import Celery
@@ -17,11 +17,12 @@ from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 # )
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-# ## FlaskCaching
-from flask_caching import Cache
+## Diskcache
+import diskcache
 
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache, clear_cache=True)
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheCachingCallbackManager(cache)
+
 
 app = dash.Dash(
     __name__,

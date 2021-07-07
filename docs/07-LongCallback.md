@@ -2,7 +2,7 @@
 DashLabs introduces a new callback decorator called `@long_callback`. This decorator is designed to make it easier to create callback functions that take a long time to run, without locking up the Dash app or timing out.
 
 `@long_callback` is designed to support multiple backend executors.  Two backends are currently implemented:
- - A [Flask-Caching](https://flask-caching.readthedocs.io/en/latest/) backend that runs callback logic in a separate process and stores the results in a Flask-Caching cache. This is the easiest backend to use for local development.
+ - A [diskcache](http://www.grantjenks.com/docs/diskcache/index.html) backend that runs callback logic in a separate process and stores the results to disk using the diskcache library. This is the easiest backend to use for local development.
  - A [Celery](https://docs.celeryproject.org/en/stable/getting-started/introduction.html) backend that runs callback logic in a celery worker and returns results to the Dash app through a Celery broker like RabbitMQ or Redis.
 
 The `@long_callback` decorator supports the same arguments as the normal `@callback` decorator, but also includes support for 3 additional arguments that will be discussion below: `running`, `cancel`, and `progress`.
@@ -14,11 +14,10 @@ In Dash Labs, the `@long_callback` decorator is enabled using the `LongCallback`
 import dash
 import dash_labs as dl
 
-# ## FlaskCaching
-from flask_caching import Cache
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
-
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
@@ -27,9 +26,15 @@ app = dash.Dash(__name__, plugins=[
 ])
 ```
 
-This configuration requires the `Flask-Caching` package which can be installed with:
+This configuration requires the `diskcache` package which can be installed with:
 ```
-$ pip install Flask-Caching
+$ pip install diskcache
+```
+
+Additionally, on Windows the `multiprocess` library is required as well.
+
+```
+$ pip install multiprocess
 ```
 
 ## Example 1: Simple background callback
@@ -40,13 +45,11 @@ import time
 import dash
 import dash_html_components as html
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager
 
-# ## FlaskCaching
-from flask_caching import Cache
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
-
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
@@ -89,12 +92,11 @@ import time
 import dash
 import dash_html_components as html
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager
 
-# ## FlaskCaching
-from flask_caching import Cache
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
@@ -134,14 +136,12 @@ This example builds on the previous example, adding support for canceling a long
 import time
 import dash
 import dash_html_components as html
-
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager
 
-# ## FlaskCaching
-from flask_caching import Cache
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
@@ -187,16 +187,11 @@ import time
 import dash
 import dash_html_components as html
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
 
-# ## FlaskCaching
-from flask_caching import Cache
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
-
-# ## FlaskCaching
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(flask_cache)
+## Diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(__name__, plugins=[
     dl.plugins.FlexibleCallbacks(),
@@ -269,18 +264,14 @@ import time
 from uuid import uuid4
 import dash
 import dash_html_components as html
-
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager
 
-# ## FlaskCaching
-from flask_caching import Cache
+## Diskcache
+import diskcache
 launch_uid = uuid4()
-flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-long_callback_manager = FlaskCachingCallbackManager(
-    flask_cache,
-    clear_cache=True, 
-    cache_by=[lambda: launch_uid]
+cache = diskcache.Cache("./cache")
+long_callback_manager = dl.plugins.DiskcacheCachingCallbackManager(
+    cache, cache_by=[lambda: launch_uid], expire=60,
 )
 
 app = dash.Dash(

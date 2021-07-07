@@ -2,7 +2,7 @@ import time
 import dash
 import dash_html_components as html
 import dash_labs as dl
-from dash_labs.plugins import FlaskCachingCallbackManager, CeleryCallbackManager
+from dash_labs.plugins import DiskcacheCachingCallbackManager, CeleryCallbackManager
 from uuid import uuid4
 
 launch_uid = uuid4()
@@ -12,25 +12,22 @@ launch_uid = uuid4()
 # celery_app = Celery(__name__, backend='rpc://', broker='pyamqp://')
 # long_callback_manager = CeleryCallbackManager(celery_app)
 
-## Celery on Redis
-from celery import Celery
-
-celery_app = Celery(
-    __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
-)
-long_callback_manager = CeleryCallbackManager(
-    celery_app,
-    # cache_by=[lambda: launch_uid]
-)
-
-# # ## FlaskCaching
-# from flask_caching import Cache
-# flask_cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "./cache"})
-# long_callback_manager = FlaskCachingCallbackManager(
-#     flask_cache, clear_cache=True, cache_by=[lambda: launch_uid]
-#     # flask_cache, clear_cache=True
+# ## Celery on Redis
+# from celery import Celery
+#
+# celery_app = Celery(
+#     __name__, broker="redis://localhost:6379/0", backend="redis://localhost:6379/1"
+# )
+# long_callback_manager = CeleryCallbackManager(
+#     celery_app,
+#     # cache_by=[lambda: launch_uid]
 # )
 
+## Diskcache
+import diskcache
+
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheCachingCallbackManager(cache)
 
 app = dash.Dash(
     __name__,

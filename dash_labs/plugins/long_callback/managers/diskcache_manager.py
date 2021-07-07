@@ -1,26 +1,40 @@
-from multiprocessing import Process
+import platform
 from dash_labs.plugins.long_callback.managers import BaseLongCallbackManager
 
 
-class FlaskCachingCallbackManager(BaseLongCallbackManager):
-    def __init__(
-        self, flask_cache, clear_cache=None, cache_by=None, cache_timeout=None
-    ):
-        super().__init__(cache_by)
-        self.flask_cache = flask_cache
-        self.callback_futures = dict()
+class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
+    def __init__(self, cache, cache_by=None, expire=None):
+        import diskcache
 
-        # Handle default clear_cache
-        if clear_cache is None:
-            # Clear cache at startup if not caching
-            clear_cache = cache_by is None
-        self.clear_cache = clear_cache
-        self.cache_timeout = cache_timeout
+        if not isinstance(cache, diskcache.Cache):
+            raise ValueError("First argument must be a diskcache.Cache object")
+        super().__init__(cache_by)
+
+        # Handle process class import
+        if platform.system() == "Windows":
+            try:
+                from multiprocess import Process
+            except ImportError:
+                raise ImportError(
+                    """\
+    When running on Windows, the long_callback decorator requires the
+    multiprocess package which can be install using pip...
+
+        $ pip install multiprocess
+
+    or conda.
+
+        $ conda install -c conda-forge multiprocess\n"""
+                )
+        else:
+            from multiprocessing import Process
+        self.Process = Process
+        self.cache = cache
+        self.callback_futures = dict()
+        self.expire = expire
 
     def init(self, app):
-        self.flask_cache.init_app(app.server)
-        if self.clear_cache:
-            self.flask_cache.clear()
+        pass
 
     def delete_future(self, key):
         if key in self.callback_futures:
@@ -32,7 +46,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return False
 
     def clear_cache_entry(self, key):
-        self.flask_cache.delete(key)
+        self.cache.delete(key)
 
     def terminate_unhealthy_future(self, key):
         return False
@@ -44,7 +58,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return self.callback_futures.get(key, default)
 
     def make_background_fn(self, fn, progress=False):
-        return make_update_cache(fn, self.flask_cache, progress, self.cache_timeout)
+        return make_update_cache(fn, self.cache, progress, self.expire)
 
     @staticmethod
     def _make_progress_key(key):
@@ -52,7 +66,7 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
 
     def call_and_register_background_fn(self, key, background_fn, args):
         self.delete_future(key)
-        future = Process(
+        future = self.Process(
             target=background_fn, args=(key, self._make_progress_key(key), args)
         )
         future.start()
@@ -62,15 +76,15 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         future = self.get_future(key)
         if future is not None:
             progress_key = self._make_progress_key(key)
-            return self.flask_cache.get(progress_key)
+            return self.cache.get(progress_key)
         return None
 
     def result_ready(self, key):
-        return self.flask_cache.get(key) not in (None, "__undefined__")
+        return self.cache.get(key) not in (None, "__undefined__")
 
     def get_result(self, key):
         # Get result value
-        result = self.flask_cache.get(key)
+        result = self.cache.get(key)
         if result == "__undefined__":
             result = None
 
@@ -84,10 +98,10 @@ class FlaskCachingCallbackManager(BaseLongCallbackManager):
         return result
 
 
-def make_update_cache(fn, cache, progress, timeout):
+def make_update_cache(fn, cache, progress, expire):
     def _callback(result_key, progress_key, user_callback_args):
         def _set_progress(i, total):
-            cache.set(progress_key, (i, total), timeout=timeout)
+            cache.set(progress_key, (i, total))
 
         maybe_progress = [_set_progress] if progress else []
         if isinstance(user_callback_args, dict):
@@ -96,6 +110,6 @@ def make_update_cache(fn, cache, progress, timeout):
             user_callback_output = fn(*maybe_progress, *user_callback_args)
         else:
             user_callback_output = fn(*maybe_progress, user_callback_args)
-        cache.set(result_key, user_callback_output, timeout=timeout)
+        cache.set(result_key, user_callback_output, expire=expire)
 
     return _callback
