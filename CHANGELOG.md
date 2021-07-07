@@ -1,6 +1,17 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 0.4.0
+
+### Added
+ - Added Windows support for the `@app.long_callback` decorator ([#32](https://github.com/plotly/dash-labs/pull/32))
+ - Added caching support to the `@app.long_callback` decorator using the `cache_by` argument ([#32](https://github.com/plotly/dash-labs/pull/32))
+ - Add support for updating arbitrary component properties while a long_callback is running using the `set_progress` function. 
+
+### Changes
+ - To enable Windows support, the FlaskCaching backend to `@app.long_callback` has been replaced by a backend based on the `daskcache` library
+
+
 ## 0.3.0
 
 ### Added

@@ -1,8 +1,10 @@
 import time
 import dash
 import dash_html_components as html
+import dash_core_components as dcc
 import dash_labs as dl
 from dash_labs.plugins import DiskcacheCachingCallbackManager, CeleryCallbackManager
+import plotly.graph_objects as go
 
 # ## Celery on RabbitMQ
 # from celery import Celery
@@ -22,6 +24,19 @@ import diskcache
 cache = diskcache.Cache("./cache")
 long_callback_manager = DiskcacheCachingCallbackManager(cache)
 
+
+def make_progress_graph(progress, total):
+    progress_graph = (
+        go.Figure(data=[go.Bar(x=[progress])])
+        .update_xaxes(range=[0, total])
+        .update_yaxes(
+            showticklabels=False,
+        )
+        .update_layout(height=100, margin=dict(t=20, b=40))
+    )
+    return progress_graph
+
+
 app = dash.Dash(
     __name__,
     plugins=[
@@ -36,7 +51,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.P(id="paragraph_id", children=["Button not clicked"]),
-                html.Progress(id="progress_bar"),
+                dcc.Graph(id="progress_bar_graph", figure=make_progress_graph(0, 10)),
             ]
         ),
         html.Button(id="button_id", children="Run Job!"),
@@ -57,19 +72,22 @@ app.layout = html.Div(
             {"visibility": "visible"},
         ),
         (
-            dl.Output("progress_bar", "style"),
+            dl.Output("progress_bar_graph", "style"),
             {"visibility": "visible"},
             {"visibility": "hidden"},
         ),
     ],
     cancel=[dl.Input("cancel_button_id", "n_clicks")],
-    progress=dl.Output("progress_bar", ("value", "max")),
+    progress=dl.Output("progress_bar_graph", "figure"),
+    progress_default=make_progress_graph(0, 10),
+    interval=1000,
 )
 def callback(set_progress, n_clicks):
     total = 10
     for i in range(total):
         time.sleep(0.5)
-        set_progress((str(i + 1), str(total)))
+        set_progress(make_progress_graph(i, 10))
+
     return [f"Clicked {n_clicks} times"]
 
 
