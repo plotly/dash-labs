@@ -8,7 +8,7 @@ DashLabs introduces a new callback decorator called `@long_callback`. This decor
 The `@long_callback` decorator supports the same arguments as the normal `@callback` decorator, but also includes support for 3 additional arguments that will be discussion below: `running`, `cancel`, and `progress`.
 
 ## Enabling long-callback support
-In Dash Labs, the `@long_callback` decorator is enabled using the `LongCallback` plugin.  To support multiple backends, the `LongCallback` plugin is, itself, configured with either a `FlaskCachingCallbackManager` or `CeleryCallbackManager` object.  Furthermore, in addition to the `LongCallback` plugin, the `FlexibleCallback` and `HiddenComponents` plugins must be enabled as well.  Here is an example of configuring an app to enable the `@long_callback` decorator using the Flask-Caching backend.
+In Dash Labs, the `@long_callback` decorator is enabled using the `LongCallback` plugin.  To support multiple backends, the `LongCallback` plugin is, itself, configured with either a `DiskcacheCachingCallbackManager` or `CeleryCallbackManager` object.  Furthermore, in addition to the `LongCallback` plugin, the `FlexibleCallback` and `HiddenComponents` plugins must be enabled as well.  Here is an example of configuring an app to enable the `@long_callback` decorator using the diskcache backend.
 
 ```python
 import dash
@@ -333,7 +333,7 @@ The built-in [`functools.lru_cache`](https://docs.python.org/3/library/functools
  1. We might want the cache to persist across server restarts.
  2. When an app is served using multiple processes (e.g. multiple gunicorn workers on a single server, or multiple servers behind a load balancer), we might want to shared cached values across all of these processes. 
 
-For these reasons, a simple Python `dict` is not a suitable storage container for caching Dash callbacks.  Instead, `long_callback` uses the current Flask-Caching or Celery callback manager to store cached results.  
+For these reasons, a simple Python `dict` is not a suitable storage container for caching Dash callbacks.  Instead, `long_callback` uses the current diskcache or Celery callback manager to store cached results.  
 
 ### Caching flexibility requirements
 To support caching in a variety of development and production use cases, `long_callback` may be configured by one or more zero-argument functions, where the return values of these functions are combined with the function input arguments when generating the cache key.  Several common use-cases will be described below.
@@ -341,7 +341,7 @@ To support caching in a variety of development and production use cases, `long_c
 ### Enabling caching
 Caching is enabled by providing one or more zero-argument functions to the `cache_by` argument of `long_callback`.  These functions are called each time the status of a `long_callback` function is checked, and their return values are hashed as part of the cache key.    
 
-Here is an example using the Flask-Caching callback manager.  The `clear_cache` argument controls whether the cache is reset at startup. In this example, the `cache_by` argument is set to a `lambda` function that returns a fixed UUID that is randomly generated during app initialization. The implication of this `cache_by` function is that the cache is shared across all invocations of the callback across all user sessions that are handled by a single server instance. Each time a server process is restarted, the cache is cleared an a new UUID is generated.
+Here is an example using the diskcache callback manager.  The `clear_cache` argument controls whether the cache is reset at startup. In this example, the `cache_by` argument is set to a `lambda` function that returns a fixed UUID that is randomly generated during app initialization. The implication of this `cache_by` function is that the cache is shared across all invocations of the callback across all user sessions that are handled by a single server instance. Each time a server process is restarted, the cache is cleared an a new UUID is generated.
 
 ```python
 import time
@@ -406,7 +406,7 @@ Various `cache_by` functions can be used to accomplish a variety of caching poli
  
 
 ## Celery configuration
-Here is an example of configuring the `LongCallback` plugin to use Celery as the execution backend rather than a background process with FlaskCaching.
+Here is an example of configuring the `LongCallback` plugin to use Celery as the execution backend rather than a background process with diskcache.
 
 ```python
 import dash
