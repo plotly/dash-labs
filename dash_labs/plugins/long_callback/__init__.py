@@ -15,7 +15,15 @@ class LongCallback:
 
 
 def long_callback(
-    self, args, output, running=(), cancel=(), progress=(), template=None, interval=1000
+    self,
+    args,
+    output,
+    running=(),
+    cancel=(),
+    progress=(),
+    progress_default=None,
+    template=None,
+    interval=1000,
 ):
     import dash
     import dash_labs as dl
@@ -55,11 +63,14 @@ def long_callback(
                     for trigger in dash.callback_context.triggered
                 ]
             )
-            clear_progress = (
-                map_grouping(lambda x: None, progress.dependencies())
-                if progress
-                else ()
-            )
+            if progress_default is None:
+                clear_progress = (
+                    map_grouping(lambda x: None, progress.dependencies())
+                    if progress
+                    else ()
+                )
+            else:
+                clear_progress = progress_default
 
             if should_cancel and result_key is not None:
                 if callback_manager.has_future(result_key):
@@ -72,7 +83,7 @@ def long_callback(
                     user_store_data=user_store_data,
                 )
 
-            progress_tuple = callback_manager.get_progress(result_key)
+            progress_value = callback_manager.get_progress(result_key)
 
             if callback_manager.result_ready(result_key):
                 result = callback_manager.get_result(result_key)
@@ -85,11 +96,11 @@ def long_callback(
                     interval_disabled=True,
                     user_store_data=user_store_data,
                 )
-            elif progress_tuple:
+            elif progress_value:
                 return dict(
                     user_callback_output=map_grouping(lambda x: dash.no_update, output),
                     in_progress=tuple([val for (_, val, _) in running]),
-                    progress=progress_tuple,
+                    progress=progress_value or {},
                     interval_disabled=False,
                     user_store_data=user_store_data,
                 )

@@ -100,8 +100,8 @@ class DiskcacheCachingCallbackManager(BaseLongCallbackManager):
 
 def make_update_cache(fn, cache, progress, expire):
     def _callback(result_key, progress_key, user_callback_args):
-        def _set_progress(i, total):
-            cache.set(progress_key, (i, total))
+        def _set_progress(progress_value):
+            cache.set(progress_key, progress_value)
 
         maybe_progress = [_set_progress] if progress else []
         if isinstance(user_callback_args, dict):

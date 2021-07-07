@@ -44,7 +44,8 @@ class CeleryCallbackManager(BaseLongCallbackManager):
         if future is not None:
             progress_info = future.info if future.state == "PROGRESS" else None
             if progress_info is not None:
-                return (progress_info["current"], progress_info["total"])
+                progress_value = progress_info["progress_value"]
+                return pickle.loads(base64.decodebytes(progress_value.encode()))
         return None
 
     def result_ready(self, key):
@@ -70,8 +71,9 @@ class CeleryCallbackManager(BaseLongCallbackManager):
 def make_celery_fn(user_fn, celery_app, progress):
     @celery_app.task(bind=True)
     def _celery_fn(self, user_callback_args):
-        def _set_progress(i, total):
-            self.update_state(state="PROGRESS", meta={"current": i, "total": total})
+        def _set_progress(progress_value):
+            progress_value = base64.encodebytes(pickle.dumps(progress_value)).decode()
+            self.update_state(state="PROGRESS", meta={"progress_value": progress_value})
 
         maybe_progress = [_set_progress] if progress else []
         if isinstance(user_callback_args, dict):
