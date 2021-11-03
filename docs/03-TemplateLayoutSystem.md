@@ -1,3 +1,23 @@
+
+> # Status: Template Layout System
+> ### Based on community feedback, this version of the template layout system will not be added to a future version of Dash.   However, the work done here inspired many new features, such as:
+> ### - New in Dash 2.1:  The [low-code shorthands](https://github.com/plotly/dash/blob/dev/CHANGELOG.md#dash-core-components) for Dash Core Components and the dash DataTable.
+> ### - New in Dash 2.1, The Input, State, and Output [accepts components instead of ID strings](https://github.com/plotly/dash/blob/dev/CHANGELOG.md#dash-and-dash-renderer). Dash callback will auto-generate the component's ID under-the-hood if not supplied.  
+> ### - Available in the [dash-bootstrap-templates](https://pypi.org/project/dash-bootstrap-templates/) library: Bootstrap themed figures.
+
+
+> We appreciate everyone's input on the template system. Templates are still in the dash-labs project plan, so stay tuned for a new version!
+
+
+```diff
+- ----------------------------------------------------------------------------------
+-  This documentation describes code in a previous version of dash-labs (v0.4.0) 
+-  and is inclded here for legacy purposes only.
+- ----------------------------------------------------------------------------------
+```
+
+
+
 # The template layout system
 Dash Labs introduces a template system that makes it possible to quickly add components to a pre-defined template.  
 

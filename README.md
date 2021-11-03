@@ -10,6 +10,7 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
   - [05-ComponentPlugingPattern.md](https://github.com/plotly/dash-labs/blob/main/docs/05-ComponentPlugingPattern.md)
   - [06-TemplateIntegrationAndMigration.md](https://github.com/plotly/dash-labs/blob/main/docs/06-TemplateIntegrationAndMigration.md)
   - [07-LongCallback.md](https://github.com/plotly/dash-labs/blob/main/docs/07-LongCallback.md)
+  - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
 
 Various demos are located in the [docs/demos](./docs/demos) directory.
 
@@ -18,10 +19,4 @@ To install the tech preview:
 
 ```
 $ pip install -U dash-labs
-```
-
-To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
-
-```
-$ pip install -U dash-bootstrap-components spectra colormath requests tinycss2 
 ```
