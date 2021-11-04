@@ -1,13 +1,13 @@
 
-> # Status: Component Plugin design pattern
-> ### This version of the component plug-in design pattern will not be added to a future version of Dash.  However, this was the precursor for the All-in-One Components that were added to Dash 2.0 🎉
-> ### See the [All-in-One Components section](https://dash.plotly.com/all-in-one-components) in the Dash documentation 
+> ## Status: Component Plugin design pattern
+> #### This version of the component plug-in design pattern will not be added to a future version of Dash.  However, this was the precursor for the All-in-One Components that were added to Dash 2.0 🎉
+> #### See the [All-in-One Components section](https://dash.plotly.com/all-in-one-components) in the Dash documentation 
 
 
 ```diff
 - ----------------------------------------------------------------------------------
 -  This documentation describes code in a previous version of dash-labs (v0.4.0) 
--  and is inclded here for legacy purposes only.
+-  and is included here for legacy purposes only.
 - ----------------------------------------------------------------------------------
 ```
 

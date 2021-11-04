@@ -1,13 +1,13 @@
 
-> # Status: Long Callbacks
-> ### The long callback handling was added to Dash 2.0 🎉
-> ### See the [Long Callback section](https://dash.plotly.com/long-callbacks) in the Dash documentation 
+> ## Status: Long Callbacks
+> #### The long callback handling was added to Dash 2.0 🎉
+> #### See the [Long Callback section](https://dash.plotly.com/long-callbacks) in the Dash documentation 
 
 
 ```diff
 - ----------------------------------------------------------------------------------
 -  This documentation describes code in a previous version of dash-labs (v0.4.0) 
--  and is inclded here for legacy purposes only.
+-  and is included here for legacy purposes only.
 - ----------------------------------------------------------------------------------
 ```
 
