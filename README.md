@@ -15,12 +15,18 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
 
 _New in dash-labs v1.0.0:_
   - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
- 
+  - [09-MultiPageDashAppExamples.md](https://github.com/plotly/dash-labs/blob/main/docs/09-MultiPageDashAppExamples.md)
+
 Examples and demos are located in the [docs/demos](./docs/demos) directory.
 
 ## Installation
-To install the tech preview:
+To install the latest version of dash-labs:
 
 ```
 $ pip install -U dash-labs
+```
+
+To install the archived version:
+```
+$ pip install dash-labs==0.4.0
 ```

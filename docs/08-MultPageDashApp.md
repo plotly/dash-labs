@@ -82,8 +82,8 @@ if __name__ == "__main__":
 - Define `layout`. This can be a variable or function that returns a component
 - Call `dash.register_page(__name__)` to tell `dl.plugins.pages` that this page should be part of the multi-page framework
 
-For example, here is the first page of our app
-link
+For example, here is the first page of our app:
+
 ```python
 import dash
 dash.register_page(__name__, path="/")
@@ -114,7 +114,7 @@ def filter_heatmap(cols):
 
 The `dash.page_registry` is an `OrderedDict` with keys being the page's module name (e.g. `pages.bar-charts`) and values being a dictionary containing keys `path`, `name`, `order`, `title`, `description`, `image`, and `layout`. 
 As you saw in the above example, This `page_registry` is populated from calling `dash.register_page` within `pages/`.
-`dash.register_page` will can accept various arguments to customize aspects about the page.  See the Advanced Features section below.
+`dash.register_page` will accept various arguments to customize aspects about the page.  See the Advanced Features section below.
    
 
 ![multi_page](https://user-images.githubusercontent.com/72614349/140232399-efe7020d-480a-40af-a0b0-40e66dcd9d56.gif)

@@ -5,8 +5,8 @@ Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versio
 
 ### Added
  - Added Dash Pages: A plug-in to simplify building multi-page apps.
- - Added documentation: 08-DashPages.
- - Added demos:  4 examples of multi-page apps using the Dash Pages plug-in.
+ - Added documentation: 08-MultiPageDashApp.md and 09-MultiPageDashAppExamples.md.
+ - Added demos:  examples of multi-page apps using the Dash Pages plug-in.
 
 ### Removed
  - removed code, tests, and demos for projects documented in chapter 02 through 07.

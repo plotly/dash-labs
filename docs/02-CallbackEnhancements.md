@@ -8,6 +8,10 @@
 - ----------------------------------------------------------------------------------
 -  This documentation describes code in a previous version of dash-labs (v0.4.0) 
 -  and is included here for legacy purposes only.
+-
+-  You can install v0.4.0 with:
+-  pip install dash-labs==0.4.0
+
 - ----------------------------------------------------------------------------------
 ```
 

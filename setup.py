@@ -44,5 +44,5 @@ setup(
     license_files=["LICENSE.txt"],
     python_requires=">=3.6.*",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    install_requires=requirements_txt(),
+
 )
