@@ -1,3 +1,23 @@
+
+> ## Status: Component Plugin design pattern
+> #### This version of the component plug-in design pattern will not be added to a future version of Dash.  However, this was the precursor for the All-in-One Components that were added to Dash 2.0 🎉
+> #### See the [All-in-One Components section](https://dash.plotly.com/all-in-one-components) in the Dash documentation 
+
+
+```diff
+- ----------------------------------------------------------------------------------
+-  This documentation describes code in a previous version of dash-labs (v0.4.0) 
+-  and is included here for legacy purposes only.
+-
+-  You can install v0.4.0 with:
+-  pip install dash-labs==0.4.0
+- ----------------------------------------------------------------------------------
+```
+
+
+
+
+
 # The Component Plugin design pattern
 Here is a proposed architecture that can be used to extract component creation and callback behavior into a separate class.  The `ComponentPlugin` class encapsulates the creation of inputs and output components, and the generation of output property value functionality.
 

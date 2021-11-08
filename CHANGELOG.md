@@ -1,6 +1,19 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 1.0.0
+
+### Added
+ - Added Dash Pages: A plug-in to simplify building multi-page apps.
+ - Added documentation: 08-MultiPageDashApp.md and 09-MultiPageDashAppExamples.md.
+ - Added demos:  examples of multi-page apps using the Dash Pages plug-in.
+
+### Removed
+ - removed code, tests, and demos for projects documented in chapter 02 through 07.
+
+## Changes
+ - updated documentation to include status of projects in chapters 02 through 07.
+
 ## 0.4.0
 
 ### Added

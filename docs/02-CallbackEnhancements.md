@@ -1,3 +1,22 @@
+
+> ## Status: Callback Enhancements
+> #### These callback enhancements were added to Dash 2.0 🎉
+> #### See the [Flexible Callback Signature section](https://dash.plotly.com/flexible-callback-signatures) in the Dash documentation.
+
+
+```diff
+- ----------------------------------------------------------------------------------
+-  This documentation describes code in a previous version of dash-labs (v0.4.0) 
+-  and is included here for legacy purposes only.
+-
+-  You can install v0.4.0 with:
+-  pip install dash-labs==0.4.0
+
+- ----------------------------------------------------------------------------------
+```
+
+
+
 # `@app.callback` Enhancements
 This section describes core enhancements to `@app.callback` that are provided by the Dash Labs `FlexibleCallbacks` plugin.
 

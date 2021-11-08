@@ -3,7 +3,9 @@ This repository contains a work-in-progress technical preview of potential futur
 
 ## Documentation
 The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
-  - [01-Overview.md](https://github.com/plotly/dash-labs/blob/main/docs/01-Overview.md)
+  - [01-Overview.md](https://github.com/plotly/dash-labs/blob/main/docs/01-Overview.md)  
+
+ _Archived in dash-labs v0.4.0:_
   - [02-CallbackEnhancements.md](https://github.com/plotly/dash-labs/blob/main/docs/02-CallbackEnhancements.md)
   - [03-TemplateLayoutSystem.md](https://github.com/plotly/dash-labs/blob/main/docs/03-TemplateLayoutSystem.md)
   - [04-PredefinedTemplates.md](https://github.com/plotly/dash-labs/blob/main/docs/04-PredefinedTemplates.md)
@@ -11,17 +13,20 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
   - [06-TemplateIntegrationAndMigration.md](https://github.com/plotly/dash-labs/blob/main/docs/06-TemplateIntegrationAndMigration.md)
   - [07-LongCallback.md](https://github.com/plotly/dash-labs/blob/main/docs/07-LongCallback.md)
 
-Various demos are located in the [docs/demos](./docs/demos) directory.
+_New in dash-labs v1.0.0:_
+  - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
+  - [09-MultiPageDashAppExamples.md](https://github.com/plotly/dash-labs/blob/main/docs/09-MultiPageDashAppExamples.md)
+
+Examples and demos are located in the [docs/demos](./docs/demos) directory.
 
 ## Installation
-To install the tech preview:
+To install the latest version of dash-labs:
 
 ```
 $ pip install -U dash-labs
 ```
 
-To use the templates based on `dash-bootstrap-components`, a few additional packages are required:
-
+To install the archived version:
 ```
-$ pip install -U dash-bootstrap-components spectra colormath requests tinycss2 
+$ pip install dash-labs==0.4.0
 ```

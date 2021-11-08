@@ -1,7 +1,26 @@
+
+> ## Status: Long Callbacks
+> #### The long callback handling was added to Dash 2.0 🎉
+> #### See the [Long Callback section](https://dash.plotly.com/long-callbacks) in the Dash documentation 
+
+
+```diff
+- ----------------------------------------------------------------------------------
+-  This documentation describes code in a previous version of dash-labs (v0.4.0) 
+-  and is included here for legacy purposes only.
+-
+-  You can install v0.4.0 with:
+-  pip install dash-labs==0.4.0
+- ----------------------------------------------------------------------------------
+```
+
+
+
+
 # Overview
 DashLabs introduces a new callback decorator called `@long_callback`. This decorator is designed to make it easier to create callback functions that take a long time to run, without locking up the Dash app or timing out.
 
-`@long_callback` is designed to support multiple backend executors.  Two backends are currently implemented:
+`@long_callback` supports multiple backend executors.  Two backends are currently implemented:
  - A [diskcache](http://www.grantjenks.com/docs/diskcache/index.html) backend that runs callback logic in a separate process and stores the results to disk using the diskcache library. This is the easiest backend to use for local development.
  - A [Celery](https://docs.celeryproject.org/en/stable/getting-started/introduction.html) backend that runs callback logic in a celery worker and returns results to the Dash app through a Celery broker like RabbitMQ or Redis.
 
