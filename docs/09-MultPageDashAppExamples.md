@@ -18,7 +18,7 @@ This example shows how `dash.register_page` handles
 
 See the code in `/demos/multi-page-nested-folders`
 
-In larger multi-page apps it's common to organize topics into categories. Each category may have it's own folder with multiple 
+In larger multi-page apps it's common to organize topics into categories. Each category may have its own folder with multiple 
 pages. This plugin automatically searches all subdirectories in `pages/` and includes all the apps.
 In our example the `heatmaps.py` is in `pages/` and  `pie-chart.py` is in `pages/chapter/`.
 The `dash.page_registry` dictionary will include the subdirectory name(s) in the dict key and the module and path like this:

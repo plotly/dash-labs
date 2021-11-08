@@ -1,7 +1,7 @@
 # Overview
 Dash Labs is a project that we use to explore future enhancements to Dash. The goal is that the successful ideas from this project will migrate into future versions of Dash itself. And over time, new ideas will be added to this library.
 
-We encourage you to join the discussion, raise issues, make pull requests, and take an active role in shaping the funture of Dash.
+We encourage you to join the discussion, raise issues, make pull requests, and take an active role in shaping the future of Dash.
 
 ## Initial Design Goals
 Dash Labs began with several interdependent design goals:
@@ -15,7 +15,7 @@ You will find the result of these initial goals archived in dash-labs v0.4.0.  M
 ### Dash Labs 1.0.0 Goals
 
 Dash Labs 1.0.0 is reset to start with Dash >= 2.0 as the base. We will continually add new projects, the first of which is 
-the new and imporoved way to make multi-page apps.  
+the new and improved way to make multi-page apps.  
 
 
 ## Documentation
