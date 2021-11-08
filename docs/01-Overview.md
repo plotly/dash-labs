@@ -14,12 +14,10 @@ You will find the result of these initial goals archived in dash-labs v0.4.0.  M
 
 ### Dash Labs 1.0.0 Goals
 
-Dash Labs 1.0.0 is reset to start with Dash >= 2.0 as the base. We will continually add new projects, the first of which is 
-the new and improved way to make multi-page apps.  
-
+Dash Labs is now set up to develop new features starting with `dash>=2.0` and `dash-bootstrap-components>=1.0`. The first new project we’ve added is the Dash `pages/` feature. We’ll be adding more new projects in the coming months.
 
 ## Documentation
-The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
+Find the documentation for Dash Labs in the [docs/](./docs/) directory.
   - [01-Overview.md](https://github.com/plotly/dash-labs/blob/main/docs/01-Overview.md)  
 
  _Archived in dash-labs v0.4.0:_
@@ -34,7 +32,7 @@ _New in dash-labs v1.0.0:_
   - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
   - [09-MultiPageDashAppExamples.md](https://github.com/plotly/dash-labs/blob/main/docs/09-MultiPageDashAppExamples.md)
  
-Examples and demos are located in the [docs/demos](./docs/demos) directory.
+Find examples and demos in the [docs/demos](./docs/demos) directory.
 
 ## Installation
 To install the latest version of dash-labs:
@@ -63,6 +61,3 @@ import dash_labs as dl
 
 app = Dash(__name__, plugins=[dl.plugins.pages])
 ```
-
-> Note: it is recommended to import `dash_labs` as `dl`, and this is the convention that will be used throughout this document.
-
