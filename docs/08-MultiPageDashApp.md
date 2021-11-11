@@ -1,7 +1,7 @@
 
 > ## Status: Multi-Page Dash App Plugin
 > #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.1.
-> **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775/2)**
+> **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
 
@@ -83,6 +83,8 @@ if __name__ == "__main__":
 - Call `dash.register_page(__name__)` to tell `dl.plugins.pages` that this page should be part of the multi-page framework
 
 For example, here is the first page of our app:
+
+[`demos/multi-page-example1/pages/heatmaps.py`](docs/demos/multi-page-example1/pages/heatmaps.py)
 
 ```python
 import dash
