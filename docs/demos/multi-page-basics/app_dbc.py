@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 
 
 app = dash.Dash(
-    __name__, plugins=[dl.plugins.pages], external_stylesheets=[dbc.themes.BOOTSTRAP]
+    __name__, plugins=[dl.plugins.pages], external_stylesheets=[dbc.themes.CYBORG]
 )
 
 navbar = dbc.NavbarSimple(
