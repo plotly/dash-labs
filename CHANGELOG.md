@@ -1,6 +1,12 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## Unreleased
+
+### Fixed
+ - Fixed bug that prevented multipage apps from working in windows: Fixed bug #52. Transitioned function away from the glob library to the os library to ensure functionality with windows. See pull request #55. 
+
+
 ## 1.0.0
 
 ### Added
