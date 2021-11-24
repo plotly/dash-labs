@@ -11,7 +11,10 @@ from os.path import isfile, join
 from textwrap import dedent
 from urllib.parse import parse_qs
 
-if not os.path.exists("pages"):
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+pages_file = os.path.join(THIS_FOLDER, 'pages')
+
+if not os.path.exists(pages_file):
     raise Exception("A folder called `pages` does not exist.")
 
 _ID_CONTENT = "_pages_plugin_content"
@@ -194,10 +197,13 @@ def _infer_image(module):
     - A logo at `assets/logo.<extension>`
     """
     # TODO - Make sure we don't need to use __name__?
+    # Ensure this works with other paths
+    assets_file = os.path.join(THIS_FOLDER, 'assets')
+
     page_id = module.split(".")[-1]
     files_in_assets = []
-    if os.path.exists("assets"):
-        files_in_assets = [f for f in listdir("assets") if isfile(join("assets", f))]
+    if os.path.exists(assets_file):
+        files_in_assets = [f for f in listdir(assets_file) if isfile(join(assets_file, f))]
     app_file = None
     logo_file = None
     for fn in files_in_assets:
@@ -231,19 +237,23 @@ def plug(app):
     # Import the pages so that the user doesn't have to.
     # TODO - Do validate_layout in here too
     dash.page_registry = OrderedDict()
+    # Updated from using glob.iglob to using os.walk to ensure that the function works for Windows users
+    # Ensure this works for different paths
+    pages_file = os.path.join(THIS_FOLDER, 'pages')
 
-    for page_filename in glob.iglob("pages/**", recursive=True):
-        _, _, page_filename = page_filename.partition("pages/")
-        if page_filename.startswith("_") or not page_filename.endswith(".py"):
-            continue
-        page_filename = page_filename.replace(".py", "")
-        page_filename = page_filename.replace("/", ".")
-        page_module = importlib.import_module(f"pages.{page_filename}")
+    for (root, dirs, files) in os.walk(pages_file):
+        for file in files:
+            if file.startswith("_") or not file.endswith(".py"):
+                continue
+            page_filename = os.path.join(root, file).replace("\\", "/")
+            _, _, page_filename = page_filename.partition("pages/")
+            page_filename = page_filename.replace(".py", "").replace("/", ".")
+            page_module = importlib.import_module(f"pages.{page_filename}")
 
-        if f"pages.{page_filename}" in dash.page_registry:
-            dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
-                page_module, "layout"
-            )
+            if f"pages.{page_filename}" in dash.page_registry:
+                dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
+                    page_module, "layout"
+                )
 
     @app.server.before_first_request
     def router():
