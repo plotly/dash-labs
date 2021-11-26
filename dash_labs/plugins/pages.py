@@ -232,18 +232,20 @@ def plug(app):
     # TODO - Do validate_layout in here too
     dash.page_registry = OrderedDict()
 
-    for page_filename in glob.iglob("pages/**", recursive=True):
-        _, _, page_filename = page_filename.partition("pages/")
-        if page_filename.startswith("_") or not page_filename.endswith(".py"):
-            continue
-        page_filename = page_filename.replace(".py", "")
-        page_filename = page_filename.replace("/", ".")
-        page_module = importlib.import_module(f"pages.{page_filename}")
+    # Updated from using glob.iglob to using os.walk to ensure that the function works for Windows users
+    for (root, dirs, files) in os.walk("pages"):
+        for file in files:
+            if file.startswith("_") or not file.endswith(".py"):
+                continue
+            page_filename = os.path.join(root, file).replace("\\", "/")
+            _, _, page_filename = page_filename.partition("pages/")
+            page_filename = page_filename.replace(".py", "").replace("/", ".")
+            page_module = importlib.import_module(f"pages.{page_filename}")
 
-        if f"pages.{page_filename}" in dash.page_registry:
-            dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
-                page_module, "layout"
-            )
+            if f"pages.{page_filename}" in dash.page_registry:
+                dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
+                    page_module, "layout"
+                )
 
     @app.server.before_first_request
     def router():
