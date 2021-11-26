@@ -30,3 +30,4 @@ To install the archived version:
 ```
 $ pip install dash-labs==0.4.0
 ```
+We also recommend installing Pandas, which is required by Plotly Express and used in many of our examples.
