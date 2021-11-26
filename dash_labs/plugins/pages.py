@@ -1,7 +1,6 @@
 from dash import callback, Output, Input, html, dcc
 import dash
 import os
-import glob
 import importlib
 from collections import OrderedDict
 import json
@@ -154,6 +153,7 @@ def register_page(
     page.update(
         supplied_description=description,
         description=(description if description is not None else page["title"]),
+        order=order,
         supplied_order=order,
         supplied_layout=layout,
         **kwargs,
@@ -170,16 +170,16 @@ def register_page(
         # Override the layout found in the file set during `plug`
         dash.page_registry[module]["layout"] = layout
 
-    # Reset order
-    order = []
-    for page_module in dash.page_registry:
-        if page["supplied_path"] == "/":
-            order.append((0, page_module))
-            page["order"] = 0
+    # set home page order
+    order_supplied = any(p["supplied_order"] for p in dash.page_registry.values())
+    page["order"] = 0 if page["path"] == "/" and not order_supplied else page["order"]
 
+    # sorted by order then by module name
     page_registry_list = sorted(
-        dash.page_registry.values(), key=lambda i: str(i.get("order", i["module"]))
+        dash.page_registry.values(),
+        key=lambda i: (str(i.get("order", i["module"])), i["module"]),
     )
+
     dash.page_registry = OrderedDict([(p["module"], p) for p in page_registry_list])
 
 
