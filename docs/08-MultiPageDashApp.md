@@ -27,16 +27,16 @@ This plugin will automatically:
 **Quick start examples**
 
 In the folder /demos/basic you will find three quick start apps:
-- [demos/multi-page-basics/app.py](demos/multi-page-basics/app.py) is a minimal quick start example.
-- [demos/multi-page-basics/app_dbc.py](demos/multi-page-basics/app.py) uses a navbar from `dash-bootstrap-components` library to create a navigation header.
-- [demos/multi-page-basics-/app_ddk.py](demos/multi-page-basics/app.py)  for Dash Enterprise customers using the Design Kit.
+- [demos/multi_page_basics/app.py](demos/multi_page_basics/app.py) is a minimal quick start example.
+- [demos/multi_page_basics/app_dbc.py](demos/multi_page_basics/app.py) uses a navbar from `dash-bootstrap-components` library to create a navigation header.
+- [demos/multi_page_basics/app_ddk.py](demos/multi_page_basics/app.py)  for Dash Enterprise customers using the Design Kit.
 
 These apps serve as an entry point to run the multi-page app and provides some minimal examples of the basic and advanced
 features available in the API.
 
 **Creating a simple Multi-Page App**
 
-Now we will step through creating a simple multi-page app.  You will find this example [demos/multi-page-example1/app.py](demos/multi-page-example1/app.py)
+Now we will step through creating a simple multi-page app.  You will find this example [demos/multi-page-example1/app.py](demos/multi_page_example1/app.py)
 
 1. In `app.py`, pass the plugin into `Dash`.  Note: In the future, this will be part of `dash` and you won't need to do this step.
 2. In this example, we create a navigation header using the `NavbarSimple` component from the `dash-bootstrap-components` library and populate
