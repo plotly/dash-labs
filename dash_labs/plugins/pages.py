@@ -171,11 +171,7 @@ def register_page(
         dash.page_registry[module]["layout"] = layout
 
     # set home page order
-    order_supplied = False
-    for p in dash.page_registry.values():
-        if p["supplied_order"] is not None:
-            order_supplied = True
-            break
+    order_supplied = any(p["supplied_order"] is not None  for p in dash.page_registry.values())
 
     for p in dash.page_registry.values():
         p["order"] = 0 if p["path"] == "/" and not order_supplied else p["supplied_order"]
