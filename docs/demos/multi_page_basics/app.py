@@ -4,9 +4,8 @@ import dash_labs as dl
 
 app = Dash(__name__, plugins=[dl.plugins.pages])
 
-
-dash.register_page("another_page", layout="Another page", path="/another-page")
-dash.register_page("and_again", layout="And again!", path="/and-again")
+dash.register_page("home", layout="We're home!", path="/")
+dash.register_page("very_important", layout="Don't miss it!", path="/important", order=0)
 
 
 app.layout = html.Div(
