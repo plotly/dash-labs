@@ -9,6 +9,8 @@ from os import listdir
 from os.path import isfile, join
 from textwrap import dedent
 from urllib.parse import parse_qs
+import re
+
 
 if not os.path.exists("pages"):
     raise Exception("A folder called `pages` does not exist.")
@@ -25,6 +27,7 @@ page_container = html.Div(
 def register_page(
     module,
     path=None,
+    path_template=None,
     name=None,
     order=None,
     title=None,
@@ -51,8 +54,15 @@ def register_page(
 
     - `path`:
        URL Path, e.g. `/` or `/home-page`.
-       If not supplied, will be inferred from `module`,
-       e.g. `pages.weekly_analytics` to `/weekly-analytics`
+       If not supplied, will be inferred from the `path_template` or `module`,
+       e.g. based on path_template: `/asset/<asset_id` to `/asset/None`
+       e.g. based on module: `pages.weekly_analytics` to `/weekly-analytics`
+
+    - path_template:
+       Add variables to a URL by marking sections with <variable_name>. The layout function
+       then receives the <variable_name> as a keyword argument.
+       e.g. path_template= "/asset/<asset_id>"
+            if pathname = "/assets/a100" then layout will receive {"asset_id":"a100"}
 
     - `name`:
        The name of the link.
@@ -142,7 +152,8 @@ def register_page(
     page = dict(
         module=module,
         supplied_path=path,
-        path=(path if path is not None else _filename_to_path(module)),
+        path_template=path_template,
+        path=(path if path is not None else _infer_path(module, path_template)),
         supplied_name=name,
         name=(name if name is not None else _filename_to_name(module)),
     )
@@ -171,10 +182,14 @@ def register_page(
         dash.page_registry[module]["layout"] = layout
 
     # set home page order
-    order_supplied = any(p["supplied_order"] is not None  for p in dash.page_registry.values())
+    order_supplied = any(
+        p["supplied_order"] is not None for p in dash.page_registry.values()
+    )
 
     for p in dash.page_registry.values():
-        p["order"] = 0 if p["path"] == "/" and not order_supplied else p["supplied_order"]
+        p["order"] = (
+            0 if p["path"] == "/" and not order_supplied else p["supplied_order"]
+        )
 
     # sorted by order then by module name
     page_registry_list = sorted(
@@ -224,8 +239,12 @@ def _filename_to_name(filename):
     return filename.split(".")[-1].replace("_", " ").capitalize()
 
 
-def _filename_to_path(filename):
-    return filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
+def _infer_path(filename, template):
+    if template is None:
+        return filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
+    else:
+        # replace the variables in the template with "None"
+        return re.sub("<(.+?)>", "None", template)
 
 
 def plug(app):
@@ -233,7 +252,6 @@ def plug(app):
     # TODO - Do validate_layout in here too
     dash.page_registry = OrderedDict()
 
-    # Updated from using glob.iglob to using os.walk to ensure that the function works for Windows users
     for (root, dirs, files) in os.walk("pages"):
         for file in files:
             if file.startswith("_") or not file.endswith(".py"):
@@ -259,11 +277,19 @@ def plug(app):
         def update(pathname, search):
             path_id = app.strip_relative_path(pathname)
             query_parameters = _parse_query_string(search)
+
             layout = None
             for module in dash.page_registry:
                 page = dash.page_registry[module]
+
                 if path_id == app.strip_relative_path(page["path"]):
                     layout = page["layout"]
+
+                if page["path_template"]:
+                    template_id = app.strip_relative_path(page["path_template"])
+                    path_variables = _parse_path_variables(path_id, template_id)
+                    if path_variables:
+                        layout = page["layout"]
 
             if layout is None:
                 if "pages.not_found_404" in dash.page_registry:
@@ -274,7 +300,13 @@ def plug(app):
             if callable(layout):
                 print("Calling...")
                 print(query_parameters)
-                return layout(**query_parameters)
+                print("path_variables:", path_variables)
+                return (
+                    layout(**path_variables, **query_parameters)
+                    if path_variables
+                    else layout(**query_parameters)
+                )
+
             else:
                 return layout
 
@@ -398,3 +430,24 @@ def _parse_query_string(search):
 
         parsed_qs[k] = first
     return parsed_qs
+
+
+def _parse_path_variables(pathname, path_template):
+    path_segments = pathname.split("/")
+    template_segments = path_template.split("/")
+
+    if len(path_segments) != len(template_segments):
+        return None
+
+    path_vars = {}
+    for i in range(len(path_segments)):
+        if path_segments[i] == template_segments[i]:
+            continue
+        if template_segments[i].startswith("<"):
+            # removes the "<" ">" around the variable key
+            variable_key = template_segments[i][1:-1]
+            path_segments[i] = None if path_segments[i] == "None" else path_segments[i]
+            path_vars[variable_key] = path_segments[i]
+        else:
+            path_vars = None
+    return path_vars
