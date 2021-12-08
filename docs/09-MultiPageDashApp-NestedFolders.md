@@ -9,7 +9,7 @@
 
 **Please see Chapter 08-MultiPageDashApp for an introduction to the Multi-Page Dash App Plugin**
 
-If you would like to add an example, feel free to create a pull request!  For more information, see the documentation issue #xx.
+If you would like to add an example, feel free to create a pull request! 
 
 ### Example: Nested Folders
 This example shows how `dash.register_page` handles
