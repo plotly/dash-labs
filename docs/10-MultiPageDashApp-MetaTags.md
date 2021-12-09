@@ -8,20 +8,19 @@
 
 **Please see Chapter 08-MultiPageDashApp for an introduction to the Multi-Page Dash App Plugin**
 
-If you would like to add an example, feel free to create a pull request! 
 
 ### Example: Social Media Meta Tags
   
-One of the cool features when you use this method of creating mult-page apps, is that it automatically creates the meta 
+One of the nice features of this API is that it automatically creates the meta 
 tags used by social media sites like Facebook and Twitter.  These sites use the app title, description and image to create
-the card that is displayed when you share a link to your site. 
+the card that is displayed when you share a link to your site. They are also used in search engine results.
 
 Here is more info on social media meta tags:  https://css-tricks.com/essential-meta-tags-social-media/
 
+The example below goes into detail about how to add an image to a page in dash.page_registry and what
+the meta tags look like.
 
-The example below goes into detail about how to add an image to a page in dash.page_registry.  
-
-See the code in `/demos/multi_page_images`
+See the code in `/demos/multi_page_meta_tags`
 
 - `image`:
    The meta description image used by social media platforms.
@@ -36,8 +35,9 @@ In the `assets` folder we have 4 jpeg images with the following file names:
 - birds.jpeg
 - logo.jpeg
 
+The `title` and `description` will be derrived from the module name if none is supplied.
 
-In the `pages` folder we have 3 simple pages to demonstrate the images feature. 
+In the `pages` folder we have 3 simple pages to demonstrate this feature. 
 
 #### `a_page.py`
 ```python
@@ -50,6 +50,9 @@ def layout():
     return """    
     This page uses a generic image.  No image is specified and there is no image that matches
     the module name in the assets folder, so it uses `app.jpeg` or `logo.jpeg` if no `app.jpeg` exists.
+    
+    The title and description are not supplied, so they will be inferred from the module name. In this 
+    case it will be "A page"
         """
 ```
 
@@ -57,7 +60,11 @@ def layout():
 ```python
 import dash
 
-dash.register_page(__name__)
+dash.register_page(
+    __name__,
+    title="(birds) The title, headline or name of the page",
+    description="(birds) A short description or summary 2-3 sentences",
+)
 
 
 def layout():
@@ -84,7 +91,13 @@ layout = html.Div("The image for the home page is specified as `birdhouse.jpeg'"
 
 ```
 
-The `dash.page_registry` now has an `image` for each page.  Here is the `app.py` we use as the entry point to run the app:
+The `dash.page_registry` now has an `image` for each page.  Note that you don't need to use the image in the app page
+for it to be included in the meta tags.  You can see this by inspecting the page when you run the examples in chapter 8.
+
+Below is the `app.py` we use as the entry point to run the app. If you'd like to see the app with Dash Bootstrap 
+styling, make sure to execute the app_dbc.py file instead of the app.py file. 
+
+Here is `app.py`:
 
 ```python
 from dash import Dash, html, dcc
@@ -122,9 +135,13 @@ if __name__ == "__main__":
     app.run_server(debug=True)
 
 ```
+
 If you inspect the page, you will see the Twitter Data card and the Open Graph data (which is use by Facebook) has
-automatically been added to the page.  Note that the title and description are as specified for each
-app in the pages folder.
+automatically been added to the page.  
 
 ![image](https://user-images.githubusercontent.com/72614349/145254812-32b8db12-2833-4244-a7f8-6f51fec309ea.png)
 
+Note that the title and description are as specified for each app in the `pages` folder.  To see this open a new web page
+for `http://127.0.0.1:8050/a-page`
+
+![image](https://user-images.githubusercontent.com/72614349/145447796-1b862fd4-c187-445d-ab8f-8476c8c246bc.png)
