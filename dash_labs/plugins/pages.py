@@ -311,13 +311,10 @@ def plug(app):
 
         # Set index HTML for the meta description and page title on page load
         def interpolate_index(**kwargs):
-            print(kwargs["metas"])
-            print("desc",path_to_description.get(flask.request.path, ""))
-
             image = path_to_image.get(flask.request.path, "")
             if image:
                 image = app.get_asset_url(image)
-            print(image)
+
             return dedent(
                 """
                 <!DOCTYPE html>
