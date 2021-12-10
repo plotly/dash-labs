@@ -284,15 +284,16 @@ def plug(app):
             for module in dash.page_registry:
                 page = dash.page_registry[module]
 
-                if path_id == app.strip_relative_path(page["path"]):
-                    layout = page["layout"]
-
                 if page["path_template"]:
                     template_id = app.strip_relative_path(page["path_template"])
                     path_variables = _parse_path_variables(path_id, template_id)
                     if path_variables:
                         layout = page["layout"]
                         break
+
+                elif path_id == app.strip_relative_path(page["path"]):
+                    layout = page["layout"]
+                    break
 
             if layout is None:
                 if "pages.not_found_404" in dash.page_registry:
