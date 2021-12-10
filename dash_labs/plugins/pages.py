@@ -71,7 +71,7 @@ def register_page(
 
     - `description`:
        The <meta type="description"></meta>.
-       If not supplied, then nothing is supplied.
+       If not supplied, then it will be the same as the title.
 
     - `image`:
        The meta description image used by social media platforms.
