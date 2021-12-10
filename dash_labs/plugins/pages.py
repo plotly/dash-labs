@@ -448,9 +448,10 @@ def _parse_path_variables(pathname, path_template):
     if len(path_segments) != len(template_segments):
         return None
 
-    segments = dict(zip(template_segments, path_segments))
-    # the segments without variables must match
-    for s in segments:
-        if not s.startswith("<") and s != segments[s]:
+    path_vars = {}
+    for path_segment, template_segment in zip(path_segments, template_segments):
+        if template_segment.startswith("<"):
+            path_vars[template_segment[1:-1]] = path_segment
+        elif template_segment != path_segment:
             return None
-    return {s[1:-1]: segments[s] for s in segments if s.startswith("<")}
+    return path_vars
