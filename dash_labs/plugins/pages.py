@@ -55,7 +55,7 @@ def register_page(
     - `path`:
        URL Path, e.g. `/` or `/home-page`.
        If not supplied, will be inferred from the `path_template` or `module`,
-       e.g. based on path_template: `/asset/<asset_id` to `/asset/None`
+       e.g. based on path_template: `/asset/<asset_id` to `/asset/none`
        e.g. based on module: `pages.weekly_analytics` to `/weekly-analytics`
 
     - path_template:
@@ -199,6 +199,7 @@ def register_page(
 
     dash.page_registry = OrderedDict([(p["module"], p) for p in page_registry_list])
 
+
 dash.register_page = register_page
 
 
@@ -244,7 +245,7 @@ def _infer_path(filename, template):
         return filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
     else:
         # replace the variables in the template with "None"
-        return re.sub("<(.+?)>", "None", template)
+        return re.sub("<(.+?)>", "none", template)
 
 
 def plug(app):
@@ -279,6 +280,7 @@ def plug(app):
             query_parameters = _parse_query_string(search)
 
             layout = None
+            path_variables = None
             for module in dash.page_registry:
                 page = dash.page_registry[module]
 
@@ -290,6 +292,7 @@ def plug(app):
                     path_variables = _parse_path_variables(path_id, template_id)
                     if path_variables:
                         layout = page["layout"]
+                        break
 
             if layout is None:
                 if "pages.not_found_404" in dash.page_registry:
@@ -433,21 +436,21 @@ def _parse_query_string(search):
 
 
 def _parse_path_variables(pathname, path_template):
+    """
+    creates the dict of path variables passed to the layout
+    e.g. path_template= "/asset/<asset_id>"
+         pathname = "/assets/a100"
+         returns {"asset_id":"a100"}
+    """
     path_segments = pathname.split("/")
     template_segments = path_template.split("/")
 
     if len(path_segments) != len(template_segments):
         return None
 
-    path_vars = {}
-    for i in range(len(path_segments)):
-        if path_segments[i] == template_segments[i]:
-            continue
-        if template_segments[i].startswith("<"):
-            # removes the "<" ">" around the variable key
-            variable_key = template_segments[i][1:-1]
-            path_segments[i] = None if path_segments[i] == "None" else path_segments[i]
-            path_vars[variable_key] = path_segments[i]
-        else:
-            path_vars = None
-    return path_vars
+    segments = dict(zip(template_segments, path_segments))
+    # the segments without variables must match
+    for s in segments:
+        if not s.startswith("<") and s != segments[s]:
+            return None
+    return {s[1:-1]: segments[s] for s in segments if s.startswith("<")}
