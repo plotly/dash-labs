@@ -210,7 +210,6 @@ def _infer_image(module):
     - A generic app image at `assets/app.<extension>`
     - A logo at `assets/logo.<extension>`
     """
-    # TODO - Make sure we don't need to use __name__?
     page_id = module.split(".")[-1]
     files_in_assets = []
     if os.path.exists("assets"):
@@ -250,7 +249,6 @@ def _infer_path(filename, template):
 
 def plug(app):
     # Import the pages so that the user doesn't have to.
-    # TODO - Do validate_layout in here too
     dash.page_registry = OrderedDict()
 
     for (root, dirs, files) in os.walk("pages"):
@@ -302,9 +300,6 @@ def plug(app):
                     layout = html.H1("404")
 
             if callable(layout):
-                print("Calling...")
-                print(query_parameters)
-                print("path_variables:", path_variables)
                 return (
                     layout(**path_variables, **query_parameters)
                     if path_variables
@@ -314,7 +309,7 @@ def plug(app):
             else:
                 return layout
 
-        # Set validation_layout and prefix component IDs and callbacks with module name
+        # Set validation_layout
         for module in dash.page_registry:
             app.validation_layout = html.Div(
                 [
@@ -412,9 +407,9 @@ def plug(app):
             page = dash.page_registry[module]
             if page["redirect_from"] and len(page["redirect_from"]):
                 for redirect in page["redirect_from"]:
-                    # TODO - Use pathname prefix
+                    fullname = app.get_relative_path(redirect)
                     app.server.add_url_rule(
-                        redirect, redirect, create_redirect_function(page["path"])
+                        fullname, fullname, create_redirect_function(page["path"])
                     )
 
 
