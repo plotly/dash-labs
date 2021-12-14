@@ -301,7 +301,7 @@ page navigation links or by template authors.
    order `0`
 
 - `title`:
-   The name of the page <title>. That is, what appears in the browser title.
+   The name of the page `<title>`. That is, what appears in the browser title.
    If not supplied, will use the supplied `name` or will be inferred by module,
    e.g. `pages.weekly_analytics` to `Weekly analytics`
 
