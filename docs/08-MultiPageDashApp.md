@@ -306,8 +306,8 @@ page navigation links or by template authors.
    e.g. `pages.weekly_analytics` to `Weekly analytics`
 
 - `description`:
-   The <meta type="description"></meta>.
-   If not supplied, then nothing is supplied.
+   The `<meta type="description"></meta>`.
+   If not supplied, then the default will be the same as the title.
     
 - `image`:
    The meta description image used by social media platforms.
