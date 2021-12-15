@@ -241,7 +241,9 @@ def _filename_to_name(filename):
 
 def _infer_path(filename, template):
     if template is None:
-        return filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
+        path = filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
+        path = "/" + path if not path.startswith("/") else path
+        return path
     else:
         # replace the variables in the template with "None"
         return re.sub("<(.+?)>", "none", template)
