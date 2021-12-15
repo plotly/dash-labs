@@ -26,7 +26,7 @@ This plugin will automatically:
 
 **Quick start examples**
 
-In the folder /demos/basic you will find three quick start apps:
+In the folder /demos/multi_page_basics you will find three quick start apps:
 - [demos/multi_page_basics/app.py](demos/multi_page_basics/app.py) is a minimal quick start example.
 - [demos/multi_page_basics/app_dbc.py](demos/multi_page_basics/app.py) uses a navbar from `dash-bootstrap-components` library to create a navigation header.
 - [demos/multi_page_basics/app_ddk.py](demos/multi_page_basics/app.py)  for Dash Enterprise customers using the Design Kit.
@@ -317,7 +317,7 @@ page navigation links or by template authors.
     - A logo at `assets/logo.<extension>`
 
 - `redirect_from`:
-   A list of paths that should redirect to this page
+   A list of paths that should redirect to this page.
    For example: `redirect_from=['/v2', '/v3']`
 
 - `layout`:
@@ -325,7 +325,7 @@ page navigation links or by template authors.
    If not supplied, then looks for `layout` from within the supplied `module`.
 
 - `**kwargs`:
-   Arbitrary keyword arguments that can be stored
+   Arbitrary keyword arguments that can be stored.
 
 
 `page_registry` stores the original property that was passed in under 
