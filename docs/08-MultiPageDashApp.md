@@ -26,7 +26,7 @@ This plugin will automatically:
 
 **Quick start examples**
 
-In the folder /demos/basic you will find three quick start apps:
+In the folder /demos/multi_page_basics you will find three quick start apps:
 - [demos/multi_page_basics/app.py](demos/multi_page_basics/app.py) is a minimal quick start example.
 - [demos/multi_page_basics/app_dbc.py](demos/multi_page_basics/app.py) uses a navbar from `dash-bootstrap-components` library to create a navigation header.
 - [demos/multi_page_basics/app_ddk.py](demos/multi_page_basics/app.py)  for Dash Enterprise customers using the Design Kit.
@@ -301,13 +301,13 @@ page navigation links or by template authors.
    order `0`
 
 - `title`:
-   The name of the page <title>. That is, what appears in the browser title.
+   The name of the page `<title>`. That is, what appears in the browser title.
    If not supplied, will use the supplied `name` or will be inferred by module,
    e.g. `pages.weekly_analytics` to `Weekly analytics`
 
 - `description`:
-   The <meta type="description"></meta>.
-   If not supplied, then nothing is supplied.
+   The `<meta type="description"></meta>`.
+   If not supplied, then the default will be the same as the title.
     
 - `image`:
    The meta description image used by social media platforms.
@@ -317,7 +317,7 @@ page navigation links or by template authors.
     - A logo at `assets/logo.<extension>`
 
 - `redirect_from`:
-   A list of paths that should redirect to this page
+   A list of paths that should redirect to this page.
    For example: `redirect_from=['/v2', '/v3']`
 
 - `layout`:
@@ -325,7 +325,7 @@ page navigation links or by template authors.
    If not supplied, then looks for `layout` from within the supplied `module`.
 
 - `**kwargs`:
-   Arbitrary keyword arguments that can be stored
+   Arbitrary keyword arguments that can be stored.
 
 
 `page_registry` stores the original property that was passed in under 
