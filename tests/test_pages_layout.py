@@ -68,6 +68,13 @@ def test_pala001_layout(dash_duo):
         dash_duo.find_element("#velocity").get_attribute("value") == "10"
     ), "query string passed to layout"
 
+    # test path variables
+    dash_duo.wait_for_page(url="http://localhost:8050/a/none/b/none")
+    dash_duo.wait_for_text_to_equal("#path_vars", "variables from pathname:none none")
+
+    dash_duo.wait_for_page(url="http://localhost:8050/a/var1/b/var2")
+    dash_duo.wait_for_text_to_equal("#path_vars", "variables from pathname:var1 var2")
+
     assert dash_duo.get_logs() == [], "browser console should contain no error"
     # dash_duo.percy_snapshot("pala001_layout")
 

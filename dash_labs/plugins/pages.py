@@ -12,9 +12,6 @@ from urllib.parse import parse_qs
 import re
 
 
-if not os.path.exists("pages"):
-    raise Exception("A folder called `pages` does not exist.")
-
 _ID_CONTENT = "_pages_plugin_content"
 _ID_LOCATION = "_pages_plugin_location"
 _ID_DUMMY = "_pages_plugin_dummy"
@@ -81,7 +78,7 @@ def register_page(
 
     - `description`:
        The <meta type="description"></meta>.
-       If not supplied, then nothing is supplied.
+       If not supplied, then it will be the same as the title.
 
     - `image`:
        The meta description image used by social media platforms.
@@ -249,10 +246,7 @@ def _infer_path(filename, template):
         return re.sub("<(.+?)>", "none", template)
 
 
-def plug(app):
-    # Import the pages so that the user doesn't have to.
-    dash.page_registry = OrderedDict()
-
+def _import_layouts_from_pages():
     for (root, dirs, files) in os.walk("pages"):
         for file in files:
             if file.startswith("_") or not file.endswith(".py"):
@@ -266,6 +260,15 @@ def plug(app):
                 dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
                     page_module, "layout"
                 )
+
+
+def plug(app):
+    dash.page_registry = OrderedDict()
+
+    if os.path.exists("pages"):
+        _import_layouts_from_pages()
+    else:
+        print("A folder called `pages` does not exist.")
 
     @app.server.before_first_request
     def router():
@@ -321,7 +324,18 @@ def plug(app):
                 + [app.layout]
             )
 
-        # Update the page title on page navigation
+        # check for duplicate pathnames
+        path_to_module = {}
+        for page in dash.page_registry.values():
+            if page["path"] not in path_to_module:
+                path_to_module[page["path"]] = [page["module"]]
+            else:
+                path_to_module[page["path"]].append(page["module"])
+
+        for modules in path_to_module.values():
+            if len(modules) > 1:
+                raise Exception(f"modules {modules} have duplicate paths")
+
         path_to_title = {
             page["path"]: page["title"] for page in dash.page_registry.values()
         }
@@ -332,6 +346,7 @@ def plug(app):
             page["path"]: page["image"] for page in dash.page_registry.values()
         }
 
+        # Update the page title on page navigation
         app.clientside_callback(
             f"""
             function(path) {{
@@ -355,20 +370,17 @@ def plug(app):
                     <head>
                         <title>{title}</title>
                         <meta name="description" content="{description}" />
-
                         <!-- Twitter Card data -->
                         <meta property="twitter:card" content="{description}">
                         <meta property="twitter:url" content="https://metatags.io/">
                         <meta property="twitter:title" content="{title}">
                         <meta property="twitter:description" content="{description}">
                         <meta property="twitter:image" content="{image}">
-
                         <!-- Open Graph data -->
                         <meta property="og:title" content="{title}" />
                         <meta property="og:type" content="website" />
                         <meta property="og:description" content="{description}" />       
                         <meta property="og:image" content="{image}">
-
                         {metas}
                         {favicon}
                         {css}
