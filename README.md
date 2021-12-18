@@ -15,7 +15,8 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
 
 _New in dash-labs v1.0.0:_
   - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
-  - [09-MultiPageDashAppExamples.md](https://github.com/plotly/dash-labs/blob/main/docs/09-MultiPageDashAppExamples.md)
+  - [09-MultiPageDashApp-NestedFolders.md](https://github.com/plotly/dash-labs/blob/main/docs/09-MultiPageDashApp-NestedFolders.md)
+  - [10-MultiPageDashApp-MetaTags.md](https://github.com/plotly/dash-labs/blob/main/docs/10-MultiPageDashApp-MetaTags.md)
 
 Examples and demos are located in the [docs/demos](./docs/demos) directory.
 
