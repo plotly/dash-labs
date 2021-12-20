@@ -12,10 +12,5 @@ dash.register_page(
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
     return dash.html.Div(
-        [
-            dash.dcc.Textarea(
-                value=f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}",
-                style={"width": 450},
-            ),
-        ]
+        f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}"
     )
