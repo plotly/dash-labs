@@ -315,14 +315,13 @@ def plug(app):
                 return layout
 
         # Set validation_layout
-        for module in dash.page_registry:
-            app.validation_layout = html.Div(
-                [
-                    page["layout"]() if callable(page["layout"]) else page["layout"]
-                    for page in dash.page_registry.values()
-                ]
-                + [app.layout]
-            )
+        app.validation_layout = html.Div(
+            [
+                page["layout"]() if callable(page["layout"]) else page["layout"]
+                for page in dash.page_registry.values()
+            ]
+            + [app.layout]
+        )
 
         # check for duplicate pathnames
         path_to_module = {}
