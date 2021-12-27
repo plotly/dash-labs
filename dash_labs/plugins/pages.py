@@ -14,10 +14,16 @@ import re
 
 _ID_CONTENT = "_pages_plugin_content"
 _ID_LOCATION = "_pages_plugin_location"
-_ID_DUMMY = "_pages_plugin_dummy"
+_ID_STORE = "_pages_plugin_store"
+_ID_DUMMY = "pages_plugin_dummy"
 
 page_container = html.Div(
-    [dcc.Location(id=_ID_LOCATION), html.Div(id=_ID_CONTENT), html.Div(id=_ID_DUMMY)]
+    [
+        dcc.Location(id=_ID_LOCATION),
+        html.Div(id=_ID_CONTENT),
+        dcc.Store(id=_ID_STORE),
+        html.Div(id=_ID_DUMMY),
+    ]
 )
 
 
@@ -131,7 +137,6 @@ def register_page(
                 description='Our historical view',
 
                 supplied_order=None,
-                order=1,
 
                 supplied_layout=None,
                 layout=<function pages.historical_outlook.layout>,
@@ -243,7 +248,7 @@ def _infer_path(filename, template):
         return path
     else:
         # replace the variables in the template with "None"
-        return re.sub("<(.+?)>", "none", template)
+        return re.sub("<.+?>", "none", template)
 
 
 def _import_layouts_from_pages():
@@ -262,6 +267,21 @@ def _import_layouts_from_pages():
                 )
 
 
+def _path_to_page(app, pathname):
+    path_id = app.strip_relative_path(pathname)
+    path_variables = None
+
+    for page in dash.page_registry.values():
+        if page["path_template"]:
+            template_id = app.strip_relative_path(page["path_template"])
+            path_variables = _parse_path_variables(path_id, template_id)
+            if path_variables:
+                return page, path_variables
+        if path_id == app.strip_relative_path(page["path"]):
+            return page, path_variables
+    return {}, None
+
+
 def plug(app):
     dash.page_registry = OrderedDict()
 
@@ -274,54 +294,40 @@ def plug(app):
     def router():
         @callback(
             Output(_ID_CONTENT, "children"),
+            Output(_ID_STORE, "data"),
             Input(_ID_LOCATION, "pathname"),
             Input(_ID_LOCATION, "search"),
             prevent_initial_call=True,
         )
         def update(pathname, search):
-            path_id = app.strip_relative_path(pathname)
+            # updates layout on page navigation
+            # updates the stored page title which will trigger the clientside callback to update the app title
+
             query_parameters = _parse_query_string(search)
+            page, path_variables = _path_to_page(app, pathname)
 
-            layout = None
-            path_variables = None
-            for module in dash.page_registry:
-                page = dash.page_registry[module]
-
-                if page["path_template"]:
-                    template_id = app.strip_relative_path(page["path_template"])
-                    path_variables = _parse_path_variables(path_id, template_id)
-                    if path_variables:
-                        layout = page["layout"]
-                        break
-
-                elif path_id == app.strip_relative_path(page["path"]):
-                    layout = page["layout"]
-                    break
-
-            if layout is None:
+            # get layout
+            if page == {}:
                 if "pages.not_found_404" in dash.page_registry:
                     layout = dash.page_registry["pages.not_found_404"]["layout"]
+                    title = {
+                        "title": dash.page_registry["pages.not_found_404"]["title"]
+                    }
                 else:
                     layout = html.H1("404")
+                    title = {"title": app.title}
+            else:
+                layout = page["layout"]
+                title = {"title": page["title"]}
 
             if callable(layout):
-                return (
+                layout = (
                     layout(**path_variables, **query_parameters)
                     if path_variables
                     else layout(**query_parameters)
                 )
 
-            else:
-                return layout
-
-        # Set validation_layout
-        app.validation_layout = html.Div(
-            [
-                page["layout"]() if callable(page["layout"]) else page["layout"]
-                for page in dash.page_registry.values()
-            ]
-            + [app.layout]
-        )
+            return layout, title
 
         # check for duplicate pathnames
         path_to_module = {}
@@ -335,30 +341,30 @@ def plug(app):
             if len(modules) > 1:
                 raise Exception(f"modules {modules} have duplicate paths")
 
-        path_to_title = {
-            page["path"]: page["title"] for page in dash.page_registry.values()
-        }
-        path_to_description = {
-            page["path"]: page["description"] for page in dash.page_registry.values()
-        }
-        path_to_image = {
-            page["path"]: page["image"] for page in dash.page_registry.values()
-        }
+        # Set validation_layout
+        app.validation_layout = html.Div(
+            [
+                page["layout"]() if callable(page["layout"]) else page["layout"]
+                for page in dash.page_registry.values()
+            ]
+            + [app.layout]
+        )
 
         # Update the page title on page navigation
         app.clientside_callback(
             f"""
-            function(path) {{
-                document.title = {json.dumps(path_to_title)}[path] || 'Dash'
+            function(data) {{
+                document.title = data.title || 'Dash'
             }}
             """,
             Output(_ID_DUMMY, "children"),
-            Input(_ID_LOCATION, "pathname"),
+            Input(_ID_STORE, "data"),
         )
 
         # Set index HTML for the meta description and page title on page load
         def interpolate_index(**kwargs):
-            image = path_to_image.get(flask.request.path, "")
+            start_page, _ = _path_to_page(app, flask.request.path)
+            image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
 
@@ -396,8 +402,8 @@ def plug(app):
                 """
             ).format(
                 metas=kwargs["metas"],
-                description=path_to_description.get(flask.request.path, ""),
-                title=path_to_title.get(flask.request.path, "Dash"),
+                description=start_page.get("description", ""),
+                title=start_page.get("title", app.title),
                 image=image,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
