@@ -1,6 +1,6 @@
 
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.1.
+> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -251,7 +251,13 @@ However, we recommend splitting out the page layouts into their own files in `pa
 
 ***
 
+**Long Callbacks**
 
+Currently `long_callback` requires the `app` object.  To use long callacks with `pages/` it's necessary to 
+include the `@app.long_callback` in the same file where the `app` is instantiated.   You can find an example
+in `/demos/multi_page_long_callback`.
+
+***
 
 ## Reference
 
