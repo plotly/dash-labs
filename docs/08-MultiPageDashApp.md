@@ -330,7 +330,7 @@ page navigation links or by template authors.
    e.g. `pages.weekly_analytics` to `/weekly-analytics`
 
 
-- path_template:
+- `path_template`:
        Add variables to a URL by marking sections with <variable_name>. The layout function
        then receives the <variable_name> as a keyword argument.
        e.g. path_template= "/asset/<asset_id>"
