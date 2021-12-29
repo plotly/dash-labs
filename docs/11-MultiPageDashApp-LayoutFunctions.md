@@ -11,16 +11,32 @@
 
 ### Example: Create navigation options by page
 
-All the examples so far create the navigation for the app in the main `app.py` file.  When it's done this way, the 
-navigation options are the same for all pages of the app. This example will demonstrate how to create different
-navigation based on which page is displayed.
+In all the examples so far, the navigation has been the same for all pages of the app. In this example we will show how to
+have different navigation options based on which page is displayed.
 
-This example has a navbar on the top with links for `home, about` and `topics`.  This top navbar is the same for
-all pages.  However, the `topics` page has a sidebar nav with three sub-topics.  This sidebar nav is only displayed in 
-the topics section and not on the `home` and `about` page.
+See how the sidebar is displayed only when the "Topics" link is selected:
 
-This is the main `app.py`.  The top `navbar`, which is the same for all apps is defined here.  The `sidebar` is
-defined in the `pages/` folder.
+![layout_functions](https://user-images.githubusercontent.com/72614349/147510416-3529dabd-6cf4-4e4f-b7a6-027267778b88.gif)
+
+
+
+Here is the multi-page stucture
+```
+- app.py
+- pages  
+  |-- about.py  
+  |-- home.py
+  |-- side_bar.py  
+  |-- topic_1.py  
+  |-- topic_2.py  
+  |-- topic_3.py  
+```
+
+
+Below is the code for the main `app.py`.  The top `navbar`, which is the same for all pages is defined here.  We
+create the nav links by looping through `dash.page_registry` and selecting the apps with the prop `top_nav`. See
+how this prop is added to `dash.page_registry` below.  Note that `topic_1.py` is both in the top navbar and the sidenav.  It acts as a
+landing page for the "topics" section.
 
 ```python
 import dash
@@ -58,9 +74,9 @@ if __name__ == "__main__":
 
 ```
 
-This is the `home.py` file (The `about.py` file is similar).  We are taking advantage of the ability to
-add arbitrary props to `dash.page_registry`.  We define `top_nav=True` for each page we want to include in the
-top nav.  See how this prop is used in `app.py` above when we create the top `navbar`.
+This is the `home.py` file. (The `about.py` and `topic_1.py` files are similar).  Since we can add arbitrary props to
+ `dash.page_registry`, we add `top_nav=True` here just to make it easy to select which pages to include in the top navbar.
+
 
 ```python
 from dash import html
@@ -74,8 +90,11 @@ layout = html.Div("About page content")
 ```
 
 
-We define the sidebar in `side_bar.py` in the `pages` folder.  Note that `sidebar` is a function (More on this later). It's
-defined here and imported into `topic_1.py, topic_2.py` and `topic_3.py`
+We define the sidebar in `side_bar.py` which is in the `pages` folder.  We create the sidebar links by looping
+through `dash.page_registry` and selecting the apps with pathnames that starts with `"/topic"`. This sidebar is imported in `topic_1.py, topic_2.py` and `topic_3.py` and
+is included in the layout.
+
+Note that `sidebar` is a function.  This is important -- more on this later. 
 
 ```python
 import dash
@@ -123,12 +142,9 @@ def layout():
     )
 
 ```
-
-The reason `sidebar` and the layouts for the three topic pages need to be functions is that data is added to
+The main purpose of this example is to show how to use `dash.page_registry` from within the `pages` folder.  
+The reason `sidebar` and the layouts for the three topic pages need to be functions is that pages are added to
 `dash.register_page`as each module is imported from the `pages` folder and `dash.register_page` is called.
-If you don't use a function then all the pages may not yet be in `dash.page_registry` when the sidebar is created.
-When you use a function, the layout is created when it's used rather than when it's imported.
+If you don't use a function then all the pages may not yet be in `dash.page_registry` when it's used to create thing 
+like the sidebar. When you use a function, it will create the layout when it's used rather than when it's imported.
 
-Here is what the app looks like:
-
-![layout_functions](https://user-images.githubusercontent.com/72614349/147510416-3529dabd-6cf4-4e4f-b7a6-027267778b88.gif)
