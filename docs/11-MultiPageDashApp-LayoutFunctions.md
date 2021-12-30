@@ -20,7 +20,7 @@ See how the sidebar is displayed only when the "Topics" link is selected:
 
 
 
-Here is the multi-page stucture
+Here is the multi-page structure
 ```
 - app.py
 - pages  
@@ -35,8 +35,7 @@ Here is the multi-page stucture
 
 Below is the code for the main `app.py`.  The top `navbar`, which is the same for all pages is defined here.  We
 create the nav links by looping through `dash.page_registry` and selecting the apps with the prop `top_nav`. See
-how this prop is added to `dash.page_registry` below.  Note that `topic_1.py` is both in the top navbar and the sidenav.  It acts as a
-landing page for the "topics" section.
+how this prop is added to `dash.page_registry` below.  
 
 ```python
 import dash
@@ -92,7 +91,8 @@ layout = html.Div("About page content")
 
 We define the sidebar in `side_bar.py` which is in the `pages` folder.  We create the sidebar links by looping
 through `dash.page_registry` and selecting the apps with pathnames that starts with `"/topic"`. This sidebar is imported in `topic_1.py, topic_2.py` and `topic_3.py` and
-is included in the layout.
+is included in the layout.  Note that `topic_1.py` is both in the top navbar and the sidenav.  It acts as a
+landing page for the "topics" section.
 
 Note that `sidebar` is a function.  This is important -- more on this later. 
 
@@ -123,7 +123,10 @@ def sidebar():
     )
 
 ```
- Here is `topic_2.py`  (`topic_1.py` and `topic_3.py` are similar).  Note that the layout is also a function.
+ Here is `topic_2.py`  (`topic_1.py` and `topic_3.py` are similar).  Note that the layout is also a function. 
+ 
+As you see below, `topic_2.py` and `topic_3.py` will NOT have `top_nav=True` included in `dash.register_page`,
+but `topic_1.py` will include `top_nav=True` because we want that page in the navbar.
 
 ```python
 from dash import html
