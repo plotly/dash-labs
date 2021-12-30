@@ -1,6 +1,6 @@
 
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.1.
+> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -15,7 +15,8 @@ One of the nice features of this API is that it automatically creates the meta
 tags used by social media sites like Facebook and Twitter.  These sites use the app title, description and image to create
 the card that is displayed when you share a link to your site. They are also used in search engine results.
 
-Here is more info on social media meta tags:  https://css-tricks.com/essential-meta-tags-social-media/
+Find more information on social media meta tags [here.](https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML)
+You may also find [this article](https://css-tricks.com/essential-meta-tags-social-media/) helpful.
 
 The example below goes into detail about how to add an image to a page in dash.page_registry and what
 the meta tags look like.
