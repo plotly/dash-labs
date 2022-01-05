@@ -154,7 +154,7 @@ def register_page(
     page = dict(
         module=module,
         supplied_path=path,
-        path_template=path_template,
+        path_template= None if path_template is None else _validate_template(path_template),
         path=(path if path is not None else _infer_path(module, path_template)),
         supplied_name=name,
         name=(name if name is not None else _filename_to_name(module)),
@@ -239,6 +239,14 @@ def _infer_image(module):
 
 def _filename_to_name(filename):
     return filename.split(".")[-1].replace("_", " ").capitalize()
+
+
+def _validate_template(template):
+    template_segments = template.split("/")
+    for s in template_segments:
+        if ("<" or ">") in s and not (s.startswith("<") and s.endswith(">")):
+            raise Exception(
+                f"template {template} is invalid. Path segments with variables must be formatted as <variable_name>")
 
 
 def _infer_path(filename, template):
