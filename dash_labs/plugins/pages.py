@@ -248,7 +248,7 @@ def _infer_path(filename, template):
         return path
     else:
         # replace the variables in the template with "None"
-        return re.sub("<.+?>", "none", template)
+        return re.sub("<[^<>]+>", "none", template)
 
 
 def _import_layouts_from_pages():
