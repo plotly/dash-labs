@@ -251,45 +251,13 @@ However, we recommend splitting out the page layouts into their own files in `pa
 
 ***
 
-**Query Strings**
+**Long Callbacks**
 
-It's possible to pass query strings from the url to a layout function.
-For example:
-```python
-import dash
+Currently `long_callback` requires the `app` object.  To use long callacks with `pages/` it's necessary to 
+include the `@app.long_callback` in the same file where the `app` is instantiated.   You can find an example
+in `/demos/multi_page_long_callback`.
 
-dash.register_page(__name__, path='/dashboard')
-
-def layout(velocity=0, **other_unknown_query_strings):
-    return dash.html.Div([
-        dash.dcc.Input(id='velocity', value=velocity)
-    ])
-
-```
-![image](https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png)
-
-**Path Variable**
-
-Another way to pass variables to the layout is to use the `path_template` parameter in  `dash.register_page`.  You can
-define which segments of the path are variables by marking them like this: `<variable_name>`. The layout function then receives the `<variable_name>` as a keyword argument.
-
-For example, if `path_template= "/asset/<asset_id>"`, and the url is "/assets/a100", then the layout
-will receive `{"asset_id":"a100"}`.  Here is an example with two variables in the path:
-
-```python
-import dash
-
-dash.register_page(
-    __name__,
-    path_template="/asset/<asset_id>/department/<dept_id>",
-)
-
-
-def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
-    return dash.html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
-
-```
-![image](https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png)
+***
 
 ## Reference
 
@@ -323,43 +291,30 @@ page navigation links or by template authors.
 - `module`:
    The module path where this page's `layout` is defined. Often `__name__`.
 
-
 - `path`:
    URL Path, e.g. `/` or `/home-page`.
    If not supplied, will be inferred from `module`,
    e.g. `pages.weekly_analytics` to `/weekly-analytics`
-
-
-- `path_template`:
-       Add variables to a URL by marking sections with <variable_name>. The layout function
-       then receives the <variable_name> as a keyword argument.
-       e.g. path_template= "/asset/<asset_id>"
-            if pathname = "/assets/a100" then layout will receive {"asset_id":"a100"}
-
 
 - `name`:
    The name of the link.
    If not supplied, will be inferred from `module`,
    e.g. `pages.weekly_analytics` to `Weekly analytics`
 
-
 - `order`:
    The order of the pages in `page_registry`.
    If not supplied, then the filename is used and the page with path `/` has
    order `0`
-
 
 - `title`:
    The name of the page `<title>`. That is, what appears in the browser title.
    If not supplied, will use the supplied `name` or will be inferred by module,
    e.g. `pages.weekly_analytics` to `Weekly analytics`
 
-
 - `description`:
    The `<meta type="description"></meta>`.
    If not supplied, then the default will be the same as the title.
     
-
 - `image`:
    The meta description image used by social media platforms.
    If not supplied, then it looks for the following images in `assets/`:
@@ -367,16 +322,13 @@ page navigation links or by template authors.
     - A generic app image at `assets/app.<extension>`
     - A logo at `assets/logo.<extension>`
 
-
 - `redirect_from`:
    A list of paths that should redirect to this page.
    For example: `redirect_from=['/v2', '/v3']`
 
-
 - `layout`:
    The layout function or component for this page.
    If not supplied, then looks for `layout` from within the supplied `module`.
-
 
 - `**kwargs`:
    Arbitrary keyword arguments that can be stored.
@@ -413,7 +365,7 @@ OrderedDict([
             description='Our historical view',
             
             supplied_order=None,
-            order=None,
+            order=1,
             
             supplied_layout=None,
             layout=<function pages.historical_outlook.layout>,

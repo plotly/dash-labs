@@ -9,6 +9,7 @@ dash.register_page(
     "very_important", layout="Don't miss it!", path="/important", order=0
 )
 
+
 app.layout = html.Div(
     [
         html.H1("App Frame"),

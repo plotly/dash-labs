@@ -3,7 +3,6 @@ import dash
 dash.register_page(__name__)
 
 
-
 def layout():
     return """    
     This page uses a generic image.  No image is specified and there is no image that matches

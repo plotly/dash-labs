@@ -154,7 +154,9 @@ def register_page(
     page = dict(
         module=module,
         supplied_path=path,
-        path_template= None if path_template is None else _validate_template(path_template),
+        path_template=None
+        if path_template is None
+        else _validate_template(path_template),
         path=(path if path is not None else _infer_path(module, path_template)),
         supplied_name=name,
         name=(name if name is not None else _filename_to_name(module)),
@@ -246,7 +248,8 @@ def _validate_template(template):
     for s in template_segments:
         if ("<" or ">") in s and not (s.startswith("<") and s.endswith(">")):
             raise Exception(
-                f"template {template} is invalid. Path segments with variables must be formatted as <variable_name>")
+                f"template {template} is invalid. Path segments with variables must be formatted as <variable_name>"
+            )
     return template
 
 
