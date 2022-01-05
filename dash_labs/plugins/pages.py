@@ -15,7 +15,7 @@ import re
 _ID_CONTENT = "_pages_plugin_content"
 _ID_LOCATION = "_pages_plugin_location"
 _ID_STORE = "_pages_plugin_store"
-_ID_DUMMY = "pages_plugin_dummy"
+_ID_DUMMY = "_pages_plugin_dummy"
 
 page_container = html.Div(
     [
