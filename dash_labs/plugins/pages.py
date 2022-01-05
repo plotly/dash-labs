@@ -247,6 +247,7 @@ def _validate_template(template):
         if ("<" or ">") in s and not (s.startswith("<") and s.endswith(">")):
             raise Exception(
                 f"template {template} is invalid. Path segments with variables must be formatted as <variable_name>")
+    return template
 
 
 def _infer_path(filename, template):
