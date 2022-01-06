@@ -22,7 +22,7 @@ _New in dash-labs>=1.0.0:_
     - Example of organizing app pages in nested folders within the `pages/` folder
   - [10-MultiPageDashApp-MetaTags.md](https://github.com/plotly/dash-labs/blob/main/docs/10-MultiPageDashApp-MetaTags.md)
     - Details on how the title, image, and description are used to create the meta tags which determine how your app looks when shared on social media.
-  - [11-MultiPageDashApp-LayoutFunctions.md](https://github.com/plotly/dash-labs/blob/main/docs/10-MultiPageDashApp-LayoutFunctions.md)
+  - [11-MultiPageDashApp-LayoutFunctions.md](https://github.com/plotly/dash-labs/blob/main/docs/11-MultiPageDashApp-LayoutFunctions.md)
     - Examples of when to make the `layout` a function - like when creating a custom menu by page, or using query strings.
   
 ### Multi-Page App Demos  

@@ -246,8 +246,50 @@ app.layout = dbc.Container([
     dash.page_container
 ])
 ```
-
 However, we recommend splitting out the page layouts into their own files in `pages/` to keep things more organized and to keep your files from becoming too long!
+
+**Query Strings**
+
+It's possible to pass query strings from the url to a layout function.
+For example:
+```python
+import dash
+
+dash.register_page(__name__, path='/dashboard')
+
+def layout(velocity=0, **other_unknown_query_strings):
+    return dash.html.Div([
+        dash.dcc.Input(id='velocity', value=velocity)
+    ])
+
+```
+![image](https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png)
+
+
+**Path Variable**
+
+Another way to pass variables to the layout is to use the `path_template` parameter in  `dash.register_page`.  You can
+define which segments of the path are variables by marking them like this: `<variable_name>`. The layout function then receives the `<variable_name>` as a keyword argument.
+
+
+For example, if `path_template= "/asset/<asset_id>"`, and the url is `"/assets/a100"`, then the layout
+will receive `{"asset_id":"a100"}`.  Here is an example with two variables in the path:
+
+
+```python
+import dash
+
+dash.register_page(
+    __name__,
+    path_template="/asset/<asset_id>/department/<dept_id>",
+)
+
+
+def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
+    return dash.html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
+
+```
+![image](https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png)
 
 ***
 
