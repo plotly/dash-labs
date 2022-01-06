@@ -1,11 +1,16 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## unreleased
+
+### Added
+ -[#61](https://github.com/plotly/dash-labs/pull/61).  New feature for handling variables in the URL.
+
 ## 1.0.1
 
 ### Fixed
- - [#59](https://github.com/plotly/dash-labs/pull/59) Fixed bug the prevented order prop from changing the order of the modules in dash.page_registry
- - [#55](https://github.com/plotly/dash-labs/pull/59) Fixed bug that prevented multipage apps from working in windows: Fixed bug #52. Transitioned function away from the glob library to the os library to ensure functionality with windows. See pull request #55. 
+ - [#59](https://github.com/plotly/dash-labs/pull/59) Fixed bug that prevented order prop from changing the order of the modules in dash.page_registry
+ - [#55](https://github.com/plotly/dash-labs/pull/55) Fixed bug that prevented multipage apps from working in windows: Fixed bug #52. Transitioned function away from the glob library to the os library to ensure functionality with windows. 
 
 ## 1.0.0
 

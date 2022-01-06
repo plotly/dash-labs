@@ -2,10 +2,11 @@ import dash
 import dash_labs as dl
 import dash_bootstrap_components as dbc
 
-
 app = dash.Dash(
     __name__, plugins=[dl.plugins.pages], external_stylesheets=[dbc.themes.BOOTSTRAP]
 )
+
+dash.register_page("home", layout="We're home!", path="/")
 
 navbar = dbc.NavbarSimple(
     dbc.DropdownMenu(
