@@ -9,8 +9,15 @@ from os import listdir
 from os.path import isfile, join
 from textwrap import dedent
 from urllib.parse import parse_qs
-import re
+from keyword import iskeyword
+import warnings
 
+
+def warning_message(message, category, filename, lineno, line=None):
+    return f"{category.__name__}:\n {message} \n"
+
+
+warnings.formatwarning = warning_message
 
 _ID_CONTENT = "_pages_plugin_content"
 _ID_LOCATION = "_pages_plugin_location"
@@ -246,10 +253,17 @@ def _filename_to_name(filename):
 def _validate_template(template):
     template_segments = template.split("/")
     for s in template_segments:
-        if ("<" or ">") in s and not (s.startswith("<") and s.endswith(">")):
-            raise Exception(
-                f"template {template} is invalid. Path segments with variables must be formatted as <variable_name>"
-            )
+        if "<" in s or ">" in s:
+            if not (s.startswith("<") and s.endswith(">")):
+                raise Exception(
+                    f'Invalid `path_template`: "{template}"  Path segments with variables must be formatted as <variable_name>'
+                )
+            variable_name = s[1:-1]
+            if not variable_name.isidentifier() or iskeyword(variable_name):
+                warnings.warn(
+                    f'`{variable_name}` is not a valid Python variable name in `path_template`: "{template}".',
+                    stacklevel=2,
+                )
     return template
 
 
@@ -259,8 +273,12 @@ def _infer_path(filename, template):
         path = "/" + path if not path.startswith("/") else path
         return path
     else:
-        # replace the variables in the template with "None"
-        return re.sub("<[^<>]+>", "none", template)
+        # replace the variables in the template with "none" to create a default path if no path is supplied
+        path_segments = template.split("/")
+        default_template_path = [
+            "none" if s.startswith("<") else s for s in path_segments
+        ]
+        return "/".join(default_template_path)
 
 
 def _import_layouts_from_pages():
@@ -300,7 +318,7 @@ def plug(app):
     if os.path.exists("pages"):
         _import_layouts_from_pages()
     else:
-        print("A folder called `pages` does not exist.")
+        warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
     @app.server.before_first_request
     def router():
