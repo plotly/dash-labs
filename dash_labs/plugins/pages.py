@@ -470,13 +470,12 @@ def _parse_query_string(search):
 
     parsed_qs = {}
     for (k, v) in parse_qs(search).items():
-        first = v[0]  # ignore multiple values
+        v = v[0] if len(v) == 1 else v
         try:
-            first = json.loads(first)
+            v = json.loads(v)
         except:
             pass
-
-        parsed_qs[k] = first
+        parsed_qs[k] = v
     return parsed_qs
 
 
