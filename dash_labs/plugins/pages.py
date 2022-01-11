@@ -68,7 +68,7 @@ def register_page(
        e.g. based on path_template: `/asset/<asset_id` to `/asset/none`
        e.g. based on module: `pages.weekly_analytics` to `/weekly-analytics`
 
-    - path_template:
+    - `path_template`:
        Add variables to a URL by marking sections with <variable_name>. The layout function
        then receives the <variable_name> as a keyword argument.
        e.g. path_template= "/asset/<asset_id>"
@@ -471,10 +471,6 @@ def _parse_query_string(search):
     parsed_qs = {}
     for (k, v) in parse_qs(search).items():
         v = v[0] if len(v) == 1 else v
-        try:
-            v = json.loads(v)
-        except:
-            pass
         parsed_qs[k] = v
     return parsed_qs
 
