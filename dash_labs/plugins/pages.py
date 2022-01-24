@@ -9,13 +9,20 @@ from os import listdir
 from os.path import isfile, join
 from textwrap import dedent
 from urllib.parse import parse_qs
-import re
+from keyword import iskeyword
+import warnings
 
+
+def warning_message(message, category, filename, lineno, line=None):
+    return f"{category.__name__}:\n {message} \n"
+
+
+warnings.formatwarning = warning_message
 
 _ID_CONTENT = "_pages_plugin_content"
 _ID_LOCATION = "_pages_plugin_location"
 _ID_STORE = "_pages_plugin_store"
-_ID_DUMMY = "pages_plugin_dummy"
+_ID_DUMMY = "_pages_plugin_dummy"
 
 page_container = html.Div(
     [
@@ -154,7 +161,9 @@ def register_page(
     page = dict(
         module=module,
         supplied_path=path,
-        path_template=path_template,
+        path_template=None
+        if path_template is None
+        else _validate_template(path_template),
         path=(path if path is not None else _infer_path(module, path_template)),
         supplied_name=name,
         name=(name if name is not None else _filename_to_name(module)),
@@ -241,22 +250,47 @@ def _filename_to_name(filename):
     return filename.split(".")[-1].replace("_", " ").capitalize()
 
 
+def _validate_template(template):
+    template_segments = template.split("/")
+    for s in template_segments:
+        if "<" in s or ">" in s:
+            if not (s.startswith("<") and s.endswith(">")):
+                raise Exception(
+                    f'Invalid `path_template`: "{template}"  Path segments with variables must be formatted as <variable_name>'
+                )
+            variable_name = s[1:-1]
+            if not variable_name.isidentifier() or iskeyword(variable_name):
+                warnings.warn(
+                    f'`{variable_name}` is not a valid Python variable name in `path_template`: "{template}".',
+                    stacklevel=2,
+                )
+    return template
+
+
 def _infer_path(filename, template):
     if template is None:
         path = filename.replace("_", "-").replace(".", "/").lower().split("pages")[-1]
         path = "/" + path if not path.startswith("/") else path
         return path
     else:
-        # replace the variables in the template with "None"
-        return re.sub("<.+?>", "none", template)
+        # replace the variables in the template with "none" to create a default path if no path is supplied
+        path_segments = template.split("/")
+        default_template_path = [
+            "none" if s.startswith("<") else s for s in path_segments
+        ]
+        return "/".join(default_template_path)
 
 
-def _import_layouts_from_pages():
+def _import_layouts_from_pages(app):
     for (root, dirs, files) in os.walk("pages"):
         for file in files:
+            page_filename = os.path.join(root, file).replace("\\", "/")
+            if file.endswith(".md"):
+                _register_page_from_markdown_file(page_filename, app)
+                continue
             if file.startswith("_") or not file.endswith(".py"):
                 continue
-            page_filename = os.path.join(root, file).replace("\\", "/")
+
             _, _, page_filename = page_filename.partition("pages/")
             page_filename = page_filename.replace(".py", "").replace("/", ".")
             page_module = importlib.import_module(f"pages.{page_filename}")
@@ -265,6 +299,53 @@ def _import_layouts_from_pages():
                 dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
                     page_module, "layout"
                 )
+
+
+def _register_page_from_markdown_file(page_filename, app):
+    """
+    Extracts and runs dash.register_page() from the "front matter" of a markdown file in the pages folder.
+    Front matter is defined with three dashes:
+    ---
+    dash.register_page(...)
+    ---
+
+    todo:
+        - use AST to parse dash.register_page() to limite what gets executed?. Use the same function as the
+          one to delete the app instance in dashdown.
+        - infer the filename for dashdown(filename,...)
+    """
+    try:
+        with open(page_filename, "r") as f:
+            delimiter = "---\n"
+            first_line_delimiter = False
+            frontmatter = []
+            for line in f:
+                if not first_line_delimiter and line == delimiter:
+                    first_line_delimiter = True
+                elif first_line_delimiter and line != delimiter:
+                    frontmatter.append(line)
+                else:
+                    break
+
+    except IOError as error:
+        warnings.warn(f"{error}", stacklevel=2)
+        return ""
+
+    if len(frontmatter) > 0:
+        frontmatter = "".join(frontmatter)
+        # todo - need to limit what gets executed in frontmatter?
+        module_name = f'"{page_filename.replace(".md", "").replace("/", ".")}"'
+        if "register_page" in frontmatter:
+            if "__name__" in frontmatter:
+                # infer module name:  so you can do this: `dash.register_page(__name__)
+
+                frontmatter = frontmatter.replace("__name__", module_name)
+            try:
+                from dash_labs import dashdown
+
+                exec(frontmatter)
+            except Exception as e:
+                print(f"error executing frontmatter in:  {module_name}", e)
 
 
 def _path_to_page(app, pathname):
@@ -286,9 +367,9 @@ def plug(app):
     dash.page_registry = OrderedDict()
 
     if os.path.exists("pages"):
-        _import_layouts_from_pages()
+        _import_layouts_from_pages(app)
     else:
-        print("A folder called `pages` does not exist.")
+        warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
     @app.server.before_first_request
     def router():
