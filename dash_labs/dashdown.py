@@ -261,7 +261,7 @@ def dashdown(
                     pass
 
             # side by side on large screens
-            lg = 6 if side_by_side else 12
+            lg = 6 if display_options["side_by_side"] else 12
             if display_options["code_first"]:
                 code_display = [
                     dbc.Col(code_card, width=12, lg=lg),
@@ -346,7 +346,7 @@ def update_display_options(options_dict, section):
     if "side-by-side-true" in section:
         options["side_by_side"] = True
     if "side-by-side-false" in section:
-        options["side-by-side"] = False
+        options["side_by_side"] = False
     if "code-first-true" in section:
         options["code_first"] = True
     if "code-first-false" in section:
