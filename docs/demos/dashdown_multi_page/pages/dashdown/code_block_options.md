@@ -30,6 +30,34 @@ The following options may be set at the file level or within a code block:
         If True, the copy to Clipboard icon will display in the code block.  This may also be set within the code block
         with the comment # clipboard-true or # clipboard-false.
 
+
+
+### Apply to all code blocks
+In this example, all the code blocks in the `home.md` file will be displayed side-by-side and the clipboard icon will
+not be displayed.
+
+```python exec-code-false clipboard-false
+dashddown("home.md", side_by_side=True, clipboard=False)
+```
+
+### Apply to certain code blocks
+
+If you have multiple code blocks in the same Markdown file, you can set the display options for each code block by
+including the code block option as a comment.  If you include the comment on the same line as the three back ticks
+that define the code block, then the comment won't be visible in the app output. 
+
+For example, if you added the comment # side-by-side-true like shown below the code will be displayed beside the output.
+
+
+```python exec-code-false
+
+`` `python # side-by-side-true
+
+
+`` `
+
+```
+
 ## Examples:
 
 Here is a markdown file that will be used in all the examples:
@@ -83,25 +111,6 @@ if __name__ == "__main__":
     
 ```
 
-The display options may also be set within the code block in a file. For example, if you added the comment # side-by-side-true
-on the same line as the three backticks, then you would see the same output as above with the code and the output side-by-side. 
-This allows certain code blocks to be displayed in different ways within the same Markdown file.
-
-
-
-```python exec-code-false
-
-## Sample Markdown File
-
-This is a markdown file with a mix of *text and code*.
-
-`` `python # side-by-side-true
-df = px.data.iris()
-fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
-layout = dcc.Graph(figure=fig)
-`` `
-
-```
 --------
 
 ### Code First or Output First

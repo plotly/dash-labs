@@ -8,66 +8,45 @@ dash.register_page(
         "pages/dashdown/overview.md",
         side_by_side=True,        
     ),
+   app_className="mb-4",
+   text_className="mb-4 pb-4"
 )
 ---
 
 # Dash Labs Top Secret Feature Preview
 
------
-
-## Welcome to `dashdown`! - _Markdown that runs code_
---------------
-
-### Background
-
-`dashdown` displays the text of a Markdown file and  can execute the embedded code blocks.  Now it's possible to write your
-page layouts entirely in Markdown. This is convenient when your content is a mix of narrative and code. 
-
-Use `dashdown` to create interactive reports and presentations by displaying the app output and hiding
-the code blocks. Use `dashdown` to create interactive documentation by deploying your project's `README.md` file.
-You can also use `dashdown` to display content within an app layout as well. This is conveinient when you would like
-to display the content from Markdown files in a highly customized Dash app.
 
 
- 
+## Welcome to `dashdown` -- _Markdown that runs code_ !
+
+-------
+
 ### `dashdown` is ideal for:  
 
- - __Reports__  
- - __Presentations__
- - __Documentation__ 
- - __Tutorials__
- 
+ - __Tutorials__  
+Write a tutorial in Markdown and use `dashdown` to create an interactive app that displays the code and the output.  
 
-`dashdown` can be used with `pages` to build multi-page apps.  The documentation you are now viewing was created with 
-`pages/` and `dashdown`. You can find the code [here]().  See the [multi-page apps]() section for more information on `pages/` and see
-the quickstart guide below for how to include `dashdown` in multi-page apps.
+
+ - __Reports__    
+Use `dashdown` to create interactive reports and presentations by displaying the app output and hiding the code blocks.  
+
+
+ - __Documentation__  
+Use `dashdown` to create interactive documentation.  See the link on the left "deploying a `README.md` with `dashdown`" to
+see the README.md from the `dash-extensions` library.  
+
+ - __Multi-page apps__  
+Use `dashdown` with `pages/` to easily build multi-page apps.  This documentation is written in Markdown and the app
+is created with `pages/` and `dashdown`. You can find the code [here]().  
 
 
 
 ------------
 
-### Quickstart  
+The page you are now viewing is a Markdown file.  Here's a codeblock included in the file. 
+Try moving the sliders  - it's live!
 
 
-##### Single Page App
-
-Here a single page app made from a Markdown file using `dashdown`. It's live!  Try interacting with the slider.
-
-
-```python exec-code-false
-from dash import Dash
-from dash_labs import dashdown
-
-app.layout = dashdown("path_to_my_markdown_file.md", side_by_side=True)
-
-if __name__ == "__main__":
-    app.run_server()
-    
-    
-```
-----------
-----------
-`my_markdown_file.md`
 ```python
 
 from dash import Dash, dcc, html, Output, Input, callback
@@ -111,28 +90,48 @@ if __name__ == '__main__':
 
 ```
 -----------
+
+
+### Quickstart  
+
+
+#### Single Page App  
+
+Here's a single page app made from a Markdown file using `dashdown`. 
+
+
+```python exec-code-false side-by-side-false
+from dash import Dash
+from dash_labs import dashdown
+
+app.layout = dashdown("path_to_my_markdown_file.md")
+
+if __name__ == "__main__":
+    app.run_server()
+    
+    
+```
 -----------
 
 #### Multi Page App
 
 See more information on creating multi-page apps with `pages/` [here]()
 
-`dashdown` is compatible with the `pages/` api.  Place your Markdown file in the `pages/` folder.  Then add it to `dash.page_registry`
-in one of two ways: 
+Place your Markdown files in the `pages/` folder.  Register the page in one of two ways: 
 
 1) include dash.register_page from a `.py` file and use `dashdown` to create the layout:
 
 `app.py`
-``` python exec-code-false clipboard-false
+``` python exec-code-false clipboard-false side-by-side-false
 dash.register_page("pages.home", path="/", layout=dashdown("pages/home.md"))
 ```
 
-2) Include the `dash.register_page()` as "front matter" at the top of the Markdown file with the page content.
+2) Include the `dash.register_page` as "front matter" at the top of the Markdown file with the page content.
 
-The `dash.register_page()` must be the first thing in the file and must be set between triple-dashed lines. 
+The `dash.register_page` must be the first thing in the file and must be set between triple-dashed lines. 
 
 `pages/home.md`
-```text exec-code-false clipboard-false
+```text exec-code-false clipboard-false side-by-side-false
 ---
 dash.register_page(__name__, path="/", layout=dashdown("pages/home.md"))
 ---
@@ -153,14 +152,14 @@ risks, the following measures have been taken to limit the possibility of code b
 unknown or untrustworthy source or from a malicious user at runtime:
 
 - Only filenames can be supplied to `dashdown`. The file(s) must exist in a known directory on the 
-server before thea app starts. 
+server before the app starts. 
 
-- By default, the files must be within the parent directory of the main app.  You may specify an alternate
+- By default, the files must reside in the parent directory of the main app.  You may specify an alternate
 path by... (todo)
 
 - Content in files downloaded by users during runtime cannot be executed.
 
-- External URL are not a valid file path for the filename passed to `dashdown`.
+- External URLs are not a valid file path for the filename passed to `dashdown`.
 
 - It is not possible pass code directly to `dashdown`. This eliminates the risk of executing code supplied
 by a malicious user at runtime from a callback.
