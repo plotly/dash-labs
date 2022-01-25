@@ -3,6 +3,8 @@ dash.register_page(
     __name__,
     path= "/",
     name="Overview",
+    title="Dashdown Overview",
+    description="Dash Labs documentation",
     order=0,
     layout=dashdown(
         "pages/dashdown/overview.md",
@@ -37,7 +39,7 @@ see the README.md from the `dash-extensions` library.
 
  - __Multi-page apps__  
 Use `dashdown` with `pages/` to easily build multi-page apps.  This documentation is written in Markdown and the app
-is created with `pages/` and `dashdown`. You can find the code [here]().  
+is created with `pages/` and `dashdown`. You can find the code [here](https://github.com/AnnMarieW/dash-labs/tree/dashdown/docs/demos/dashdown_multi_page).  
 
 
 

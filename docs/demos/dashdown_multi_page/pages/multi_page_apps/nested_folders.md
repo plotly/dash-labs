@@ -8,6 +8,8 @@ dash.register_page(
         exec_code=False,
         #  code_card_style={"margin": "25px 50px"}
     ),
+    title="Pages Nested Folders Example",
+    description="Dash Labs documentation",
 )
 
 ---

@@ -2,6 +2,8 @@
 dash.register_page(
     __name__,   
     order=2,
+    title="Dashdown Code Block Options",
+    description="Dash Labs documentation",
     layout=dashdown(
         "pages/dashdown/code_block_options.md",
     ),

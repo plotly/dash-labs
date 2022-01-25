@@ -7,6 +7,8 @@ dash.register_page(
         "pages/multi_page_apps/overview.md",
         exec_code=False,
     ),
+    title="Pages Overview",
+    description="Dash Labs documentation",
 )
 
 ---

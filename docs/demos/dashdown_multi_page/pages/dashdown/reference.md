@@ -2,6 +2,8 @@
 dash.register_page(
     __name__,
     name="Reference",
+    title="Dashdown Reference",
+    description="Dash Labs documentation",
     order=1,
     layout=dashdown(
         "pages/dashdown/reference.md",

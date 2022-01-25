@@ -3,6 +3,8 @@
 dash.register_page(
     __name__,
     name="Deploy a README.md with dashdown",
+    title="Dashdown example-Deploy a README.md",
+    description="Dash Labs documentation",
     order=99,
     layout=dashdown(
         "pages/dashdown/README.md",        

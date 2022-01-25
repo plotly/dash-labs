@@ -8,8 +8,10 @@ dash.register_page(
         "pages/dashdown/scope_and_scope_creep.md",
         app_className = "mb-4 pb-4",
         scope={"pd":pd},
-        scope_creep=True
+        scope_creep=True,        
     ),
+    title="Dashdown Scope",
+    description="Dash Labs documentation",
 )
 
 

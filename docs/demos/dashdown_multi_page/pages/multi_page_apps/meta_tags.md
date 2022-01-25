@@ -6,8 +6,9 @@ dash.register_page(
     layout=dashdown(
         "pages/multi_page_apps/meta_tags.md",
         exec_code=False,
-        #  code_card_style={"margin": "25px 50px"}
     ),
+    title="Pages Meta Tags",
+    description="Dash Labs documentation",
 )
 
 
