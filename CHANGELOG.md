@@ -4,8 +4,9 @@ Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versio
 ## unreleased
 
 ### Added
- -[#61](https://github.com/plotly/dash-labs/pull/61).  New feature for handling variables in the URL.
-
+ - [#61](https://github.com/plotly/dash-labs/pull/61).  New feature for handling variables in the URL.
+### Fixed
+ - [#73](https://github.com/plotly/dash-labs/pull/73).  Allow for multiple values in query strings.
 ## 1.0.1
 
 ### Fixed
