@@ -16,6 +16,7 @@ tags used by social media sites like Facebook and Twitter.  These sites use the 
 the card that is displayed when you share a link to your site. They are also used in search engine results.
 
 Find more information on social media meta tags [here.](https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML)
+You may also find [this article](https://css-tricks.com/essential-meta-tags-social-media/) helpful.
 
 The example below goes into detail about how to add an image to a page in dash.page_registry and what
 the meta tags look like.
