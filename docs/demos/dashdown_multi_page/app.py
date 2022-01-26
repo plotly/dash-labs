@@ -8,7 +8,7 @@ SIDEBAR_STYLE = {
     "top": 90,
     "left": 0,
     "bottom": 0,
-    "width": "18rem",
+    "width": "17rem",
     "padding": "2rem 1rem",
     "background-color": "#f8f9fa",
     "overflow": "auto",
@@ -17,7 +17,7 @@ SIDEBAR_STYLE = {
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
-    "margin-left": "18rem",
+    "margin-left": "17rem",
     "margin-right": "2rem",
     "padding": "2rem 2rem",
 }
