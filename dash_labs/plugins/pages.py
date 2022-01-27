@@ -297,17 +297,15 @@ def _import_layouts_from_pages():
                 )
 
 
-def _path_to_page(app, pathname):
-    path_id = app.strip_relative_path(pathname)
+def _path_to_page(app, path_id):
     path_variables = None
-
     for page in dash.page_registry.values():
         if page["path_template"]:
-            template_id = app.strip_relative_path(page["path_template"])
+            template_id = page["path_template"].strip("/")
             path_variables = _parse_path_variables(path_id, template_id)
             if path_variables:
                 return page, path_variables
-        if path_id == app.strip_relative_path(page["path"]):
+        if path_id == page["path"].strip("/"):
             return page, path_variables
     return {}, None
 
@@ -334,7 +332,7 @@ def plug(app):
             # updates the stored page title which will trigger the clientside callback to update the app title
 
             query_parameters = _parse_query_string(search)
-            page, path_variables = _path_to_page(app, pathname)
+            page, path_variables = _path_to_page(app, app.strip_relative_path(pathname))
 
             # get layout
             if page == {}:
@@ -393,7 +391,10 @@ def plug(app):
 
         # Set index HTML for the meta description and page title on page load
         def interpolate_index(**kwargs):
-            start_page, _ = _path_to_page(app, flask.request.path)
+            # The flask.request.path doesn't include the pathname prefix
+            # when inside DE Workspaces or deployed environments,
+            # so we don't need to call `app.strip_relative_path` on it.
+            start_page, _ = _path_to_page(app, flask.request.path.strip("/"))
             image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
