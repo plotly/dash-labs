@@ -1,12 +1,14 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
-## unreleased
+## 1.0.2 - January 26, 2022
 
 ### Added
  - [#61](https://github.com/plotly/dash-labs/pull/61).  New feature for handling variables in the URL.
 ### Fixed
  - [#73](https://github.com/plotly/dash-labs/pull/73).  Allow for multiple values in query strings.
+ - [#78](https://github.com/plotly/dash-labs/pull/78). Fix `/pages` for Dash Enterprise.
+
 ## 1.0.1
 
 ### Fixed
