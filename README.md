@@ -1,5 +1,8 @@
 # Dash Labs tech preview
-This repository contains a work-in-progress technical preview of potential future Dash features.
+
+This repository contains a work-in-progress technical preview of potential future Dash features. 
+
+> 🚧 Dash Labs features are not guaranteed to land in the official `dash` package. These features are also not officially supported by Plotly's Support Team or by Dash Enterprise. We recommend waiting for these features to land in `dash` before using them in a Production Environment. 🚧
 
 ## Documentation
 The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
