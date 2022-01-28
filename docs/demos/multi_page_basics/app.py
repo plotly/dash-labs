@@ -4,11 +4,10 @@ import dash_labs as dl
 
 app = Dash(__name__, plugins=[dl.plugins.pages])
 
-dash.register_page("another_home", layout="We're home!", path="/")
+dash.register_page("another_home", layout=html.Div("We're home!"), path="/")
 dash.register_page(
-    "very_important", layout="Don't miss it!", path="/important", order=0
+    "very_important", layout=html.Div("Don't miss it!"), path="/important", order=0
 )
-
 
 app.layout = html.Div(
     [

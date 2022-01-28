@@ -162,8 +162,7 @@ OrderedDict([
     ('pages.historical_analysis', {
         'module': 'pages.historical_analysis', 
         'name': 'Historical analysis', 
-        'title': 'Historical analysis',
-        'description': 'Historical analysis',
+        'title': 'Historical analysis',        
         'order': None,
     }
 ])
@@ -183,8 +182,7 @@ OrderedDict([
         'module': 'pages.outlook', 
         'path': '/future',
         'name': 'Future outlook', 
-        'title': 'Future outlook',
-        'description': 'Future outlook',
+        'title': 'Future outlook',        
         'order': 4,
     }
 ])
@@ -273,7 +271,7 @@ define which segments of the path are variables by marking them like this: `<var
 
 
 For example, if `path_template= "/asset/<asset_id>"`, and the url is `"/assets/a100"`, then the layout
-will receive `{"asset_id":"a100"}`.  Here is an example with two variables in the path:
+will receive `**{"asset_id": "a100"}`.  Here is an example with two variables in the path:
 
 
 ```python
@@ -338,6 +336,12 @@ page navigation links or by template authors.
    If not supplied, will be inferred from `module`,
    e.g. `pages.weekly_analytics` to `/weekly-analytics`
 
+- `path_template`:
+   Add variables to a URL by marking sections with <variable_name>. The layout function
+   then receives the <variable_name> as a keyword argument.
+   e.g. path_template= "/asset/<asset_id>"
+   then if pathname in browser is "/assets/a100" then layout will receive **{"asset_id":"a100"}
+
 - `name`:
    The name of the link.
    If not supplied, will be inferred from `module`,
@@ -355,7 +359,7 @@ page navigation links or by template authors.
 
 - `description`:
    The `<meta type="description"></meta>`.
-   If not supplied, then the default will be the same as the title.
+   If not supplied, then nothing is supplied.
     
 - `image`:
    The meta description image used by social media platforms.
