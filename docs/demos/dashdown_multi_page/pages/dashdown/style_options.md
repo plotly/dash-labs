@@ -3,7 +3,8 @@ dash.register_page(
     __name__,    
     order=2,
     layout=dashdown(
-        "pages/dashdown/style_options.md",    
+        "pages/dashdown/style_options.md", 
+        exec_code=True
     ),
     title="Dashdown Style Options",
     description="Dash Labs documentation",

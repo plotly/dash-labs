@@ -23,7 +23,7 @@ def layout():
                             # other elements
                             
                             dbc.Collapse(
-                                dbc.Card(dashdown("sample.md")),
+                                dbc.Card(dashdown("sample.md", exec_code=True)),
                                 id="collapse",
                                 is_open=False,
                             ), 
@@ -47,7 +47,7 @@ def layout():
                             n_clicks=0,
                         ),
                         dbc.Collapse(
-                            dbc.Card(dashdown("pages/dashdown/sample.md")),
+                            dbc.Card(dashdown("pages/dashdown/sample.md", exec_code=True)),
                             id="collapse",
                             is_open=False,
                         ),

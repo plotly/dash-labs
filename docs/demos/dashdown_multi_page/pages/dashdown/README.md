@@ -9,6 +9,7 @@ dash.register_page(
     layout=dashdown(
         "pages/dashdown/README.md",        
         side_by_side=True,
+        exec_code=True
     ),
 )
 ---
@@ -33,6 +34,7 @@ dash.register_page(
     layout=dashdown(
         "pages/dashdown/README.md",        
         side_by_side=True,
+        exec_code=True
     ),
 )
 ```
@@ -44,7 +46,7 @@ Or you could run it as regular single page app like this:
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("README.md")
+app.layout = dashdown("README.md", exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()

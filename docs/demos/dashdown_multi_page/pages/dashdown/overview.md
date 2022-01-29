@@ -8,7 +8,8 @@ dash.register_page(
     order=0,
     layout=dashdown(
         "pages/dashdown/overview.md",
-        side_by_side=True,        
+        side_by_side=True,  
+        exec_code=True
     ),
    app_className="mb-4",
    text_className="mb-4 pb-4"
@@ -106,7 +107,7 @@ Here's a single page app made from a Markdown file using `dashdown`.
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("path_to_my_markdown_file.md")
+app.layout = dashdown("path_to_my_markdown_file.md", exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -125,7 +126,7 @@ Place your Markdown files in the `pages/` folder.  Register the page in one of t
 
 `app.py`
 ``` python exec-code-false clipboard-false side-by-side-false
-dash.register_page("pages.home", path="/", layout=dashdown("pages/home.md"))
+dash.register_page("pages.home", path="/", layout=dashdown("pages/home.md", exec_code=True))
 ```
 
 2) Include the `dash.register_page` as "front matter" at the top of the Markdown file with the page content.
@@ -135,7 +136,7 @@ The `dash.register_page` must be the first thing in the file and must be set bet
 `pages/home.md`
 ```text exec-code-false clipboard-false side-by-side-false
 ---
-dash.register_page(__name__, path="/", layout=dashdown("pages/home.md"))
+dash.register_page(__name__, path="/", layout=dashdown("pages/home.md", exec_code=True))
 ---
 
 # My home Page
@@ -167,6 +168,7 @@ path by... (todo)
 by a malicious user at runtime from a callback.
 
 - The `dangerously_allow_html` is set to `False` for displaying the Markdown text. 
+- The `exec_code` is set to `False` 
 
 To learn more about creating secure Dash apps, please see [this discussion](https://community.plotly.com/t/writing-secure-dash-apps-community-thread/54619/)
 on the Dash community forum.

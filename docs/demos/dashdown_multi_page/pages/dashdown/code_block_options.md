@@ -6,6 +6,7 @@ dash.register_page(
     description="Dash Labs documentation",
     layout=dashdown(
         "pages/dashdown/code_block_options.md",
+        exec_code=True
     ),
 )
 
@@ -88,7 +89,7 @@ Here's a Dash app with the default display options for `dashdown`
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md")
+app.layout = dashdown("pages/dashdown/sample.md", exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -105,7 +106,7 @@ The display options may be changed at the file level.  Now all the code blocks i
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md", side_by_side=True)
+app.layout = dashdown("pages/dashdown/sample.md", side_by_side=True, exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -123,7 +124,7 @@ In this example, the output is displayed first, followed by the code.
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md", code_first=False)
+app.layout = dashdown("pages/dashdown/sample.md", code_first=False, exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -141,7 +142,7 @@ Now the code is displayed to the right of the output
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md", code_first=False, side_by_side=True)
+app.layout = dashdown("pages/dashdown/sample.md", code_first=False, side_by_side=True, exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -160,7 +161,7 @@ In this output, the copy to clipboard icon does not show in the code block
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md", clipboard=False, side_by_side=True)
+app.layout = dashdown("pages/dashdown/sample.md", clipboard=False, side_by_side=True, exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -198,7 +199,7 @@ This is ideal for a report or presentation where you do not want to show the cod
 from dash import Dash
 from dash_labs import dashdown
 
-app.layout = dashdown("pages/dashdown/sample.md", display_code=False)
+app.layout = dashdown("pages/dashdown/sample.md", display_code=False, exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()

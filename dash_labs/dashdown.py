@@ -35,8 +35,12 @@ warnings.formatwarning = warning_message
      - add `dangerously_allow_html` parameter for the dcc.Markdown() in dashdown?
      
      - be able to change `dashdown` default "globally" so it doesn't have to be done for every instance. 
-       This would be good especially good for style and className params, and scope.  Currently to add to scope,
-       in a multi-page app it's necessary to call dash.register_page from the main app.py file
+       This would be good especially good for style and className params, and scope.  
+       
+    - Ability to embed another file within the markdown file. use case being, ability to keep the python app code in
+     a seperate file so you can run it individually. We could integrate jinja in here perhaps…: {% include code.py %}
+     
+     - Add markdown files to hot reload
        
 """
 
@@ -47,7 +51,7 @@ def dashdown(
     scope_creep=False,
     dash_scope=True,
     display_code=True,
-    exec_code=True,
+    exec_code=False,
     template_variables=None,
     side_by_side=False,
     clipboard=True,
@@ -98,7 +102,7 @@ def dashdown(
        If `True`, code blocks will be displayed. This may also be set within the code block with the comment
         # display-code-true or # display-code-false.
 
-    - `exec_code` (boolean; default True):
+    - `exec_code` (boolean; default False):
        If `True`, code blocks will be executed.  This may also be set within the code block with the comment
         # exec-code-true or # exec-code-false
 

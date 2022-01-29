@@ -26,7 +26,7 @@ def dashdown(
     scope_creep=False,
     dash_scope=True,
     display_code=True,
-    exec_code=True,
+    exec_code=False,
     template_variables=None,
     side_by_side=False,
     clipboard=True,
@@ -73,7 +73,7 @@ See the jinja docs for how to use the template variables in the markdown files.
 - `display_code` (boolean; default True):
 If `True`, code blocks will be displayed. This may also be set within the code block with the comment # display-code-true or # display-code-false.
 
-- `exec_code` (boolean; default True):
+- `exec_code` (boolean; default False):
 If `True`, code blocks will be executed.  This may also be set within the code block with the comment # exec-code-true or # exec-code-false
 
 - `side_by_side` (boolean; default False):
