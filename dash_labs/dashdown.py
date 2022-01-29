@@ -1,3 +1,66 @@
+"""
+ todo
+    - reduce security risk with exec
+       - local files only.
+       ensure that the file is within a certain directory, and by default
+       that should be the parent directory of the main app but maybe we could create a way to override that.
+        (and if so, use the new path as the base path for dashdown to look in?)  Similar to /assets?
+    - css:
+       - create a dashdown stylesheet?
+       - eliminated dbc dependency  (replace Rows and Cols with inline css)
+    - rewrite the _remove_app_instance() to use the AST module
+    - any advantage to using jinja's read file function?
+    - see todos in pages.py in _register_page_from_markdown_file()
+    - use UUID for clipboard ID?
+    - add ability to change `dashdown` default "globally" so it doesn't have to be done for every instance.
+    - add ability to embed another file within the markdown file. Use case being, ability to keep the python app code in
+     a separate file so you can run it individually. We could integrate jinja in here perhaps…: {% include code.py %}
+    - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
+
+
+    - see MarkdownAIO branch :
+    - change to AIO component
+    - allow more props to be passed to underlying components? The issue is that some props should not be accessible to
+      reduce security risks.  Should we allow all props to be sent, like code_markdown_props={}, but then filter out
+       certain props such as:
+           -children and id for all components
+           - dangerously_allow_html for code markdown blocks
+           - for clipboard exclude `target_id`, `content`
+
+       Add the following props:
+          code_markdown_props
+          clipboard_props
+          app_div_props
+          text_markdown_props
+
+       This would eliminate the following props:
+          display_code    use code_markdown_props={"style":"display-none"} instead of display_code=false
+          clipboard       use clipboard_props={"style":"display-none"} instead of clipboard-false
+          code_style      use code_markdown_props={"style": ...}
+          code_className  use code_markdown_props={"className": ...}
+          app_style      use app_div_props={"style": ...}
+          app_className  use app_div_props={"className": ...}
+          text_style      use text_markdown_props={"style": ...}
+          text_className  use text_markdown_props={"className": ...}
+
+      Within the code files, the following props would be accepted:
+          code-markdown-props-{...}
+          clipboard-props-{...}
+          app-div-props-{...}
+          exec-code-true
+          exec-code-false
+          side-by-side-true
+          side-by-side-false
+          code-first-true
+          code-first-false
+
+
+
+
+
+
+"""
+
 from dash import dcc, html, dash_table, Input, Output, State, callback
 import re
 import ast
@@ -14,282 +77,252 @@ def warning_message(message, category, filename, lineno, line=None):
 
 warnings.formatwarning = warning_message
 
+class MarkdownAIO(html.Div):
+    def __init__(
+            self,
+            filename,
+            scope=None,
+            scope_creep=False,
+            dash_scope=True,
+            display_code=True,
+            exec_code=False,
+            template_variables=None,
+            side_by_side=False,
+            clipboard=True,
+            code_first=True,
+            code_style=None,
+            code_className=None,
+            app_style=None,
+            app_className=None,
+            text_style=None,
+            text_className=None,
+    ):
+        """
+        dashdown displays content of a markdown file with the option to run and/or display code blocks.
 
-"""
- todo 
-    - security risk with exec 
-       - local files only.  
-       ensure that the file is within a certain directory, and by default 
-       that should be the parent directory of the main app but maybe we could create a way to override that.
-        (and if so, use the new path as the base path for dashdown to look in?)  Similar to /assets?   
-    
-    - eliminated dbc dependency  (just need to replace Rows and Cols with inline css)   
-       - create a dashdown stylesheet?
-       
-    - rewrite the remove_app_instance() to use the AST module
-    
-    - any advantage to using jinja's read file function?
-    
-     - see todos in pages.py in _register_page_from_markdown_file()
-     
-     - add `dangerously_allow_html` parameter for the dcc.Markdown() in dashdown?
-     
-     - be able to change `dashdown` default "globally" so it doesn't have to be done for every instance. 
-       This would be good especially good for style and className params, and scope.  
-       
-    - Ability to embed another file within the markdown file. use case being, ability to keep the python app code in
-     a seperate file so you can run it individually. We could integrate jinja in here perhaps…: {% include code.py %}
-     
-     - Add markdown files to hot reload
-       
-"""
+        - `filename`(string):
+           The path to the markdown file.
 
+        - `scope`(dict):
+           Add scope to the code blocks. When using `app.callback` the `app` must be included.
+           scope=dict(app=app)
 
-def dashdown(
-    filename,
-    scope=None,
-    scope_creep=False,
-    dash_scope=True,
-    display_code=True,
-    exec_code=False,
-    template_variables=None,
-    side_by_side=False,
-    clipboard=True,
-    code_first=True,
-    code_style=None,
-    code_className=None,
-    app_style=None,
-    app_className=None,
-    text_style=None,
-    text_className=None,
-):
-    """
-    dashdown displays content of a markdown file with the option to run and/or display code blocks.
+        - `scope_creep`(boolean; default False):
+           Allows variables from one code block to be defined in the next code block.
 
-    - `filename`(string):
-       The path to the markdown file.
+        - `dash_scope`(boolean; default True):
+           If True, the default scope is:
+            ```scope = dict(
+                dcc=dcc,
+                html=html,
+                Input=Input,
+                Output=Output,
+                State=State,
+                dash_table=dash_table,
+                px=px,
+                plotly=plotly,
+                dbc=dbc,
+                **(scope or {}),
+            )```
 
-    - `scope`(dict):
-       Add scope to the code blocks. When using `app.callback` the `app` must be included.
-       scope=dict(app=app)
+        - `template_variables` (dict):
+           Variable passed to the  jinja templating engine: https://jinja.palletsprojects.com/en/3.0.x/templates/
+           This is a way to display dynamic content.  For example:
+           `template_variables={‘language’: ‘english’})`
+           See the jinja docs for how to use the template variables in the markdown files.
+           `{% if language == 'english' %} Hello {% elif language == 'french' %} Bonjour {% endif %}`
 
-    - `scope_creep`(boolean; default False):
-       Allows variables from one code block to be defined in the next code block.
+        - `display_code` (boolean; default True):
+           If `True`, code blocks will be displayed. This may also be set within the code block with the comment
+            # display-code-true or # display-code-false.
 
-    - `dash_scope`(boolean; default True):
-       If True, the default scope is:
-        ```scope = dict(
-            dcc=dcc,
-            html=html,
-            Input=Input,
-            Output=Output,
-            State=State,
-            dash_table=dash_table,
-            px=px,
-            plotly=plotly,
-            dbc=dbc,
-            **(scope or {}),
-        )```
+        - `exec_code` (boolean; default False):
+           If `True`, code blocks will be executed.  This may also be set within the code block with the comment
+            # exec-code-true or # exec-code-false
 
-    - `template_variables` (dict):
-       Variable passed to the  jinja templating engine: https://jinja.palletsprojects.com/en/3.0.x/templates/
-       This is a way to display dynamic content.  For example:
-       `template_variables={‘language’: ‘english’})`
-       See the jinja docs for how to use the template variables in the markdown files.
-       `{% if language == 'english' %} Hello {% elif language == 'french' %} Bonjour {% endif %}`
+        - `side_by_side` (boolean; default False):
+          If `True`, the code block will be displayed on the left and the app output on the right on large screens.
+          If `False`, or on small screens, code block will be displayed on top and the output will be on the bottom.
+          This may also be set within the code block with the comment # side-by-side-true or # side-by-side-false.
 
-    - `display_code` (boolean; default True):
-       If `True`, code blocks will be displayed. This may also be set within the code block with the comment
-        # display-code-true or # display-code-false.
+        - `code_first` (boolean; default True):
+          If `True`, the code block will be displayed on the top and output on the bottom (or on the left if side by side).
+          This may also be set within the code block with the comment # code-first-true or # code-first-false
 
-    - `exec_code` (boolean; default False):
-       If `True`, code blocks will be executed.  This may also be set within the code block with the comment
-        # exec-code-true or # exec-code-false
+        - `clipboard` (boolean: default True);
+          If True, the copy to Clipboard icon will display in the code block.  This may also be set within the code block
+          with the comment # clipboard-true or # clipboard-false.
 
-    - `side_by_side` (boolean; default False):
-      If `True`, the code block will be displayed on the left and the app output on the right on large screens.
-      If `False`, or on small screens, code block will be displayed on top and the output will be on the bottom.
-      This may also be set within the code block with the comment # side-by-side-true or # side-by-side-false.
+        - `code_style` (dict; optional):
+          The style of the code display container (Div).
+          default: {"maxHeight": 700, "overflow": "auto"}
 
-    - `code_first` (boolean; default True):
-      If `True`, the code block will be displayed on the top and output on the bottom (or on the left if side by side).
-      This may also be set within the code block with the comment # code-first-true or # code-first-false
+        - `code_className` (string; optional):
+          The className of the code display container (Div).
 
-    - `clipboard` (boolean: default True);
-      If True, the copy to Clipboard icon will display in the code block.  This may also be set within the code block
-      with the comment # clipboard-true or # clipboard-false.
+        - `app_style` (dict; optional):
+          The style of the app output container (Div).
+          default: {"maxHeight": 700, "overflow": "auto"}
 
-    - `code_style` (dict; optional):
-      The style of the code display container (Div).
-      default: {"maxHeight": 700, "overflow": "auto"}
+        - `app_className` (string; optional):
+          The className of the app output container (Div).
 
-    - `code_className` (string; optional):
-      The className of the code display container (Div).
+        - `text_style` (dict; optional):
+          The style of the Markdown text container (Markdown).
 
-    - `app_style` (dict; optional):
-      The style of the app output container (Div).
-      default: {"maxHeight": 700, "overflow": "auto"}
+        - `text_className` (string; optional):
+          The className of the Markdown text container (Markdown)
 
-    - `app_className` (string; optional):
-      The className of the app output container (Div).
+        """
+        if dash_scope:
+            scope = dict(
+                dcc=dcc,
+                html=html,
+                Input=Input,
+                Output=Output,
+                State=State,
+                dash_table=dash_table,
+                px=px,
+                plotly=plotly,
+                dbc=dbc,
+                **(scope or {}),
+            )
+        elif not scope:
+            scope = {}
 
-    - `text_style` (dict; optional):
-      The style of the Narkdown text container (Div).
+        try:
+            with open(filename, "r") as f:
+                notebook = f.read()
+        except IOError as error:
+            warnings.warn(f"{error} supplied to dashdown", stacklevel=2)
+            return ""
 
-    - `text_className` (string; optional):
-      The className of the Markdown text container (Div)
+        # remove frontmatter which is delimited with 3 dashes
+        split_frontmatter = re.split(r"(^---[\s\S]*?\n*---)", notebook)
+        notebook = split_frontmatter[-1]
+        template = Template(notebook)
+        notebook = template.render(**(template_variables or {}))
 
-    """
-    if dash_scope:
-        scope = dict(
-            dcc=dcc,
-            html=html,
-            Input=Input,
-            Output=Output,
-            State=State,
-            dash_table=dash_table,
-            px=px,
-            plotly=plotly,
-            dbc=dbc,
-            **(scope or {}),
+        split_notebook = re.split(
+            #   r"(```[^`]*```)",  # this one doesn't work if there are docstrings in the codeblock
+            r"(```[\s\S]*?\n```)",
+            notebook,
         )
-    elif not scope:
-        scope = {}
 
-    try:
-        with open(filename, "r") as f:
-            notebook = f.read()
-    except IOError as error:
-        warnings.warn(f"{error} supplied to dashdown", stacklevel=2)
-        return ""
+        # make a unique id for clipboard based on the markdown filename
+        clipboard_id = filename.split(".")[0].replace("\\", "/").replace("/", "-")
 
-    # remove frontmatter which is delimited with 3 dashes
-    split_frontmatter = re.split(r"(^---[\s\S]*?\n*---)", notebook)
-    notebook = split_frontmatter[-1]
-    template = Template(notebook)
-    notebook = template.render(**(template_variables or {}))
+        file_display_options = {
+            "display_code": display_code,
+            "clipboard": clipboard,
+            "side_by_side": side_by_side,
+            "code_first": code_first,
+            "exec_code": exec_code,
+        }
 
-    split_notebook = re.split(
-        #   r"(```[^`]*```)",  # this one doesn't work if there are docstrings in the codeblock
-        r"(```[\s\S]*?\n```)",
-        notebook,
-    )
+        reconstructed = []
+        code_block = 0
+        for i, section in enumerate(split_notebook):
+            if "```" in section:
+                code_block += 1
+                app_card = ""
+                code_card = ""
+                display_options = _update_display_options(file_display_options, section)
 
-    # make a unique id for clipboard based on the markdown filename
-    # todo use UUID here?
-    clipboard_id = filename.split(".")[0].replace("\\", "/").replace("/", "-")
+                if display_options["display_code"]:
+                    if display_options["clipboard"]:
+                        code_card = html.Div(
+                            html.Div(
+                                [
+                                    dcc.Markdown(
+                                        section,
+                                        style={"maxHeight": 700, "overflow": "auto"}
+                                        if code_style is None
+                                        else code_style,
+                                        className=code_className,
+                                    ),
+                                    dcc.Clipboard(
+                                        target_id=f"{clipboard_id}{i}",
+                                        style={
+                                            "right": 15,
+                                            "position": "absolute",
+                                            "top": 0,
+                                        },
+                                    ),
+                                ],
+                                id=f"{clipboard_id}{i}",
+                                style={"position": "relative"},
+                            ),
+                        )
+                    else:
+                        code_card = (
+                            dcc.Markdown(
+                                section,
+                                style={"maxHeight": 700, "overflow": "auto"}
+                                if code_style is None
+                                else code_style,
+                                className=code_className,
+                            ),
+                        )
 
-    file_display_options = {
-        "display_code": display_code,
-        "clipboard": clipboard,
-        "side_by_side": side_by_side,
-        "code_first": code_first,
-        "exec_code": exec_code,
-    }
-
-    reconstructed = []
-    code_block = 0
-    for i, section in enumerate(split_notebook):
-        if "```" in section:
-            code_block += 1
-            app_card = ""
-            code_card = ""
-            display_options = update_display_options(file_display_options, section)
-
-            if display_options["display_code"]:
-                if display_options["clipboard"]:
-                    code_card = html.Div(
-                        html.Div(
-                            [
-                                dcc.Markdown(
-                                    section,
-                                    style={"maxHeight": 700, "overflow": "auto"}
-                                    if code_style is None
-                                    else code_style,
-                                    className=code_className,
-                                ),
-                                dcc.Clipboard(
-                                    target_id=f"{clipboard_id}{i}",
-                                    style={
-                                        "right": 15,
-                                        "position": "absolute",
-                                        "top": 0,
-                                    },
-                                ),
-                            ],
-                            id=f"{clipboard_id}{i}",
-                            style={"position": "relative"},
-                        ),
-                    )
-                else:
-                    code_card = (
-                        dcc.Markdown(
-                            section,
-                            style={"maxHeight": 700, "overflow": "auto"}
-                            if code_style is None
-                            else code_style,
-                            className=code_className,
-                        ),
-                    )
-
-            if display_options["exec_code"]:
-                if "app.callback" in section and "app" not in scope:
-                    raise Exception(
+                if display_options["exec_code"]:
+                    if "app.callback" in section and "app" not in scope:
+                        raise Exception(
+                            """
+                            You must pass your own app object into the scope
+                            with scope={'app': app} if using callbacks.
+                            """
+                        )
+                    if not scope_creep:
+                        # make a copy
+                        code_scope = dict(**scope)
+                    else:
+                        # use the same dict that'll keep getting mutated
+                        code_scope = scope
+                    try:
+                        code = section.replace("```python", "").replace("```", "")
+                        app_card = _run_code(
+                            code,
+                            scope=code_scope,
+                            style=app_style,
+                            className=app_className,
+                        )
+                    except Exception as e:
+                        print(
+                            f"""
+                        The following error was generated while attempting to execute 
+                        code block #: {code_block} in file: {filename}
+                        error:  {e}                    
                         """
-                        You must pass your own app object into the scope
-                        with scope={'app': app} if using callbacks.
-                        """
-                    )
-                if not scope_creep:
-                    # make a copy
-                    code_scope = dict(**scope)
-                else:
-                    # use the same dict that'll keep getting mutated
-                    code_scope = scope
-                try:
-                    code = section.replace("```python", "").replace("```", "")
-                    app_card = _run_code(
-                        code,
-                        scope=code_scope,
-                        style=app_style,
-                        className=app_className,
-                    )
-                except Exception as e:
-                    print(
-                        f"""
-                    The following error was generated while attempting to execute 
-                    code block #: {code_block} in file: {filename}
-                    error:  {e}                    
-                    """
-                    )
-                    pass
+                        )
+                        pass
 
-            # side by side on large screens
-            lg = 6 if display_options["side_by_side"] else 12
-            if display_options["code_first"]:
-                code_display = [
-                    dbc.Col(code_card, width=12, lg=lg),
-                    dbc.Col(app_card, width=12, lg=lg),
-                ]
+                # side by side on large screens
+                lg = 6 if display_options["side_by_side"] else 12
+                if display_options["code_first"]:
+                    code_display = [
+                        dbc.Col(code_card, width=12, lg=lg),
+                        dbc.Col(app_card, width=12, lg=lg),
+                    ]
+                else:
+                    code_display = [
+                        dbc.Col(app_card, width=12, lg=lg),
+                        dbc.Col(code_card, width=12, lg=lg),
+                    ]
+
+                reconstructed.append(dbc.Row(code_display))
             else:
-                code_display = [
-                    dbc.Col(app_card, width=12, lg=lg),
-                    dbc.Col(code_card, width=12, lg=lg),
-                ]
-
-            reconstructed.append(dbc.Row(code_display))
-        else:
-            reconstructed.append(
-                dbc.Row(
-                    dbc.Col(
-                        dcc.Markdown(
-                            section, style=text_style, className=text_className
+                reconstructed.append(
+                    dbc.Row(
+                        dbc.Col(
+                            dcc.Markdown(
+                                section, style=text_style, className=text_className
+                            )
                         )
                     )
                 )
-            )
 
-    return html.Div(reconstructed)
+        super().__init__(reconstructed)
 
 
 def _run_code(code, scope=None, style=None, className=None):
@@ -307,7 +340,7 @@ def _run_code(code, scope=None, style=None, className=None):
     # code = code.replace("Dash(__name__,", "Dash(")
 
     # 3) Remove the app instance in the code block otherwise app.callbacks don't work
-    code = remove_app_instance(code)
+    code = _remove_app_instance(code)
 
     if "app.layout" in code:
         code = code.replace("app.layout", "layout")
@@ -334,7 +367,7 @@ def _run_code(code, scope=None, style=None, className=None):
         return html.Div(eval(compile(last, "<string>", mode="eval"), scope))
 
 
-def update_display_options(options_dict, section):
+def _update_display_options(options_dict, section):
     """
     update file level options with the options specified within the code block
     """
@@ -362,7 +395,7 @@ def update_display_options(options_dict, section):
     return options
 
 
-def remove_app_instance(code):
+def _remove_app_instance(code):
     """
     remove the app instance from a code block otherwise app.callback doesn't work
     todo:  This function is a placeholder. It will fail if there are things like unmatched parens in comments within

@@ -1,6 +1,6 @@
 from dash import dcc, callback, Input, Output, State
 import dash_bootstrap_components as dbc
-from dash_labs import dashdown
+from dash_labs import MarkdownAIO
 import dash
 
 dash.register_page(__name__, name="Dashdown embeded in layout")
@@ -14,7 +14,7 @@ def layout():
                     [
                         dcc.Markdown(
                             """
-                    #### `dashdown` can be used within a regular Dash layout.  
+                    #### `MarkdownAIO` can be used within a regular Dash layout.  
                     In this example, the `sample.md` is displayed in a dbc.Collapse:
                     
                     ```python                    
@@ -23,7 +23,7 @@ def layout():
                             # other elements
                             
                             dbc.Collapse(
-                                dbc.Card(dashdown("sample.md", exec_code=True)),
+                                dbc.Card(MarkdownAIO("sample.md", exec_code=True)),
                                 id="collapse",
                                 is_open=False,
                             ), 
@@ -47,7 +47,7 @@ def layout():
                             n_clicks=0,
                         ),
                         dbc.Collapse(
-                            dbc.Card(dashdown("pages/dashdown/sample.md", exec_code=True)),
+                            dbc.Card(MarkdownAIO("pages/MarkdownAIO/sample.md", exec_code=True)),
                             id="collapse",
                             is_open=False,
                         ),

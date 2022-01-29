@@ -6,8 +6,8 @@ dash.register_page(
     title="Dashdown Overview",
     description="Dash Labs documentation",
     order=0,
-    layout=dashdown(
-        "pages/dashdown/overview.md",
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/overview.md",
         side_by_side=True,  
         exec_code=True
     ),
@@ -20,27 +20,27 @@ dash.register_page(
 
 
 
-## Welcome to `dashdown` -- _Markdown that runs code_ !
+## Welcome to `MarkdownAIO` -- _Markdown that runs code_ !
 
 -------
 
-### `dashdown` is ideal for:  
+### `MarkdownAIO` is ideal for:  
 
  - __Tutorials__  
-Write a tutorial in Markdown and use `dashdown` to create an interactive app that displays the code and the output.  
+Write a tutorial in Markdown and use `MarkdownAIO` to create an interactive app that displays the code and the output.  
 
 
  - __Reports__    
-Use `dashdown` to create interactive reports and presentations by displaying the app output and hiding the code blocks.  
+Use `MarkdownAIO` to create interactive reports and presentations by displaying the app output and hiding the code blocks.  
 
 
  - __Documentation__  
-Use `dashdown` to create interactive documentation.  See the link on the left "deploying a `README.md` with `dashdown`" to
+Use `MarkdownAIO` to create interactive documentation.  See the link on the left "deploying a `README.md` with `MarkdownAIO`" to
 see the README.md from the `dash-extensions` library.  
 
  - __Multi-page apps__  
-Use `dashdown` with `pages/` to easily build multi-page apps.  This documentation is written in Markdown and the app
-is created with `pages/` and `dashdown`. You can find the code [here](https://github.com/AnnMarieW/dash-labs/tree/dashdown/docs/demos/dashdown_multi_page).  
+Use `MarkdownAIO` with `pages/` to easily build multi-page apps.  This documentation is written in Markdown and the app
+is created with `pages/` and `MarkdownAIO`. You can find the code [here](https://github.com/AnnMarieW/dash-labs/tree/MarkdownAIO/docs/demos/MarkdownAIO_multi_page).  
 
 
 
@@ -100,14 +100,14 @@ if __name__ == '__main__':
 
 #### Single Page App  
 
-Here's a single page app made from a Markdown file using `dashdown`. 
+Here's a single page app made from a Markdown file using `MarkdownAIO`. 
 
 
 ```python exec-code-false side-by-side-false
 from dash import Dash
-from dash_labs import dashdown
+from dash_labs import MarkdownAIO
 
-app.layout = dashdown("path_to_my_markdown_file.md", exec_code=True)
+app.layout = MarkdownAIO("path_to_my_markdown_file.md", exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -122,11 +122,11 @@ See more information on creating multi-page apps with `pages/` [here]()
 
 Place your Markdown files in the `pages/` folder.  Register the page in one of two ways: 
 
-1) include dash.register_page from a `.py` file and use `dashdown` to create the layout:
+1) include dash.register_page from a `.py` file and use `MarkdownAIO` to create the layout:
 
 `app.py`
 ``` python exec-code-false clipboard-false side-by-side-false
-dash.register_page("pages.home", path="/", layout=dashdown("pages/home.md", exec_code=True))
+dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
 ```
 
 2) Include the `dash.register_page` as "front matter" at the top of the Markdown file with the page content.
@@ -136,7 +136,7 @@ The `dash.register_page` must be the first thing in the file and must be set bet
 `pages/home.md`
 ```text exec-code-false clipboard-false side-by-side-false
 ---
-dash.register_page(__name__, path="/", layout=dashdown("pages/home.md", exec_code=True))
+dash.register_page(__name__, path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
 ---
 
 # My home Page
@@ -150,11 +150,11 @@ dash.register_page(__name__, path="/", layout=dashdown("pages/home.md", exec_cod
 
 ### App Security
 
-`dashdown` uses `exec` to run the code blocks. Given that `exec` can potentially introduce security
+`MarkdownAIO` uses `exec` to run the code blocks. Given that `exec` can potentially introduce security
 risks, the following measures have been taken to limit the possibility of code being executed from an
 unknown or untrustworthy source or from a malicious user at runtime:
 
-- Only filenames can be supplied to `dashdown`. The file(s) must exist in a known directory on the 
+- Only filenames can be supplied to `MarkdownAIO`. The file(s) must exist in a known directory on the 
 server before the app starts. 
 
 - By default, the files must reside in the parent directory of the main app.  You may specify an alternate
@@ -162,9 +162,9 @@ path by... (todo)
 
 - Content in files downloaded by users during runtime cannot be executed.
 
-- External URLs are not a valid file path for the filename passed to `dashdown`.
+- External URLs are not a valid file path for the filename passed to `MarkdownAIO`.
 
-- It is not possible pass code directly to `dashdown`. This eliminates the risk of executing code supplied
+- It is not possible pass code directly to `MarkdownAIO`. This eliminates the risk of executing code supplied
 by a malicious user at runtime from a callback.
 
 - The `dangerously_allow_html` is set to `False` for displaying the Markdown text. 

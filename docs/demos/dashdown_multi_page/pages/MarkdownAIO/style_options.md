@@ -2,8 +2,8 @@
 dash.register_page(
     __name__,    
     order=2,
-    layout=dashdown(
-        "pages/dashdown/style_options.md", 
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/style_options.md", 
         exec_code=True
     ),
     title="Dashdown Style Options",
@@ -13,7 +13,7 @@ dash.register_page(
 
 ## Style options 
 
-The following may be set for each instance of `dashdown`.  You can not set them for each block within a Markdown file.
+The following may be set for each instance of `MarkdownAIO`.  You can not set them for each block within a Markdown file.
 
 Note the default for `code_style` and `app_style` is {"maxHeight": 700, "overflow": "auto"}
 

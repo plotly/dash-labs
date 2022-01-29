@@ -2,10 +2,10 @@
 import pandas as pd
 
 dash.register_page(
-    "pages.dashdown.scope_and_scope_creep",
+    "pages.MarkdownAIO.scope_and_scope_creep",
     order=4,
-    layout=dashdown(
-        "pages/dashdown/scope_and_scope_creep.md",
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/scope_and_scope_creep.md",
         app_className = "mb-4 pb-4",
         scope={"pd":pd},
         scope_creep=True,    
@@ -21,7 +21,7 @@ dash.register_page(
 
 # Scope and Scope Creep
 
-This section will describe more about the following `dashdown` parameters:
+This section will describe more about the following `MarkdownAIO` parameters:
 
 - `dash_scope`: the default scope available when executing code blocks
 
@@ -92,7 +92,7 @@ Note:  If you are adding `app` to the scope in a multi-page app, you must call `
 
 ```python exec-code-false
 import pandas as pd
-dashdown("my_markdown_file.md", scope={"pd": pd})
+MarkdownAIO("my_markdown_file.md", scope={"pd": pd})
 
 ```  
 
@@ -128,7 +128,7 @@ layout = dash_table.DataTable(
 
 ### `scope_creep` parameter
 
-It's possible for `dashdown` to function like a notebook.  By setting `scope_creep=True` 
+It's possible for `MarkdownAIO` to function like a notebook.  By setting `scope_creep=True` 
 which allows variables from one code block to be defined in the next code block.
 
 For example, let's start with this dataset:

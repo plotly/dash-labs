@@ -311,8 +311,8 @@ def _register_page_from_markdown_file(page_filename, app):
 
     todo:
         - use AST to parse dash.register_page() to limite what gets executed?. Use the same function as the
-          one to delete the app instance in dashdown.
-        - infer the filename for dashdown(filename,...)
+          one to delete the app instance in MarkdownAIO.
+        - infer the filename for MarkdownAIO(filename,...)
     """
     try:
         with open(page_filename, "r") as f:
@@ -341,7 +341,7 @@ def _register_page_from_markdown_file(page_filename, app):
 
                 frontmatter = frontmatter.replace("__name__", module_name)
             try:
-                from dash_labs import dashdown
+                from dash_labs import MarkdownAIO
 
                 exec(frontmatter)
             except Exception as e:

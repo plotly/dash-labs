@@ -4,7 +4,7 @@ dash.register_page(
     __name__,
     name="Sub Menus",
     order=4,
-    layout=dashdown(
+    layout=MarkdownAIO(
         "pages/multi_page_apps/sub_menus.md",
         exec_code=False,
         #   code_card_style={"margin": "25px 50px"}

@@ -3,7 +3,7 @@ dash.register_page(
     __name__,
     name="Overview",
     order=1,
-    layout=dashdown(
+    layout=MarkdownAIO(
         "pages/multi_page_apps/overview.md",
         exec_code=False,
     ),

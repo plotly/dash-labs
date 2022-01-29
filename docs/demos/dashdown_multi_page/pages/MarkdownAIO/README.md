@@ -2,12 +2,12 @@
   
 dash.register_page(
     __name__,
-    name="Deploy a README.md with dashdown",
+    name="Deploy a README.md with MarkdownAIO",
     title="Dashdown example-Deploy a README.md",
     description="Dash Labs documentation",
     order=99,
-    layout=dashdown(
-        "pages/dashdown/README.md",        
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/README.md",        
         side_by_side=True,
         exec_code=True
     ),
@@ -16,7 +16,7 @@ dash.register_page(
 
 # Deploy a README.md file
 
-This example uses `dashdown` to deploy a README.md file.  It will execute the code blocks contained
+This example uses `MarkdownAIO` to deploy a README.md file.  It will execute the code blocks contained
 within the README.md  
 
 Note that for security purposes, it's not possible to use an external URL to specify the file.
@@ -31,8 +31,8 @@ dash.register_page(
     __name__,
     name="Deploy a README.md",
     order=99,
-    layout=dashdown(
-        "pages/dashdown/README.md",        
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/README.md",        
         side_by_side=True,
         exec_code=True
     ),
@@ -44,9 +44,9 @@ Or you could run it as regular single page app like this:
 ```python # exec-code-false
 
 from dash import Dash
-from dash_labs import dashdown
+from dash_labs import MarkdownAIO
 
-app.layout = dashdown("README.md", exec_code=True)
+app.layout = MarkdownAIO("README.md", exec_code=True)
 
 if __name__ == "__main__":
     app.run_server()

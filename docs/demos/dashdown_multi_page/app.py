@@ -48,7 +48,7 @@ sidebar = dbc.Card(
             href=dash.page_registry["pages.home"]["path"],
             active="exact",
         ),
-        html.H6("Dashdown", className="mt-2"),
+        html.H6("MarkdownAIO", className="mt-2"),
         dbc.Nav(
             [
                 dbc.NavLink(
@@ -59,7 +59,7 @@ sidebar = dbc.Card(
                     active="exact",
                 )
                 for page in dash.page_registry.values()
-                if page["module"].startswith("pages.dashdown")
+                if page["module"].startswith("pages.MarkdownAIO")
             ],
             vertical=True,
         ),

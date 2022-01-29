@@ -5,8 +5,8 @@ dash.register_page(
     title="Dashdown Reference",
     description="Dash Labs documentation",
     order=1,
-    layout=dashdown(
-        "pages/dashdown/reference.md",
+    layout=MarkdownAIO(
+        "pages/MarkdownAIO/reference.md",
         exec_code=False,
     ),
 )
@@ -16,11 +16,11 @@ dash.register_page(
 # Dashdown Reference
 
 
-`dashdown` displays content of a markdown file with the option to run and/or display code blocks.
+`MarkdownAIO` displays content of a markdown file with the option to run and/or display code blocks.
 
 
 ```
-def dashdown(
+def MarkdownAIO(
     filename,
     scope=None,
     scope_creep=False,

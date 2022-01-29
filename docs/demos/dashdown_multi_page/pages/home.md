@@ -2,7 +2,7 @@
 dash.register_page(__name__, 
                    title="Dash Labs Home",
                    description="Dash Labs documentation",
-                   layout=dashdown("pages/home.md", 
+                   layout=MarkdownAIO("pages/home.md", 
                    exec_code=False, 
                    text_style={"maxWidth":970},  
                    side_by_side=True,                   

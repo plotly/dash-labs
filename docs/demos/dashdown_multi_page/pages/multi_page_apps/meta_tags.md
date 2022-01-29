@@ -3,7 +3,7 @@ dash.register_page(
     __name__,
     name="Meta Tags",
     order=3,
-    layout=dashdown(
+    layout=MarkdownAIO(
         "pages/multi_page_apps/meta_tags.md",
         exec_code=False,
     ),
