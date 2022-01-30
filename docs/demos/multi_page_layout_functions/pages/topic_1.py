@@ -6,9 +6,7 @@ import dash_bootstrap_components as dbc
 from .side_bar import sidebar
 
 dash.register_page(
-    __name__,
-    name="Topics",
-    top_nav=True,
+    __name__, name="Topics", top_nav=True,
 )
 
 

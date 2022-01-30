@@ -22,10 +22,7 @@ navbar = dbc.NavbarSimple(
     className="mb-2",
 )
 
-app.layout = dbc.Container(
-    [navbar, dl.plugins.page_container],
-    fluid=True,
-)
+app.layout = dbc.Container([navbar, dl.plugins.page_container], fluid=True,)
 
 if __name__ == "__main__":
     app.run_server(debug=True)

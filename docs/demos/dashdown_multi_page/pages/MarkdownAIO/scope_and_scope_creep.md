@@ -6,12 +6,12 @@ dash.register_page(
     order=4,
     layout=MarkdownAIO(
         "pages/MarkdownAIO/scope_and_scope_creep.md",
-        app_className = "mb-4 pb-4",
+        app_div_props={"className": "mb-4 pb-4"},
         scope={"pd":pd},
         scope_creep=True,    
         exec_code=True
     ),
-    title="Dashdown Scope",
+    title="MarkdownAIO Scope",
     description="Dash Labs documentation",
 )
 

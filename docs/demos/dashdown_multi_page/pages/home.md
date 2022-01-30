@@ -4,7 +4,7 @@ dash.register_page(__name__,
                    description="Dash Labs documentation",
                    layout=MarkdownAIO("pages/home.md", 
                    exec_code=False, 
-                   text_style={"maxWidth":970},  
+                   text_markdown_props={"style": {"maxWidth":970}},  
                    side_by_side=True,                   
 ))
 ---
@@ -17,12 +17,11 @@ We encourage you to join the discussion, raise issues, make pull requests, and t
 
 ## New in Dash Labs:
 
-- `pages/  ` The new way to make multi-page apps
+- `pages/  ` The new, better way to make multi-page apps
 
-- `dashdown  `  Markdown that runs the code!
+- `MarkdownAIO`  Markdown that runs the code!  _Comming Soon to dash-labs_.  See the feature preview here.
 
-__The documentation you are now viewing was created with `pages/` and `dashdown`. You can find the code [here]().__
-
+__The documentation you are now viewing was created with `pages/` and `MarkdownAIO`. You can find the code [here]().__
 
 
 
@@ -57,12 +56,3 @@ To use the demos  based on `dash-bootstrap-components`:
 $ pip install -U dash-bootstrap-components 
 ```
  
-## Activating Dash Labs Functionality
-The Dash Labs `pages/` functionality is enabled by specifying an instance of `dash_labs.Plugin` when instantiating a Dash app.
-
-```python 
-from dash import Dash
-import dash_labs as dl
-
-app = Dash(__name__, plugins=[dl.plugins.pages])
-```

@@ -2,7 +2,8 @@
 dash.register_page(
     __name__,
     name="Overview",
-    order=1,
+    path="/",
+    order=0,
     layout=MarkdownAIO(
         "pages/multi_page_apps/overview.md",
         exec_code=False,
@@ -175,8 +176,7 @@ OrderedDict([
     ('pages.historical_analysis', {
         'module': 'pages.historical_analysis', 
         'name': 'Historical analysis', 
-        'title': 'Historical analysis',
-        'description': 'Historical analysis',
+        'title': 'Historical analysis',       
         'order': None,
     }
 ])
@@ -196,8 +196,7 @@ OrderedDict([
         'module': 'pages.outlook', 
         'path': '/future',
         'name': 'Future outlook', 
-        'title': 'Future outlook',
-        'description': 'Future outlook',
+        'title': 'Future outlook',       
         'order': 4,
     }
 ])
@@ -285,7 +284,7 @@ define which segments of the path are variables by marking them like this: `<var
 
 
 For example, if `path_template= "/asset/<asset_id>"`, and the url is `"/assets/a100"`, then the layout
-will receive `{"asset_id":"a100"}`.  Here is an example with two variables in the path:
+will receive `**{"asset_id":"a100"}`.  Here is an example with two variables in the path:
 
 
 ```python

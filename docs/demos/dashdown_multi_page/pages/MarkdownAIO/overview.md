@@ -1,9 +1,8 @@
 ---
 dash.register_page(
-    __name__,
-    path= "/",
+    __name__,    
     name="Overview",
-    title="Dashdown Overview",
+    title="MarkdownAIO Overview",
     description="Dash Labs documentation",
     order=0,
     layout=MarkdownAIO(
@@ -125,7 +124,7 @@ Place your Markdown files in the `pages/` folder.  Register the page in one of t
 1) include dash.register_page from a `.py` file and use `MarkdownAIO` to create the layout:
 
 `app.py`
-``` python exec-code-false clipboard-false side-by-side-false
+``` python exec-code-false  side-by-side-false clipboard-props-{"className": "d-none"}
 dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
 ```
 
@@ -134,7 +133,7 @@ dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", e
 The `dash.register_page` must be the first thing in the file and must be set between triple-dashed lines. 
 
 `pages/home.md`
-```text exec-code-false clipboard-false side-by-side-false
+```text exec-code-false side-by-side-false clipboard-props-{"className": "d-none"}
 ---
 dash.register_page(__name__, path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
 ---
@@ -167,8 +166,17 @@ path by... (todo)
 - It is not possible pass code directly to `MarkdownAIO`. This eliminates the risk of executing code supplied
 by a malicious user at runtime from a callback.
 
-- The `dangerously_allow_html` is set to `False` for displaying the Markdown text. 
+- In the `dcc.Markdown` subcomponent that is used to display the text, the `dangerously_allow_html` prop has a default
+of `False` but may be updated. This controls raw HTML escaping. Setting HTML from code is risky because it's easy 
+- to inadvertently expose your users to a cross-site scripting (XSS) (https://en.wikipedia.org/wiki/Cross-site_scripting) attack.
+
 - The `exec_code` is set to `False` 
+
+- Unlike most All-In-One components, `MarkdownAIO` has no built-in callbacks.  In fact, there are no ID's for `MarkdownAIO`
+or any of it's subcomponents, so it's not possible to update `MarkwownAIO` props in a callback, or to have any 
+of these props trigger a callback.  This not only improves app security, but it also helps with performance.
+Unlike other AIO components that use pattern matching callbacks, there is no decrease in performance with
+having many MarkdownAIO components in your app.
 
 To learn more about creating secure Dash apps, please see [this discussion](https://community.plotly.com/t/writing-secure-dash-apps-community-thread/54619/)
 on the Dash community forum.
@@ -177,5 +185,11 @@ on the Dash community forum.
 (todo)
 
 ### Next 
+
+OK, MarkdownAIO is not actually "Top Secret".  It's just so early in the development, that it's not even available in
+dash-labs yet.  It's still incubating on my fork, but I thought it was too cool not to share. 
+
+If you try it out, please expect lots of breaking changes.  Feedback of any kind is welcome! 
+
 
 See the reference section and the other examples for more information about all the available options.

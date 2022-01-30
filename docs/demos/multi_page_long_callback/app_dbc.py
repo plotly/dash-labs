@@ -32,10 +32,7 @@ navbar = dbc.NavbarSimple(
     className="mb-2",
 )
 
-app.layout = dbc.Container(
-    [navbar, dl.plugins.page_container],
-    fluid=True,
-)
+app.layout = dbc.Container([navbar, dl.plugins.page_container], fluid=True,)
 
 
 @app.long_callback(

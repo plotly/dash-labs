@@ -47,7 +47,11 @@ def layout():
                             n_clicks=0,
                         ),
                         dbc.Collapse(
-                            dbc.Card(MarkdownAIO("pages/MarkdownAIO/sample.md", exec_code=True)),
+                            dbc.Card(
+                                MarkdownAIO(
+                                    "pages/MarkdownAIO/sample.md", exec_code=True
+                                )
+                            ),
                             id="collapse",
                             is_open=False,
                         ),

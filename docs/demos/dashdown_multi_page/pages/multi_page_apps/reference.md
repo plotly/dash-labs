@@ -58,7 +58,7 @@ def register_page(
        Add variables to a URL by marking sections with <variable_name>. The layout function
        then receives the <variable_name> as a keyword argument.
        e.g. path_template= "/asset/<asset_id>"
-            if pathname = "/assets/a100" then layout will receive {"asset_id":"a100"}
+            then if pathname in browser "/assets/a100" then layout will receive **{"asset_id":"a100"}
 
 - `name`:
    The name of the link.
@@ -77,7 +77,7 @@ def register_page(
 
 - `description`:
    The `<meta type="description"></meta>`.
-   If not supplied, then the default will be the same as the title.
+   If not supplied, then nothing is supplied.
     
 - `image`:
    The meta description image used by social media platforms.
@@ -85,6 +85,7 @@ def register_page(
     - A page specific image: `assets/<title>.<extension>` is used, e.g. `assets/weekly_analytics.png`
     - A generic app image at `assets/app.<extension>`
     - A logo at `assets/logo.<extension>`
+  When inferring the image file, it will look for the following extensions: APNG, AVIF, GIF, JPEG, PGN, SVG, WebP
 
 - `redirect_from`:
    A list of paths that should redirect to this page.
@@ -126,12 +127,6 @@ OrderedDict([
             
             supplied_title=None,
             title='Our historical view',
-            
-            supplied_description=None,
-            description='Our historical view',
-            
-            supplied_order=None,
-            order=1,
             
             supplied_layout=None,
             layout=<function pages.historical_outlook.layout>,

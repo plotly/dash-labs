@@ -4,9 +4,7 @@ import dash_bootstrap_components as dbc
 
 
 app = dash.Dash(
-    __name__,
-    plugins=[dl.plugins.pages],
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    __name__, plugins=[dl.plugins.pages], external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 
 
@@ -25,10 +23,7 @@ navbar = dbc.NavbarSimple(
 )
 
 
-app.layout = dbc.Container(
-    [navbar, dl.plugins.page_container],
-    fluid=True,
-)
+app.layout = dbc.Container([navbar, dl.plugins.page_container], fluid=True,)
 
 
 if __name__ == "__main__":

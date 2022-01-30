@@ -42,39 +42,33 @@ topbar = html.H2(
 sidebar = dbc.Card(
     [
         dbc.NavLink(
-            [
-                html.Div("home", className="ms-2"),
-            ],
+            [html.Div("home", className="ms-2"),],
             href=dash.page_registry["pages.home"]["path"],
             active="exact",
-        ),
-        html.H6("MarkdownAIO", className="mt-2"),
-        dbc.Nav(
-            [
-                dbc.NavLink(
-                    [
-                        html.Div(page["name"], className="ms-2"),
-                    ],
-                    href=page["path"],
-                    active="exact",
-                )
-                for page in dash.page_registry.values()
-                if page["module"].startswith("pages.MarkdownAIO")
-            ],
-            vertical=True,
         ),
         html.H6("Multi-Page Apps", className="mt-2"),
         dbc.Nav(
             [
                 dbc.NavLink(
-                    [
-                        html.Div(page["name"], className="ms-2"),
-                    ],
+                    [html.Div(page["name"], className="ms-2"),],
                     href=page["path"],
                     active="exact",
                 )
                 for page in dash.page_registry.values()
-                if page["path"].startswith("/multi-page")
+                if page["module"].startswith("pages.multi_page")
+            ],
+            vertical=True,
+        ),
+        html.H6("MarkdownAIO - Feature Preview", className="mt-2"),
+        dbc.Nav(
+            [
+                dbc.NavLink(
+                    [html.Div(page["name"], className="ms-2"),],
+                    href=page["path"],
+                    active="exact",
+                )
+                for page in dash.page_registry.values()
+                if page["module"].startswith("pages.MarkdownAIO")
             ],
             vertical=True,
         ),

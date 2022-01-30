@@ -3,7 +3,7 @@
 dash.register_page(
     __name__,
     name="Deploy a README.md with MarkdownAIO",
-    title="Dashdown example-Deploy a README.md",
+    title="MarkdownAIO example-Deploy a README.md",
     description="Dash Labs documentation",
     order=99,
     layout=MarkdownAIO(
@@ -281,8 +281,8 @@ if __name__ == '__main__':
 
 The `Burger` component is a light wrapper of [react-burger-menu](https://github.com/negomi/react-burger-menu), which enables [cool interactive burger menus](https://negomi.github.io/react-burger-menu/). Here is a small example,
 
-```python
-# exec-code-false
+```python exec-code-false
+
 
 from dash import Dash, html
 from dash_extensions import Burger
