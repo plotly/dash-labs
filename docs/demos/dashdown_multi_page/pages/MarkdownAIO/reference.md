@@ -86,13 +86,13 @@ displays the code blocks. Does not accept user-supplied `id`, `children`, or `da
 This may also be set within a code block with the comment # code-markdown-props-{...}
 
 - `text_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that 
-displays the Markdown text other than code blocks. Does not accept user supplied `id`, `children` props.
+displays the Markdown text other than code blocks. Does not accept user-supplied `id`, `children` props.
 
 - `clipboard_props`(dict; default ):  A dictionary of properties passed into the dcc.Clipboard component. Does
-not accept user supplied `id`, `content`, 'target_id` props.
+not accept user-supplied `id`, `content`, 'target_id` props.
 This may also be set within a code block with the comment # clipboard-props-{...}
 
 - `app_div_props`(dict; default ):  A dictionary of properties passed into the html.Div component that contains
-the output of the executed code blocks.  Does not accept user supplied `id`, `children` props.
+the output of the executed code blocks.  Does not accept user-supplied `id`, `children` props.
 This may also be set within a code block with the comment # app-div-props-{...}
 

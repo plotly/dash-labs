@@ -8,7 +8,7 @@ dash.register_page(
     layout=MarkdownAIO(
         "pages/MarkdownAIO/overview.md",
         side_by_side=True,  
-        exec_code=True
+        exec_code=True,
     ),
    app_className="mb-4",
    text_className="mb-4 pb-4"
@@ -166,30 +166,18 @@ path by... (todo)
 - It is not possible pass code directly to `MarkdownAIO`. This eliminates the risk of executing code supplied
 by a malicious user at runtime from a callback.
 
-- In the `dcc.Markdown` subcomponent that is used to display the text, the `dangerously_allow_html` prop has a default
-of `False` but may be updated. This controls raw HTML escaping. Setting HTML from code is risky because it's easy 
-- to inadvertently expose your users to a cross-site scripting (XSS) (https://en.wikipedia.org/wiki/Cross-site_scripting) attack.
+- By default, the embedded code will not be executed.  The `exec_code` prop must be set to `True` for the code to run.
 
-- The `exec_code` is set to `False` 
-
-- Unlike most All-In-One components, `MarkdownAIO` has no built-in callbacks.  In fact, there are no ID's for `MarkdownAIO`
-or any of it's subcomponents, so it's not possible to update `MarkwownAIO` props in a callback, or to have any 
-of these props trigger a callback.  This not only improves app security, but it also helps with performance.
-Unlike other AIO components that use pattern matching callbacks, there is no decrease in performance with
-having many MarkdownAIO components in your app.
 
 To learn more about creating secure Dash apps, please see [this discussion](https://community.plotly.com/t/writing-secure-dash-apps-community-thread/54619/)
 on the Dash community forum.
 
 ### Limitations
-(todo)
+
+- `MarkdownAIO` contains no pattern-matching callbacks. So it ***does not*** slow down your app if you have 100+ components
+per the limitation described in the [AIO documentation.](https://dash.plotly.com/all-in-one-components#all-in-one-component-limitations).
 
 ### Next 
-
-OK, MarkdownAIO is not actually "Top Secret".  It's just so early in the development, that it's not even available in
-dash-labs yet.  It's still incubating on my fork, but I thought it was too cool not to share. 
-
-If you try it out, please expect lots of breaking changes.  Feedback of any kind is welcome! 
 
 
 See the reference section and the other examples for more information about all the available options.

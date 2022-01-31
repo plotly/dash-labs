@@ -1,26 +1,24 @@
 """
  todo
     - reduce security risk with exec
-       - local files only.
-       ensure that the file is within a certain directory, and by default
-       that should be the parent directory of the main app but maybe we could create a way to override that.
-        (and if so, use the new path as the base path for dashdown to look in?)  Similar to /assets?
+       - local files only. Ensure that the file is within a certain directory, and by default
+       that should be the parent directory of the main app but maybe we could create a way to override that. Similar to /assets?
     - css:
-       - create a dashdown stylesheet?
+       - create a MarkdownAIO stylesheet?
        - eliminated dbc dependency  (replace Rows and Cols with inline css)
+       - document the default style in subcomponents and that user-supplied style will overwrite. Or better yet - use a stylesheet.
     - rewrite the _remove_app_instance() to use the AST module
-      - allow for other names other than Dash
+      - allow for other names other than Dash ie app = DashProxy()
     - any advantage to using jinja's read file function?
     - see todos in pages.py in _register_page_from_markdown_file()
     - use UUID for clipboard ID?
-    - add ability to change `dashdown` default "globally" so it doesn't have to be done for every instance.
+    - add ability to change defaults "globally" so it doesn't have to be done for every instance.
     - add ability to embed another file within the markdown file. Use case being, ability to keep the python app code in
      a separate file so you can run it individually. We could integrate jinja in here perhaps…: {% include code.py %}
     - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
     - if code block is not executed don't register callbacks and layout
     - Need to remove if __name__ == "__main__": ...   from the code blocks?
-    - refactor the way props for subcomponents are updated.  I know.  It's pretty ugly right now.
-    - refactor the way props are updated from the code blocks.
+    - refactor the _update_props function.
 
 """
 
@@ -59,7 +57,8 @@ class MarkdownAIO(html.Div):
         app_div_props={},
     ):
         """
-        MarkdownAIO is an All-In-One component to display content of Markdown files with the option to run and/or display code blocks.
+        MarkdownAIO is an All-In-One component to display content of Markdown files with the option to run and/or
+         display code blocks.
 
         - `filename`(string):
            The path to the markdown file.
@@ -107,19 +106,18 @@ class MarkdownAIO(html.Div):
           This may also be set within the code block with the comment # code-first-true or # code-first-false
 
         - `code_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that
-           displays the code blocks. Does not accept user supplied `id`, `children`, or `dangerously_allow_html` props.
+           displays the code blocks. Does not accept user-supplied `id`, `children`, or `dangerously_allow_html` props.
            This may also be set within a code block with the comment # code-markdown-props-{...}
 
         - `text_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that
-           displays the Markdown text other than code blocks. Does not accept user supplied `id`, `children` props.
-
+           displays the Markdown text other than code blocks. Does not accept user-supplied `id`, `children` props.
 
         - `clipboard_props`(dict; default ):  A dictionary of properties passed into the dcc.Clipboard component. Does
-            not accept user supplied `id`, `content`, 'target_id` props.
+            not accept user-supplied `id`, `content`, 'target_id` props.
             This may also be set within a code block with the comment # clipboard-props-{...}
 
         - `app_div_props`(dict; default ):  A dictionary of properties passed into the html.Div component that contains
-          the output of the executed code blocks.  Does not accept user supplied `id`, `children` props.
+          the output of the executed code blocks.  Does not accept user-supplied `id`, `children` props.
           This may also be set within a code block with the comment # app-div-props-{...}
 
         """
@@ -158,25 +156,22 @@ class MarkdownAIO(html.Div):
             notebook,
         )
 
-        # These subcomponent props may not be user-supplied.  Callbacks are not allowed so the id is not necessary
+        # These subcomponent props may not be user-supplied.  Callbacks are not allowed so the id is unnecessary
         # The `children` are read-only and are updated by MarkdownAIO
         prohibited_props = {
             "code_markdown_props": ["id", "children", "dangerously_allow_html"],
-            "clipboard_props": ["id", "content", "target_id"],
+            "clipboard_props": ["id", "content", "target_id", "children"],
             "app_div_props": ["id", "children"],
             "text_markdown_props": ["id", "children"],
         }
 
         # Merge user-supplied properties into default properties
-        code_markdown_props = copy.deepcopy(
-            code_markdown_props
-        )  # copy the dict to not mutate the user's dict
+        code_markdown_props = copy.deepcopy(code_markdown_props)
         if "style" not in code_markdown_props:
             code_markdown_props["style"] = {"maxHeight": 700, "overflow": "auto"}
 
         clipboard_props = copy.deepcopy(clipboard_props)
         if "style" not in clipboard_props:
-            # todo check for each of these separately use filter kwards from utils - or move to stylesheet?
             clipboard_props["style"] = {
                 "right": 15,
                 "position": "absolute",
@@ -192,7 +187,6 @@ class MarkdownAIO(html.Div):
             }
 
         # These props may be updated in each code block
-        # The dict just makes it easier to pass them to functions
         props = {
             "code_markdown_props": code_markdown_props,
             "clipboard_props": clipboard_props,
@@ -204,11 +198,12 @@ class MarkdownAIO(html.Div):
 
         _prohibited_props_check(props, prohibited_props)
 
-        # make a unique id for clipboard based on the markdown filename
+        # make a unique id for clipboard based on the markdown filename. Use UUID instead?
         clipboard_props["id"] = (
             filename.split(".")[0].replace("\\", "/").replace("/", "-")
         )
 
+        # create layout
         reconstructed = []
         code_block = 0
         for i, section in enumerate(split_notebook):
@@ -282,23 +277,21 @@ class MarkdownAIO(html.Div):
         super().__init__(reconstructed)
 
 
-def _prohibited_props_check(
-    code_props, prohibited_props, code_block=None, filename=None
-):
+def _prohibited_props_check(props, prohibited_props, code_block=None, filename=None):
     """
-    certain props may not be updated for security reasons or because they are updated by
+    certain props may not be updated for security reasons and/or because they are updated by
     the MarkdownAIO component
     """
-    code_block_msg = (
-        f" see code block# {code_block} in module {filename}" if code_block else ""
-    )
-    for prop in code_props:
-        if isinstance(code_props[prop], dict):
-            for p in code_props[prop]:
+
+    for prop in props:
+        if isinstance(props[prop], dict):
+            for p in props[prop]:
                 if p in prohibited_props[prop]:
                     raise Exception(
                         f" The `{p}` prop in `{prop}` may not be user-supplied in MarkdownAIO"
-                        + code_block_msg
+                        + f" see code block# {code_block} in module {filename}"
+                        if code_block
+                        else ""
                     )
 
 
@@ -330,7 +323,7 @@ def _run_code(code, scope=None, div_props=None):
 
 def _parse_props(component_props, section):
     """
-    returns the component property dict specified with a code block.
+    returns the component property dict specified within a code block.
 
     For example if this was on the first line of the code block:
        `app-div-props-{"style": {"maxHeight": "800px"}}`
@@ -354,7 +347,7 @@ def _update_props(
     props_dict, prohibited_props, section, code_block=None, filename=None
 ):
     """
-    update props that can be updated within a code block
+    update props that are user-supplied  within a code block
     """
     props_dict = copy.deepcopy(props_dict)
     if "side-by-side-true" in section:
@@ -370,7 +363,6 @@ def _update_props(
     if "exec-code-false" in section:
         props_dict["exec_code"] = False
 
-    # # todo need to merge style props? rather than the new value replacing
     if "code-markdown-props" in section:
         parsed_props = _parse_props("code-markdown-props-", section)
         _prohibited_props_check(

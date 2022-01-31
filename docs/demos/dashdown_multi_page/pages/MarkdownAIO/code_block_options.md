@@ -14,15 +14,15 @@ dash.register_page(
 
 # Code Block Options
 
-You may set certain ways for the output to be displayed, such as showing the code and the output side-by-side, or whether
-the code will be either executed. This can be set for all the code blocks, or only certain code block.
+You may control the way the output is displayed, such as showing the code and the output side-by-side, or whether
+the code will be executed. This can be set for all the code blocks, or only certain code block.
 
 
 ### Apply to all code blocks
 In this example, all the code blocks in the `home.md` file will be displayed side-by-side. and the clipboard icon will
 not be displayed.
 
-```python exec-code-false clipboard_props={"className": "d-none"}
+```python exec-code-false clipboard-props-{"className": "d-none"}
 MarkdownAIO("home.md", side_by_side=True, clipboard_props={"className": "d-none"})
 ```
 
@@ -35,9 +35,9 @@ that define the code block, then the comment won't be visible in the app output.
 For example, if you added the comment # side-by-side-true like shown below the code will be displayed beside the output.
 
 
-```python exec-code-false
+```python exec-code-false side-by-side-false clipboard-props-{"className": "d-none"}
 
-`` `python # side-by-side-true
+`` `python # side-by-side-true clipboard-props-{"className": "d-none"}
 
 
 `` `
@@ -67,16 +67,16 @@ This may also be set within a code block with the comment # code-markdown-props-
 
 
 - `text_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that 
-displays the Markdown text other than code blocks. Does not accept user supplied `id`, `children` props.  
+displays the Markdown text other than code blocks. Does not accept user-supplied `id`, `children` props.  
 
 
 - `clipboard_props`(dict; default ):  A dictionary of properties passed into the dcc.Clipboard component. Does
-not accept user supplied `id`, `content`, 'target_id` props.
+not accept user-supplied `id`, `content`, 'target_id` props.
 This may also be set within a code block with the comment # clipboard-props-{...}  
 
 
 - `app_div_props`(dict; default ):  A dictionary of properties passed into the html.Div component that contains
-the output of the executed code blocks.  Does not accept user supplied `id`, `children` props.
+the output of the executed code blocks.  Does not accept user-supplied `id`, `children` props.
 This may also be set within a code block with the comment # app-div-props-{...}  
 
 
