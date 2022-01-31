@@ -18,6 +18,9 @@ The documentation for Dash Labs can be found in the [docs/](./docs/) directory.
 
 
 ### Multi-Page App Docs 
+
+See the [online docs](https://dashlabs.pythonanywhere.com/) made with 'pages/' and the new feature coming soon to dash-labs: `MarkdownAIO` - Markdown that runs code!
+
 _New in dash-labs>=1.0.0:_
   - [08-MultiPageDashApp.md](https://github.com/plotly/dash-labs/blob/main/docs/08-MultiPageDashApp.md)
     - Overview, quickstart apps, reference for the `pages` plug-in
