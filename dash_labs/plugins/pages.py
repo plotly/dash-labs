@@ -454,6 +454,7 @@ def plug(app):
                 <!DOCTYPE html>
                 <html>
                     <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
                         <title>{title}</title>
                         <meta name="description" content="{description}" />
                         <!-- Twitter Card data -->
