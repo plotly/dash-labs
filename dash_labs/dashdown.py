@@ -231,7 +231,8 @@ class MarkdownAIO(html.Div):
                         raise Exception(
                             """
                             You must pass your own app object into the scope
-                            with scope={'app': app} if using callbacks.
+                            with scope={'app': app} if code blocks within your markdown file
+                            have callbacks.
                             """
                         )
                     if not scope_creep:
