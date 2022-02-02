@@ -64,7 +64,7 @@ class MarkdownAIO(html.Div):
            The path to the markdown file.
 
         - `scope`(dict):
-           Add scope to the code blocks. When using `app.callback` the `app` must be included.
+           Add scope (i.e. variables) to the context in which the code blocks are executed from. When using `app.callback` the `app` must be included.
            scope=dict(app=app)
 
         - `scope_creep`(boolean; default False):
