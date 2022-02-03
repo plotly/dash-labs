@@ -372,7 +372,7 @@ def plug(app):
                 page["layout"]() if callable(page["layout"]) else page["layout"]
                 for page in dash.page_registry.values()
             ]
-            + [app.layout]
+            + [app.layout() if callable(app.layout) else app.layout]
         )
 
         # Update the page title on page navigation
