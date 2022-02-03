@@ -9,7 +9,7 @@ dash.register_page(
     layout=MarkdownAIO(
         "pages/MarkdownAIO/README.md",        
         side_by_side=True,
-        exec_code=True
+        exec=True
     ),
 )
 ---
@@ -26,7 +26,7 @@ Note that for security purposes, it's not possible to use an external URL to spe
 The README.md file below is part of the README.md in the `dash-extentions` library.
 Here is how it's added to this multi-page app:
 
-```python # exec-code-false
+```python # exec-false
 dash.register_page(
     __name__,
     name="Deploy a README.md",
@@ -34,19 +34,19 @@ dash.register_page(
     layout=MarkdownAIO(
         "pages/MarkdownAIO/README.md",        
         side_by_side=True,
-        exec_code=True
+        exec=True
     ),
 )
 ```
 
 Or you could run it as regular single page app like this:
 
-```python # exec-code-false
+```python # exec-false
 
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("README.md", exec_code=True)
+app.layout = MarkdownAIO("README.md", exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -281,7 +281,7 @@ if __name__ == '__main__':
 
 The `Burger` component is a light wrapper of [react-burger-menu](https://github.com/negomi/react-burger-menu), which enables [cool interactive burger menus](https://negomi.github.io/react-burger-menu/). Here is a small example,
 
-```python exec-code-false
+```python exec-false
 
 
 from dash import Dash, html

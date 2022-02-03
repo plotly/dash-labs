@@ -9,7 +9,7 @@ dash.register_page(
         app_div_props={"className": "mb-4 pb-4"},
         scope={"pd":pd},
         scope_creep=True,    
-        exec_code=True
+        exec=True
     ),
     title="MarkdownAIO Scope",
     description="Dash Labs documentation",
@@ -67,10 +67,21 @@ layout = dcc.Graph(figure=fig)
 
 ```
 
+In fact, you don't even need the `layout = ` 
+
+
+```python 
+
+dcc.Graph(figure=fig)
+
+```
+
+
+
 This is possible, because of the `dash_scope` parameter.  The default is True, so it adds the following to the scope
 of the code bock:
 
-```python exec-code-false
+```python exec-false
 scope = dict(
               dcc=dcc,
               html=html,
@@ -90,7 +101,7 @@ scope.
 
 Note:  If you are adding `app` to the scope in a multi-page app, you must call `dash.register_page` from within the main `app.py` file
 
-```python exec-code-false
+```python exec-false
 import pandas as pd
 MarkdownAIO("my_markdown_file.md", scope={"pd": pd})
 
@@ -111,7 +122,7 @@ layout = dash_table.DataTable(
 You may also add to the scope without using the `scope` parameter by importing the module in your codeblock.  Here
 we include `import pandas as pd` in the code block:
 
-```python exec-code-false
+```python exec-false
 import pandas as pd
 
 data_url = 'https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv'

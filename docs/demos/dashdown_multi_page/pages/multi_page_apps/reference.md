@@ -5,7 +5,7 @@ dash.register_page(
     order=1,
     layout=MarkdownAIO(
         "pages/multi_page_apps/reference.md",
-        exec_code=False,
+        exec=False,
     ),
     title="Pages Reference",
     description="Dash Labs documentation",

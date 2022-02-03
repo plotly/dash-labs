@@ -5,7 +5,7 @@ dash.register_page(
     order=3,
     layout=MarkdownAIO(
         "pages/multi_page_apps/meta_tags.md",
-        exec_code=False,
+        exec=False,
     ),
     title="Pages Meta Tags",
     description="Dash Labs documentation",

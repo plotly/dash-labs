@@ -14,7 +14,10 @@ def layout():
                     [
                         dcc.Markdown(
                             """
-                    #### `MarkdownAIO` can be used within a regular Dash layout.  
+                    #### `MarkdownAIO` can be used in a .py file. 
+                    This is convenient when only certain parts of a layout are easier to write as a Markdown file, like help text
+                    or other narrative.
+                     
                     In this example, the `sample.md` is displayed in a dbc.Collapse:
                     
                     ```python                    
@@ -23,7 +26,7 @@ def layout():
                             # other elements
                             
                             dbc.Collapse(
-                                dbc.Card(MarkdownAIO("sample.md", exec_code=True)),
+                                dbc.Card(MarkdownAIO("sample.md", exec=True)),
                                 id="collapse",
                                 is_open=False,
                             ), 
@@ -48,9 +51,7 @@ def layout():
                         ),
                         dbc.Collapse(
                             dbc.Card(
-                                MarkdownAIO(
-                                    "pages/MarkdownAIO/sample.md", exec_code=True
-                                )
+                                MarkdownAIO("pages/MarkdownAIO/sample.md", exec=True)
                             ),
                             id="collapse",
                             is_open=False,

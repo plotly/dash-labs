@@ -5,7 +5,7 @@ dash.register_page(
     order=2,
     layout=MarkdownAIO(
         "pages/multi_page_apps/nested_folders.md",
-        exec_code=False,
+        exec=False,
         #  code_card_style={"margin": "25px 50px"}
     ),
     title="Pages Nested Folders Example",

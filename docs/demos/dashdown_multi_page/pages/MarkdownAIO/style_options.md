@@ -4,7 +4,7 @@ dash.register_page(
     order=2,
     layout=MarkdownAIO(
         "pages/MarkdownAIO/style_options.md", 
-        exec_code=True
+        exec=True
     ),
     title="MarkdownAIO Style Options",
     description="Dash Labs documentation",
@@ -27,7 +27,7 @@ one color scheme available. However, you can override this by adding custom styl
 
 This app you are viewing uses a light theme like this:
 
-```python exec-code-false
+```python exec-false
 # syntax highlighting
 hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
 
@@ -42,7 +42,7 @@ app = Dash(
 
 To change the theme, update the URL. Here is the URL for one of the dark themes:
 
-```python exec-code-false
+```python exec-false
 hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/github-dark-dimmed.min.css"
 
 ```

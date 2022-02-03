@@ -6,7 +6,7 @@ dash.register_page(
     order=0,
     layout=MarkdownAIO(
         "pages/multi_page_apps/overview.md",
-        exec_code=False,
+        exec=False,
     ),
     title="Pages Overview",
     description="Dash Labs documentation",

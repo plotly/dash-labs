@@ -7,7 +7,7 @@ dash.register_page(
     order=1,
     layout=MarkdownAIO(
         "pages/MarkdownAIO/reference.md",
-        exec_code=False,
+        exec=False,
     ),
 )
 ---
@@ -27,7 +27,7 @@ class MarkdownAIO(html.Div):
         scope_creep=False,
         dash_scope=True,
         template_variables=None,
-        exec_code=False,
+        exec=False,
         side_by_side=False,
         code_first=True,
         code_markdown_props={},
@@ -68,9 +68,9 @@ This is a way to display dynamic content.  For example:
 See the jinja docs for how to use the template variables in the markdown files.
 `{% if language == 'english' %} Hello {% elif language == 'french' %} Bonjour {% endif %}`  
 
-- `exec_code` (boolean; default False):
+- `exec` (boolean; default False):
 If `True`, code blocks will be executed.  This may also be set within the code block with the comment
-`# exec-code-true or # exec-code-false ` 
+`# exec-true or # exec-code-false ` 
 
 - `side_by_side` (boolean; default False):
 If `True`, the code block will be displayed on the left and the app output on the right on large screens.

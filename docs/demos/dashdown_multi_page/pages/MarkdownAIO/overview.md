@@ -8,7 +8,7 @@ dash.register_page(
     layout=MarkdownAIO(
         "pages/MarkdownAIO/overview.md",
         side_by_side=True,  
-        exec_code=True,
+        exec=True,
     ),
    app_className="mb-4",
    text_className="mb-4 pb-4"
@@ -49,11 +49,10 @@ The page you are now viewing is a Markdown file.  Here's a codeblock included in
 Try moving the sliders  - it's live!
 
 
-```python
+```PYTHON
 
 from dash import Dash, dcc, html, Output, Input, callback
 import plotly.express as px
-
 
 df = px.data.iris()
 fig = px.scatter(
@@ -102,11 +101,11 @@ if __name__ == '__main__':
 Here's a single page app made from a Markdown file using `MarkdownAIO`. 
 
 
-```python exec-code-false side-by-side-false
+```python exec-false side-by-side-false
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("path_to_my_markdown_file.md", exec_code=True)
+app.layout = MarkdownAIO("path_to_my_markdown_file.md", exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -124,8 +123,8 @@ Place your Markdown files in the `pages/` folder.  Register the page in one of t
 1) include dash.register_page from a `.py` file and use `MarkdownAIO` to create the layout:
 
 `app.py`
-``` python exec-code-false  side-by-side-false clipboard-props-{"className": "d-none"}
-dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
+``` python exec-false  side-by-side-false clipboard-props-{"className": "d-none"}
+dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", exec=True))
 ```
 
 2) Include the `dash.register_page` as "front matter" at the top of the Markdown file with the page content.
@@ -133,9 +132,9 @@ dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", e
 The `dash.register_page` must be the first thing in the file and must be set between triple-dashed lines. 
 
 `pages/home.md`
-```text exec-code-false side-by-side-false clipboard-props-{"className": "d-none"}
+```text exec-false side-by-side-false clipboard-props-{"className": "d-none"}
 ---
-dash.register_page(__name__, path="/", layout=MarkdownAIO("pages/home.md", exec_code=True))
+dash.register_page(__name__, path="/", layout=MarkdownAIO("pages/home.md", exec=True))
 ---
 
 # My home Page
@@ -166,7 +165,7 @@ path by... (todo)
 - It is not possible pass code directly to `MarkdownAIO`. This eliminates the risk of executing code supplied
 by a malicious user at runtime from a callback.
 
-- By default, the embedded code will not be executed.  The `exec_code` prop must be set to `True` for the code to run.
+- By default, the embedded code will not be executed.  The `exec` prop must be set to `True` for the code to run.
 
 
 To learn more about creating secure Dash apps, please see [this discussion](https://community.plotly.com/t/writing-secure-dash-apps-community-thread/54619/)

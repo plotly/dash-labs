@@ -6,7 +6,7 @@ dash.register_page(
     order=4,
     layout=MarkdownAIO(
         "pages/multi_page_apps/sub_menus.md",
-        exec_code=False,
+        exec=False,
         #   code_card_style={"margin": "25px 50px"}
     ),
     title="Pages Sub Menus example",
