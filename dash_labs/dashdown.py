@@ -27,7 +27,7 @@ import copy
 import textwrap
 import uuid
 import random
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 import plotly.express as px
 import plotly
 import dash_bootstrap_components as dbc
@@ -138,10 +138,6 @@ class MarkdownAIO(html.Div):
         elif not scope:
             scope = {}
 
-        # todo figure out correct path to use.
-        path = "pages/"
-        from jinja2 import Environment, FileSystemLoader
-
         try:
             with open(filename) as f:
                 md_string = f.read()
@@ -149,6 +145,8 @@ class MarkdownAIO(html.Div):
             print(f"{error} supplied to MarkdownAIO")
             return
 
+        # todo figure out correct path to use.
+        path = "pages/"
         template = Environment(loader=FileSystemLoader(path)).from_string(md_string)
         md_string = template.render(**(template_variables or {}))
 
