@@ -133,9 +133,10 @@ As you saw in the above example, This `page_registry` is populated from calling 
 `dash.register_page` will accept various arguments to customize aspects about the page.  See the Advanced Features section below.
    
 
-![multi_page](https://user-images.githubusercontent.com/72614349/140232399-efe7020d-480a-40af-a0b0-40e66dcd9d56.gif)
+```python # exec-true
+html.Img(src="https://user-images.githubusercontent.com/72614349/140232399-efe7020d-480a-40af-a0b0-40e66dcd9d56.gif", className="img-fluid")
 
-
+```
 
 ***
 
@@ -275,8 +276,11 @@ def layout(velocity=0, **other_unknown_query_strings):
     ])
 
 ```
-![image](https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png)
 
+```python # exec-true
+html.Img(src="https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png", className="img-fluid")
+
+```
 **Path Variable**
 
 Another way to pass variables to the layout is to use the `path_template` parameter in  `dash.register_page`.  You can
@@ -300,8 +304,11 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
     return dash.html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
 
 ```
-![image](https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png)
 
+```python # exec-true
+html.Img(src="https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png", className="img-fluid")
+
+```
 ***
 
 **Long Callbacks**

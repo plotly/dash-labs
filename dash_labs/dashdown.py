@@ -7,14 +7,12 @@
        - create a MarkdownAIO stylesheet?
        - eliminated dbc dependency  (replace Rows and Cols with inline css)
        - document the default style in subcomponents and that user-supplied style will overwrite. Or better yet - use a stylesheet.
+    - add props to make it easier to hide codeblocks and clipboard?
     - rewrite the _remove_app_instance() to use the AST module
       - allow for other names other than Dash ie app = DashProxy()
     - any advantage to using jinja's read file function?
     - see todos in pages.py in _register_page_from_markdown_file()
-    - use UUID for clipboard ID?
     - add ability to change defaults "globally" so it doesn't have to be done for every instance.
-    - add ability to embed another file within the markdown file. Use case being, ability to keep the python app code in
-     a separate file so you can run it individually. We could integrate jinja in here perhaps…: {% include code.py %}
     - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
     - if code block is not executed don't register callbacks and layout
     - Need to remove if __name__ == "__main__": ...   from the code blocks?
@@ -182,9 +180,12 @@ class MarkdownAIO(html.Div):
         clipboard_props = copy.deepcopy(clipboard_props)
         if "style" not in clipboard_props:
             clipboard_props["style"] = {
-                "right": 15,
+                "right": 0,
                 "position": "absolute",
                 "top": 0,
+                "backgroundColor": "#f6f6f6",
+                "color": "#2f3337",
+                "padding": "4px"
             }
         app_div_props = copy.deepcopy(app_div_props)
         if "style" not in app_div_props:
@@ -209,7 +210,7 @@ class MarkdownAIO(html.Div):
 
         # make a unique id for clipboard
         rd = random.Random(0)
-        clipboard_props["id"] = str(uuid.UUID(int=rd.randint(0, 2 ** 128)))
+        clipboard_id = str(uuid.UUID(int=rd.randint(0, 2 ** 128)))
 
         # create layout
         reconstructed = []
@@ -226,11 +227,11 @@ class MarkdownAIO(html.Div):
                     [
                         dcc.Markdown(section, **updated_props["code_markdown_props"]),
                         dcc.Clipboard(
-                            target_id=f"{clipboard_props['id']}{i}",
+                            target_id=f"{clipboard_id}{i}",
                             **updated_props["clipboard_props"],
                         ),
                     ],
-                    id=f"{clipboard_props['id']}{i}",
+                    id=f"{clipboard_id}{i}",
                     style={"position": "relative"},
                 )
 
@@ -417,12 +418,10 @@ def _get_first_lines(code, code_block_number, file, lines=8):
     """
     split = code.splitlines()[:lines]
     first_lines_of_code = "\n".join(split)
-
     msg = textwrap.dedent(
         f"""
         The error occurred in code block number {code_block_number} in filename {file}.
         Here are the first few lines of the code block:        
         """
     )
-
     return msg + first_lines_of_code + "\n----------"

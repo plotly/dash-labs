@@ -3,25 +3,6 @@ from dash import Dash, html
 import dash_bootstrap_components as dbc
 import dash_labs as dl
 
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": 90,
-    "left": 0,
-    "bottom": 0,
-    "width": "17rem",
-    "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
-    "overflow": "auto",
-}
-
-# the styles for the main content position it to the right of the sidebar and
-# add some padding.
-CONTENT_STYLE = {
-    "margin-left": "17rem",
-    "margin-right": "2rem",
-    "padding": "2rem 2rem",
-}
-
 
 # syntax highlighting
 light_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
@@ -36,7 +17,7 @@ app = Dash(
 
 
 topbar = html.H2(
-    "Dash Labs Docs & Demo", className="p-4 bg-primary text-white sticky-top"
+    "Dash Labs Docs & Demo", className="p-4 bg-primary text-white ",
 )
 
 sidebar = dbc.Card(
@@ -44,7 +25,8 @@ sidebar = dbc.Card(
         dbc.NavLink(
             [html.Div("home", className="ms-2"),],
             href=dash.page_registry["pages.home"]["path"],
-            active="exact",
+            active="partial",
+
         ),
         html.H6("Multi-Page Apps", className="mt-2"),
         dbc.Nav(
@@ -52,7 +34,8 @@ sidebar = dbc.Card(
                 dbc.NavLink(
                     [html.Div(page["name"], className="ms-2"),],
                     href=page["path"],
-                    active="exact",
+                    active="partial",
+
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.multi_page")
@@ -65,7 +48,7 @@ sidebar = dbc.Card(
                 dbc.NavLink(
                     [html.Div(page["name"], className="ms-2"),],
                     href=page["path"],
-                    active="exact",
+                    active="partial",
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.MarkdownAIO")
@@ -73,12 +56,21 @@ sidebar = dbc.Card(
             vertical=True,
         ),
     ],
-    className="overflow-auto",
-    style=SIDEBAR_STYLE,
+    className="overflow-auto sticky-top",
+
 )
 
-app.layout = html.Div(
-    [topbar, sidebar, html.Div(dl.plugins.page_container, style=CONTENT_STYLE)]
+app.layout = dbc.Container(
+    [
+        dbc.Row(
+            [
+                topbar,
+                dbc.Col(sidebar, width=4, lg=2),
+                dbc.Col(dl.plugins.page_container, width=8, lg=10),
+            ]
+        ),
+    ],
+    fluid=True,
 )
 
 
