@@ -3,7 +3,6 @@ import dash
 import os
 import importlib
 from collections import OrderedDict
-import json
 import flask
 from os import listdir
 from os.path import isfile, join
@@ -72,7 +71,7 @@ def register_page(
        Add variables to a URL by marking sections with <variable_name>. The layout function
        then receives the <variable_name> as a keyword argument.
        e.g. path_template= "/asset/<asset_id>"
-            if pathname = "/assets/a100" then layout will receive {"asset_id":"a100"}
+            then if pathname in browser is "/assets/a100" then layout will receive **{"asset_id":"a100"}
 
     - `name`:
        The name of the link.
@@ -91,7 +90,7 @@ def register_page(
 
     - `description`:
        The <meta type="description"></meta>.
-       If not supplied, then it will be the same as the title.
+       If not supplied, then nothing is supplied.
 
     - `image`:
        The meta description image used by social media platforms.
@@ -99,6 +98,7 @@ def register_page(
         - A page specific image: `assets/<title>.<extension>` is used, e.g. `assets/weekly_analytics.png`
         - A generic app image at `assets/app.<extension>`
         - A logo at `assets/logo.<extension>`
+        When inferring the image file, it will look for the following extensions: APNG, AVIF, GIF, JPEG, PNG, SVG, WebP.
 
     - `redirect_from`:
        A list of paths that should redirect to this page.
@@ -140,11 +140,6 @@ def register_page(
                 supplied_title=None,
                 title='Our historical view'
 
-                supplied_description=None,
-                description='Our historical view',
-
-                supplied_order=None,
-
                 supplied_layout=None,
                 layout=<function pages.historical_outlook.layout>,
 
@@ -173,8 +168,7 @@ def register_page(
         title=(title if title is not None else page["name"]),
     )
     page.update(
-        supplied_description=description,
-        description=(description if description is not None else page["title"]),
+        description=description,
         order=order,
         supplied_order=order,
         supplied_layout=layout,
@@ -221,6 +215,7 @@ def _infer_image(module):
     - A generic app image at `assets/app.<extension>`
     - A logo at `assets/logo.<extension>`
     """
+    valid_extensions = ["apng", "avif", "gif", "jpeg", "png", "webp"]
     page_id = module.split(".")[-1]
     files_in_assets = []
     if os.path.exists("assets"):
@@ -228,17 +223,19 @@ def _infer_image(module):
     app_file = None
     logo_file = None
     for fn in files_in_assets:
-        fn_without_extension = fn.split(".")[0]
-        if fn_without_extension == page_id or fn_without_extension == page_id.replace(
-            "_", "-"
-        ):
-            return fn
+        fn_without_extension, _, extension = fn.partition(".")
+        if extension.lower() in valid_extensions:
+            if (
+                fn_without_extension == page_id
+                or fn_without_extension == page_id.replace("_", "-")
+            ):
+                return fn
 
-        if fn_without_extension == "app":
-            app_file = fn
+            if fn_without_extension == "app":
+                app_file = fn
 
-        if fn_without_extension == "logo":
-            logo_file = fn
+            if fn_without_extension == "logo":
+                logo_file = fn
 
     if app_file:
         return app_file
@@ -425,7 +422,7 @@ def plug(app):
                 page["layout"]() if callable(page["layout"]) else page["layout"]
                 for page in dash.page_registry.values()
             ]
-            + [app.layout]
+            + [app.layout() if callable(app.layout) else app.layout]
         )
 
         # Update the page title on page navigation
@@ -531,8 +528,8 @@ def _parse_path_variables(pathname, path_template):
     """
     creates the dict of path variables passed to the layout
     e.g. path_template= "/asset/<asset_id>"
-         pathname = "/assets/a100"
-         returns {"asset_id":"a100"}
+         if pathname provided by the browser is "/assets/a100"
+         returns **{"asset_id": "a100"}
     """
     path_segments = pathname.split("/")
     template_segments = path_template.split("/")
