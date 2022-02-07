@@ -1,15 +1,9 @@
 ---
-dash.register_page(
-    __name__,
-    name="Reference",
-    title="MarkdownAIO Reference",
-    description="Dash Labs documentation",
-    order=1,
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/reference.md",
-        exec=False,
-    ),
-)
+register_page:
+    name: "Reference"
+    title: "MarkdownAIO Reference"
+    description: "Dash Labs documentation"
+    order: 1
 ---
 
 

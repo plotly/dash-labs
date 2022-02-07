@@ -1,14 +1,11 @@
 ---
-dash.register_page(
-    __name__,    
-    order=2,
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/style_options.md", 
-        exec=True
-    ),
-    title="MarkdownAIO Style Options",
-    description="Dash Labs documentation",
-)
+register_page:   
+    order: 2
+    title: "MarkdownAIO Style Options"
+    description: "Dash Labs documentation"
+
+MarkdownAIO:
+    exec: True  
 ---
 
 ## Style options 

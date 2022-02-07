@@ -1,16 +1,10 @@
 ---
-dash.register_page(
-    __name__,
-    name="Overview",
-    path="/",
-    order=0,
-    layout=MarkdownAIO(
-        "pages/multi_page_apps/overview.md",
-        exec=False,
-    ),
-    title="Pages Overview",
-    description="Dash Labs documentation",
-)
+register_page:
+    name: "Overview"
+    path: "/"
+    order: 0
+    title: "Pages Overview"
+    description: "Dash Labs documentation"
 
 ---
 # Multi-Page Dash App Plugin

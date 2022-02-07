@@ -1,17 +1,14 @@
 ---
   
-dash.register_page(
-    __name__,
-    name="Deploy a README.md with MarkdownAIO",
-    title="MarkdownAIO example-Deploy a README.md",
-    description="Dash Labs documentation",
-    order=99,
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/README.md",        
-        side_by_side=True,
-        exec=True
-    ),
-)
+register_page:
+    name: "Deploy a README.md with MarkdownAIO"
+    title: "MarkdownAIO example-Deploy a README.md"
+    description: "Dash Labs documentation"
+    order: 99
+
+MarkdownAIO:
+    side_by_side: True
+    exec: True
 ---
 
 # Deploy a README.md file

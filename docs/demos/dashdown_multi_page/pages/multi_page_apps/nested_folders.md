@@ -1,16 +1,9 @@
 ---
-dash.register_page(
-    __name__,
-    name="Nested Folders",
-    order=2,
-    layout=MarkdownAIO(
-        "pages/multi_page_apps/nested_folders.md",
-        exec=False,
-        #  code_card_style={"margin": "25px 50px"}
-    ),
-    title="Pages Nested Folders Example",
-    description="Dash Labs documentation",
-)
+register_page:
+    name: "Nested Folders"
+    order: 2
+    title: "Pages Nested Folders Example"
+    description: "Dash Labs documentation"
 
 ---
 

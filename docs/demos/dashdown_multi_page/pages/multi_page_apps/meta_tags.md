@@ -1,15 +1,9 @@
 ---
-dash.register_page(
-    __name__,
-    name="Meta Tags",
-    order=3,
-    layout=MarkdownAIO(
-        "pages/multi_page_apps/meta_tags.md",
-        exec=False,
-    ),
-    title="Pages Meta Tags",
-    description="Dash Labs documentation",
-)
+register_page:
+    name: "Meta Tags"
+    order: 3
+    title: "Pages Meta Tags"
+    description: "Dash Labs documentation"
 
 
 ---

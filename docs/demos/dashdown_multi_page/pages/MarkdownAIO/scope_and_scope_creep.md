@@ -1,20 +1,14 @@
 ---
-import pandas as pd
+register_page:
+    order: 4
+    title: "MarkdownAIO Scope"
+    description: "Dash Labs documentation"
 
-dash.register_page(
-    "pages.MarkdownAIO.scope_and_scope_creep",
-    order=4,
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/scope_and_scope_creep.md",
-        app_div_props={"className": "mb-4 pb-4"},
-        scope={"pd":pd},
-        scope_creep=True,    
-        exec=True
-    ),
-    title="MarkdownAIO Scope",
-    description="Dash Labs documentation",
-)
-
+MarkdownAIO:
+    app_div_props: {"className": "mb-4 pb-4"}
+    scope_creep: True
+    exec: True
+  
 
 ---
 
@@ -108,6 +102,7 @@ MarkdownAIO("my_markdown_file.md", scope={"pd": pd})
 ```  
 
 ```python
+import pandas as pd
 data_url = 'https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv'
 df = pd.read_csv(data_url)
 

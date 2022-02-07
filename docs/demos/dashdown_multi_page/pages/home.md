@@ -1,12 +1,12 @@
 ---
-dash.register_page(__name__, 
-                   title="Dash Labs Home",
-                   description="Dash Labs documentation",
-                   layout=MarkdownAIO("pages/home.md", 
-                   exec=False, 
-                   text_markdown_props={"style": {"maxWidth":970}},  
-                   side_by_side=True,                   
-))
+register_page:
+    title: "Dash Labs Home"
+    description: "Dash Labs documentation"
+
+MarkdownAIO: 
+    exec: False
+    text_markdown_props: {"style": {"maxWidth":970}}
+    side_by_side: True
 ---
 
 # Dash Labs Overview

@@ -10,13 +10,14 @@
     - add props to make it easier to hide codeblocks and clipboard?
     - rewrite the _remove_app_instance() to use the AST module
       - allow for other names other than Dash ie app = DashProxy()
-    - any advantage to using jinja's read file function?
     - see todos in pages.py in _register_page_from_markdown_file()
     - add ability to change defaults "globally" so it doesn't have to be done for every instance.
     - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
-    - if code block is not executed don't register callbacks and layout
+    - if code block is not executed don't register callbacks and layout - to reduce id clashes
     - Need to remove if __name__ == "__main__": ...   from the code blocks?
     - refactor the _update_props function.
+    - how to have import statements in front matter? (for adding to scop)
+    - update docstring to describe how front matter works for both MarkdownAIO and pages.py
 
 """
 
@@ -27,6 +28,7 @@ import copy
 import textwrap
 import uuid
 import random
+import frontmatter
 from jinja2 import Environment, FileSystemLoader
 import plotly.express as px
 import plotly
@@ -122,6 +124,29 @@ class MarkdownAIO(html.Div):
           This may also be set within a code block with the comment # app-div-props-{...}
 
         """
+        try:
+            md_page = frontmatter.load(filename)
+            md_string = md_page.content
+            md_props = md_page.get("MarkdownAIO", {})
+        except IOError as error:
+            print(f"{error} supplied to MarkdownAIO")
+            return
+        if md_string == "":
+            raise Exception(f"No content in {filename}")
+
+        # Update props from front matter todo omg there has to be a way to iterate!
+        scope = md_props.get("scope", scope)
+        scope_creep = md_props.get("scope_creep", scope_creep)
+        dash_scope = md_props.get("dash_scope", dash_scope)
+        template_variables = md_props.get("template_variables", template_variables)
+        text_markdown_props = md_props.get("text_markdown_props", text_markdown_props)
+        code_markdown_props = md_props.get("code_markdown_props", code_markdown_props)
+        clipboard_props = md_props.get("clipboard_props", clipboard_props)
+        app_div_props = md_props.get("app_div_props", app_div_props)
+        side_by_side = md_props.get("side_by_side", side_by_side)
+        code_first = md_props.get("code_first", code_first)
+        exec = md_props.get("exec", exec)
+
         if dash_scope:
             scope = dict(
                 dcc=dcc,
@@ -138,21 +163,10 @@ class MarkdownAIO(html.Div):
         elif not scope:
             scope = {}
 
-        try:
-            with open(filename) as f:
-                md_string = f.read()
-        except IOError as error:
-            print(f"{error} supplied to MarkdownAIO")
-            return
-
-        # todo figure out correct path to use.
+        # todo - what's the correct path to use?
         path = "pages/"
         template = Environment(loader=FileSystemLoader(path)).from_string(md_string)
         md_string = template.render(**(template_variables or {}))
-
-        if md_string.startswith("---"):
-            split_frontmatter = re.split(r"(^---[\s\S]*?\n*---)", md_string)
-            md_string = split_frontmatter[-1]
 
         split_md_string = re.split(
             #   r"(```[^`]*```)",  # this one doesn't work if there are docstrings in the codeblock
@@ -161,8 +175,7 @@ class MarkdownAIO(html.Div):
         )
 
         # These subcomponent props may not be user-supplied.  Callbacks are not allowed to update the underlying
-        # components so the id is unnecessary.
-        # The `children` are read-only and are updated by MarkdownAIO
+        # components so the id is unnecessary.  `children` are read-only and are updated by MarkdownAIO
         prohibited_props = {
             "code_markdown_props": ["id", "children", "dangerously_allow_html"],
             "clipboard_props": ["id", "content", "target_id", "children"],
@@ -183,7 +196,7 @@ class MarkdownAIO(html.Div):
                 "top": 0,
                 "backgroundColor": "#f6f6f6",
                 "color": "#2f3337",
-                "padding": "4px"
+                "padding": "4px",
             }
         app_div_props = copy.deepcopy(app_div_props)
         if "style" not in app_div_props:

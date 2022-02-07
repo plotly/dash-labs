@@ -1,17 +1,10 @@
 ---
+register_page:
+    name: "Sub Menus"
+    order: 4
+    title: "Pages Sub Menus example"
+    description=: Dash Labs documentation"
 
-dash.register_page(
-    __name__,
-    name="Sub Menus",
-    order=4,
-    layout=MarkdownAIO(
-        "pages/multi_page_apps/sub_menus.md",
-        exec=False,
-        #   code_card_style={"margin": "25px 50px"}
-    ),
-    title="Pages Sub Menus example",
-    description="Dash Labs documentation",
-)
 ---
 
 # Multi-Page Dash App Examples

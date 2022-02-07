@@ -1,15 +1,9 @@
 ---
-dash.register_page(
-    __name__,
-    name="Reference",
-    order=1,
-    layout=MarkdownAIO(
-        "pages/multi_page_apps/reference.md",
-        exec=False,
-    ),
-    title="Pages Reference",
-    description="Dash Labs documentation",
-)
+register_page:
+    name: "Reference"
+    order: 1
+    title: "Pages Reference"
+    description: "Dash Labs documentation"
 ---
 
 # Multi-Page Dash App Plugin Reference

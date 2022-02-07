@@ -1,15 +1,11 @@
 ---
-dash.register_page(
-    __name__,   
-    order=2,
-    title="MarkdownAIO Code Block Options",
-    description="Dash Labs documentation",
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/code_block_options.md",
-        exec=True
-    ),
-)
+register_page:
+    order: 2
+    title: "MarkdownAIO Code Block Options"
+    description: "Dash Labs documentation"
 
+MarkdownAIO:
+    exec: True
 ---
 
 

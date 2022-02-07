@@ -1,18 +1,14 @@
 ---
-dash.register_page(
-    __name__,    
-    name="Overview",
-    title="MarkdownAIO Overview",
-    description="Dash Labs documentation",
-    order=0,
-    layout=MarkdownAIO(
-        "pages/MarkdownAIO/overview.md",
-        side_by_side=True,  
-        exec=True,
-    ),
-   app_className="mb-4",
-   text_className="mb-4 pb-4"
-)
+register_page:   
+    name: "Overview"
+    title: "MarkdownAIO Overview"
+    description: "Dash Labs documentation"
+    order: 0
+
+MarkdownAIO:
+    side_by_side: True
+    exec: True       
+
 ---
 
 # Dash Labs Top Secret Feature Preview
@@ -121,12 +117,17 @@ dash.register_page("pages.home", path="/", layout=MarkdownAIO("pages/home.md", e
 
 2) Include the `dash.register_page` as "front matter" at the top of the Markdown file with the page content.
 
-The `dash.register_page` must be the first thing in the file and must be set between triple-dashed lines. 
+The front matter is in a yaml format and must be the first thing in the file and must be set between triple-dashed lines. 
+
 
 `pages/home.md`
 ```text exec-false side-by-side-false clipboard-props-{"className": "d-none"}
 ---
-dash.register_page(__name__, path="/", layout=MarkdownAIO("pages/home.md", exec=True))
+register_page:
+    path: "/"   
+    
+MarkdownAIO:
+   exec: True
 ---
 
 # My home Page

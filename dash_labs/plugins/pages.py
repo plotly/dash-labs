@@ -164,8 +164,7 @@ def register_page(
         name=(name if name is not None else _filename_to_name(module)),
     )
     page.update(
-        supplied_title=title,
-        title=(title if title is not None else page["name"]),
+        supplied_title=title, title=(title if title is not None else page["name"]),
     )
     page.update(
         description=description,
@@ -298,51 +297,38 @@ def _import_layouts_from_pages(app):
                 )
 
 
-def _register_page_from_markdown_file(page_filename, app):
+def _register_page_from_markdown_file(filename, app):
     """
     Extracts and runs dash.register_page() from the "front matter" of a markdown file in the pages folder.
-    Front matter is defined with three dashes:
+    Front matter is yaml defined with three dashes:
     ---
-    dash.register_page(...)
+    register_page:
+      path: "/home"
+      order: 2
+    MarkdownAIO:
+      exec: True
+      side_by_side: True
     ---
-
-    todo:
-        - use AST to parse dash.register_page() to limite what gets executed?. Use the same function as the
-          one to delete the app instance in MarkdownAIO.
-        - infer the filename for MarkdownAIO(filename,...)
     """
+    import frontmatter
+    from dash_labs import MarkdownAIO
+
     try:
-        with open(page_filename, "r") as f:
-            delimiter = "---\n"
-            first_line_delimiter = False
-            frontmatter = []
-            for line in f:
-                if not first_line_delimiter and line == delimiter:
-                    first_line_delimiter = True
-                elif first_line_delimiter and line != delimiter:
-                    frontmatter.append(line)
-                else:
-                    break
+        md_page = frontmatter.load(filename)
+    except Exception as e:
+        print(f"Error reading {filename} \n{e}")
 
-    except IOError as error:
-        warnings.warn(f"{error}", stacklevel=2)
-        return ""
+    pages_props = md_page.get("register_page", {})
+    if "module" not in pages_props:
+        module_name = f'{filename.replace(".md", "").replace("/", ".")}'
+        pages_props["module"] = module_name
+    if "layout" not in pages_props:
 
-    if len(frontmatter) > 0:
-        frontmatter = "".join(frontmatter)
-        # todo - need to limit what gets executed in frontmatter?
-        module_name = f'"{page_filename.replace(".md", "").replace("/", ".")}"'
-        if "register_page" in frontmatter:
-            if "__name__" in frontmatter:
-                # infer module name:  so you can do this: `dash.register_page(__name__)
+        markdownaio_props = md_page.get("MarkdownAIO", {})
+        # todo- how to accept other functions here - for use by other projects like dmc?
+        pages_props["layout"] = MarkdownAIO(filename, **markdownaio_props)
 
-                frontmatter = frontmatter.replace("__name__", module_name)
-            try:
-                from dash_labs import MarkdownAIO
-
-                exec(frontmatter)
-            except Exception as e:
-                print(f"error executing frontmatter in:  {module_name}", e)
+    dash.register_page(**pages_props)
 
 
 def _path_to_page(app, path_id):
@@ -356,6 +342,7 @@ def _path_to_page(app, path_id):
         if path_id == page["path"].strip("/"):
             return page, path_variables
     return {}, None
+
 
 def plug(app):
     dash.page_registry = OrderedDict()
