@@ -3,6 +3,8 @@ import random
 from collections import OrderedDict
 
 from dash.development.base_component import Component
+
+import json
 import re
 
 
@@ -32,10 +34,7 @@ def build_id(name=None, **kwargs):
     the same app.
     """
     uid = str(uuid.UUID(int=_uid_random.randint(0, 2 ** 128)))
-    return dict(
-        uid=uid,
-        **filter_kwargs(name=name, **kwargs),
-    )
+    return dict(uid=uid, **filter_kwargs(name=name, **kwargs),)
 
 
 def filter_kwargs(*args, **kwargs):
@@ -156,3 +155,52 @@ def add_css_class(component, className):
         return
     else:
         component.className = " ".join(all_classes)
+
+
+def _parse_codefence(codefence):
+    """
+    Convert a codefence variables into Python
+    Codefence variables have a few restrictions:
+    - Locally scoped:
+          - Variables cant be cross-referenced within the string
+          - Python modules can't be used
+    - Basic data structures that would be passed into the prop
+    = dict(a=3) not supported, only {"a": 3}
+
+    The "easy" way to do this would be to call `exec` on the string.
+    However, that would grow the surface area of the `exec` security issues
+    So instead we'll use the safer JSON parse mechanism and take
+    advantage of the fact that these codefence variables can only be
+    simple, json-like data structures that are locally scoped.
+
+    # sample codefence
+    # codefence = '```python i = 3, j=1, k =3, l =   False, m=True, n={"color":"blue", \'size\': 10}, style={"font":  {"decoration":  "orange","thing":"that"}}'
+
+    """
+
+    # remove the language specifier example ```python or ```text
+    s = re.sub(r"^```\w+", "", codefence)
+    s = s.replace("```", "")
+
+    s = (
+        s.replace("'", '"')
+        .replace("True", "true")
+        .replace("False", "false")
+        .replace("None", "null")
+    )
+    # Replace `variable = value` with `"variable": value`, taking care of variable white space
+    # See test case: https://regex101.com/r/SqdZDf/1
+    s = re.sub(r"(\S+)\s*=\s*", r'"\1": ', s)
+
+    # Clean up whitespace issues within dictionaries, e.g.
+    # e.g. turn {"color":"blue", "size":   10} into {"color": "blue", "size": 10}
+    s = re.sub(r"\":\s*", '": ', s)
+
+    # And similarly around commas
+    s = re.sub(r",\s*", ", ", s)
+
+    # Add starting and closing {} to turn it into JSON and then back into Python
+
+    s = "{" + s + "}"
+    # Now it's python!
+    return json.loads(s)

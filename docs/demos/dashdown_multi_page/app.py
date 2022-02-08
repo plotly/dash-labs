@@ -15,10 +15,7 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
-
-topbar = html.H2(
-    "Dash Labs Docs & Demo", className="p-4 bg-primary text-white ",
-)
+topbar = html.H2("Dash Labs Docs & Demo", className="p-4 bg-primary text-white ",)
 
 sidebar = dbc.Card(
     [
@@ -26,7 +23,6 @@ sidebar = dbc.Card(
             [html.Div("home", className="ms-2"),],
             href=dash.page_registry["pages.home"]["path"],
             active="partial",
-
         ),
         html.H6("Multi-Page Apps", className="mt-2"),
         dbc.Nav(
@@ -35,7 +31,6 @@ sidebar = dbc.Card(
                     [html.Div(page["name"], className="ms-2"),],
                     href=page["path"],
                     active="partial",
-
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.multi_page")
@@ -57,7 +52,6 @@ sidebar = dbc.Card(
         ),
     ],
     className="overflow-auto sticky-top",
-
 )
 
 app.layout = dbc.Container(

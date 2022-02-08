@@ -142,7 +142,7 @@ You can see how the icon is included in the sidebar navigation:
 ![nested_folders](https://user-images.githubusercontent.com/72614349/140660047-d97e80b0-72dd-4fbe-b862-55f5a6431331.gif)
 
 
-```python # exec-true
+```python dangerously_use_exec=True
 html.Img(src="https://user-images.githubusercontent.com/72614349/140660047-d97e80b0-72dd-4fbe-b862-55f5a6431331.gif", className="img-fluid")
 
 ```

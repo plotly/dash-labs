@@ -7,7 +7,7 @@ register_page:
 MarkdownAIO:
     app_div_props: {"className": "mb-4 pb-4"}
     scope_creep: True
-    exec: True
+    dangerously_use_exec: True
   
 
 ---
@@ -17,7 +17,7 @@ MarkdownAIO:
 
 This section will describe more about the following `MarkdownAIO` parameters:
 
-- `dash_scope`: the default scope available when executing code blocks
+- `dash_scope`: the default scope available when dangerously_use_executing code blocks
 
 - `scope`: Adds scope to the code blocks. 
 
@@ -75,7 +75,7 @@ dcc.Graph(figure=fig)
 This is possible, because of the `dash_scope` parameter.  The default is True, so it adds the following to the scope
 of the code bock:
 
-```python exec-false
+```python dangerously_use_exec=False
 scope = dict(
               dcc=dcc,
               html=html,
@@ -95,7 +95,7 @@ scope.
 
 Note:  If you are adding `app` to the scope in a multi-page app, you must call `dash.register_page` from within the main `app.py` file
 
-```python exec-false
+```python dangerously_use_exec=False
 import pandas as pd
 MarkdownAIO("my_markdown_file.md", scope={"pd": pd})
 
@@ -117,7 +117,7 @@ layout = dash_table.DataTable(
 You may also add to the scope without using the `scope` parameter by importing the module in your codeblock.  Here
 we include `import pandas as pd` in the code block:
 
-```python exec-false
+```python dangerously_use_exec=False
 import pandas as pd
 
 data_url = 'https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv'

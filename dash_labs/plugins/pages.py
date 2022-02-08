@@ -280,14 +280,24 @@ def _infer_path(filename, template):
 def _import_layouts_from_pages(app):
     for (root, dirs, files) in os.walk("pages"):
         for file in files:
+
+            if (file.endswith(".md") or file.endswith(".py")) and not file.startswith(
+                "_"
+            ):
+                with open(os.path.join(root, file)) as f:
+                    content = f.read()
+                    if "register_page" not in content:
+                        continue
+
             page_filename = os.path.join(root, file).replace("\\", "/")
-            if file.endswith(".md"):
+            if file.endswith(".md") and not file.startswith("_"):
                 _register_page_from_markdown_file(page_filename, app)
                 continue
             if file.startswith("_") or not file.endswith(".py"):
                 continue
 
             _, _, page_filename = page_filename.partition("pages/")
+
             page_filename = page_filename.replace(".py", "").replace("/", ".")
             page_module = importlib.import_module(f"pages.{page_filename}")
 
@@ -306,7 +316,7 @@ def _register_page_from_markdown_file(filename, app):
       path: "/home"
       order: 2
     MarkdownAIO:
-      exec: True
+      dangerously_use_exec: True
       side_by_side: True
     ---
     """
@@ -316,7 +326,7 @@ def _register_page_from_markdown_file(filename, app):
     try:
         md_page = frontmatter.load(filename)
     except Exception as e:
-        print(f"Error reading {filename} \n{e}")
+        raise Exception(f"Error parsing the YAML front matter of {filename}:\n{e}")
 
     pages_props = md_page.get("register_page", {})
     if "module" not in pages_props:

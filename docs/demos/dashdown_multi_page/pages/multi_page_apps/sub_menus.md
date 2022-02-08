@@ -16,13 +16,13 @@ have different navigation options based on which page is displayed.
 
 See how the sidebar is displayed only when the "Topics" link is selected:
 
-```python # exec-true
+```python dangerously_use_exec=True
 html.Img(src="https://user-images.githubusercontent.com/72614349/147510416-3529dabd-6cf4-4e4f-b7a6-027267778b88.gif", className="img-fluid")
 
 ```
 
 Here is the multi-page structure
-```
+```text dangerously_use_exec=False
 - app.py
 - pages  
   |-- about.py  

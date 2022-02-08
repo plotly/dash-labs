@@ -4,7 +4,7 @@ register_page:
     description: "Dash Labs documentation"
 
 MarkdownAIO: 
-    exec: False
+    dangerously_use_exec: False
     text_markdown_props: {"style": {"maxWidth":970}}
     side_by_side: True
 ---

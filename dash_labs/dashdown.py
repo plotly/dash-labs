@@ -1,22 +1,14 @@
 """
  todo
-    - reduce security risk with exec
-       - local files only. Ensure that the file is within a certain directory, and by default
-       that should be the parent directory of the main app but maybe we could create a way to override that. Similar to /assets?
     - css:
        - create a MarkdownAIO stylesheet?
        - eliminated dbc dependency  (replace Rows and Cols with inline css)
        - document the default style in subcomponents and that user-supplied style will overwrite. Or better yet - use a stylesheet.
-    - add props to make it easier to hide codeblocks and clipboard?
-    - rewrite the _remove_app_instance() to use the AST module
-      - allow for other names other than Dash ie app = DashProxy()
     - see todos in pages.py in _register_page_from_markdown_file()
     - add ability to change defaults "globally" so it doesn't have to be done for every instance.
     - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
-    - if code block is not executed don't register callbacks and layout - to reduce id clashes
     - Need to remove if __name__ == "__main__": ...   from the code blocks?
-    - refactor the _update_props function.
-    - how to have import statements in front matter? (for adding to scop)
+    - how to have import statements in front matter? (for adding to scope)
     - update docstring to describe how front matter works for both MarkdownAIO and pages.py
 
 """
@@ -34,6 +26,7 @@ import plotly.express as px
 import plotly
 import dash_bootstrap_components as dbc
 import warnings
+from .util import _parse_codefence
 
 
 def warning_message(message, category, filename, lineno, line=None):
@@ -51,9 +44,11 @@ class MarkdownAIO(html.Div):
         scope_creep=False,
         dash_scope=True,
         template_variables=None,
-        exec=False,
+        dangerously_use_exec=False,
         side_by_side=False,
         code_first=True,
+        clipboard=True,
+        code=True,
         code_markdown_props={},
         text_markdown_props={},
         clipboard_props={},
@@ -95,33 +90,42 @@ class MarkdownAIO(html.Div):
            See the jinja docs for how to use the template variables in the markdown files.
            `{% if language == 'english' %} Hello {% elif language == 'french' %} Bonjour {% endif %}`
 
-        - `exec` (boolean; default False):
-           If `True`, code blocks will be executed.  This may also be set within the code block with the comment
-            # exec-true or # exec-false
+        - `dangerously_use_exec` (boolean; default False):
+           If `True`, code blocks will be executed.  This may also be set within the code block on the same line as the
+           fenced code blocks beginning with three backticks.
 
         - `side_by_side` (boolean; default False):
           If `True`, the code block will be displayed on the left and the app output on the right on large screens.
           If `False`, or on small screens, code block will be displayed on top and the output will be on the bottom.
-          This may also be set within the code block with the comment # side-by-side-true or # side-by-side-false.
+          This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
 
         - `code_first` (boolean; default True):
           If `True`, the code block will be displayed on the top and output on the bottom (or on the left if side by side).
-          This may also be set within the code block with the comment # code-first-true or # code-first-false
+          This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
+
+        - `code` (boolean; default True):
+          If `True`, the code block will be displayed.
+          This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
+
+        - `clipboard` (boolean; default True):
+          If `True`, the clipboard will be displayed.
+          This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
+
 
         - `code_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that
            displays the code blocks. Does not accept user-supplied `id`, `children`, or `dangerously_allow_html` props.
-           This may also be set within a code block with the comment # code-markdown-props-{...}
+           This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
 
         - `text_markdown_props`(dict; default ):  A dictionary of properties passed into the dcc.Markdown component that
            displays the Markdown text other than code blocks. Does not accept user-supplied `id`, `children` props.
 
         - `clipboard_props`(dict; default ):  A dictionary of properties passed into the dcc.Clipboard component. Does
             not accept user-supplied `id`, `content`, 'target_id` props.
-            This may also be set within a code block with the comment # clipboard-props-{...}
+            This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
 
         - `app_div_props`(dict; default ):  A dictionary of properties passed into the html.Div component that contains
           the output of the executed code blocks.  Does not accept user-supplied `id`, `children` props.
-          This may also be set within a code block with the comment # app-div-props-{...}
+          This may also be set within the code block on the same line as the fenced code blocks beginning with three backticks.
 
         """
         try:
@@ -134,7 +138,7 @@ class MarkdownAIO(html.Div):
         if md_string == "":
             raise Exception(f"No content in {filename}")
 
-        # Update props from front matter todo omg there has to be a way to iterate!
+        # Update props from front matter todo omg there has to be a better way to do this!
         scope = md_props.get("scope", scope)
         scope_creep = md_props.get("scope_creep", scope_creep)
         dash_scope = md_props.get("dash_scope", dash_scope)
@@ -145,7 +149,11 @@ class MarkdownAIO(html.Div):
         app_div_props = md_props.get("app_div_props", app_div_props)
         side_by_side = md_props.get("side_by_side", side_by_side)
         code_first = md_props.get("code_first", code_first)
-        exec = md_props.get("exec", exec)
+        dangerously_use_exec = md_props.get(
+            "dangerously_use_exec", dangerously_use_exec
+        )
+        code = md_props.get("code", code)
+        clipboard = md_props.get("clipboard", clipboard)
 
         if dash_scope:
             scope = dict(
@@ -163,16 +171,11 @@ class MarkdownAIO(html.Div):
         elif not scope:
             scope = {}
 
-        # todo - what's the correct path to use?
-        path = "pages/"
+        path = ""
         template = Environment(loader=FileSystemLoader(path)).from_string(md_string)
         md_string = template.render(**(template_variables or {}))
 
-        split_md_string = re.split(
-            #   r"(```[^`]*```)",  # this one doesn't work if there are docstrings in the codeblock
-            r"(```[\s\S]*?\n```)",
-            md_string,
-        )
+        split_md_string = re.split(r"(```[\s\S]*?\n```)", md_string,)
 
         # These subcomponent props may not be user-supplied.  Callbacks are not allowed to update the underlying
         # components so the id is unnecessary.  `children` are read-only and are updated by MarkdownAIO
@@ -201,8 +204,6 @@ class MarkdownAIO(html.Div):
         app_div_props = copy.deepcopy(app_div_props)
         if "style" not in app_div_props:
             app_div_props["style"] = {
-                "maxHeight": 700,
-                "overflow": "auto",
                 "padding": 10,
                 "border": "1px solid rgba(100, 100, 100, 0.4)",
             }
@@ -214,7 +215,9 @@ class MarkdownAIO(html.Div):
             "app_div_props": app_div_props,
             "side_by_side": side_by_side,
             "code_first": code_first,
-            "exec": exec,
+            "dangerously_use_exec": dangerously_use_exec,
+            "code": code,
+            "clipboard": clipboard,
         }
 
         _prohibited_props_check(props, prohibited_props)
@@ -234,19 +237,27 @@ class MarkdownAIO(html.Div):
                     props, prohibited_props, section, code_block, filename
                 )
 
-                code_card = html.Div(
-                    [
-                        dcc.Markdown(section, **updated_props["code_markdown_props"]),
-                        dcc.Clipboard(
-                            target_id=f"{clipboard_id}{i}",
-                            **updated_props["clipboard_props"],
-                        ),
-                    ],
-                    id=f"{clipboard_id}{i}",
-                    style={"position": "relative"},
+                code_card = (
+                    html.Div(
+                        [
+                            dcc.Markdown(
+                                section, **updated_props["code_markdown_props"]
+                            ),
+                            dcc.Clipboard(
+                                target_id=f"{clipboard_id}{i}",
+                                **updated_props["clipboard_props"],
+                            )
+                            if updated_props["clipboard"]
+                            else None,
+                        ],
+                        id=f"{clipboard_id}{i}",
+                        style={"position": "relative"},
+                    )
+                    if updated_props["code"]
+                    else None
                 )
 
-                if updated_props["exec"]:
+                if updated_props["dangerously_use_exec"]:
                     if "app.callback" in section and "app" not in scope:
                         msg1 = textwrap.dedent(
                             """
@@ -263,7 +274,7 @@ class MarkdownAIO(html.Div):
                         # use the same dict that'll keep getting mutated
                         code_scope = scope
                     try:
-                        code = section.replace("```python", "").replace("```", "")
+                        code = section.replace("```", "#")
                         app_card = _run_code(
                             code,
                             scope=code_scope,
@@ -304,7 +315,7 @@ def _prohibited_props_check(props, prohibited_props, code_block=None, filename=N
     for prop in props:
         if isinstance(props[prop], dict):
             for p in props[prop]:
-                if p in prohibited_props[prop]:
+                if p in prohibited_props.get(prop, []):
                     raise Exception(
                         f" The `{p}` prop in `{prop}` may not be user-supplied in MarkdownAIO"
                         + f" see code block# {code_block} in module {filename}"
@@ -317,19 +328,14 @@ def _run_code(code, scope=None, div_props=None):
     if scope is None:
         scope = {}
 
-    # Replacements to get this working in an `exec` environment:
-    # 1) Remove language specifier included at beginning of markdown string
-
-    language = code[:6].lower()
-    if language.startswith("python"):
-        code = code[6:]
-    # 2) Remove the app instance in the code block otherwise app.callbacks don't work
-    code = _remove_app_instance(code)
-
     if "app.layout" in code:
         code = code.replace("app.layout", "layout")
     if "layout" in code:
-        exec(code, scope)
+        # Remove the app instance in the code block otherwise app.callbacks don't work
+        tree = ast.parse(code)
+        new_tree = RemoveAppAssignment().visit(tree)
+        exec(compile(new_tree, filename="<ast>", mode="exec"), scope)
+
         return html.Div(scope["layout"], **div_props)
 
     else:
@@ -338,7 +344,9 @@ def _run_code(code, scope=None, div_props=None):
         # assumes last node is an expression
         last = ast.Expression(block.body.pop().value)
         exec(compile(block, "<string>", mode="exec"), scope)
-        return html.Div(eval(compile(last, "<string>", mode="eval"), scope))
+        return html.Div(
+            eval(compile(last, "<string>", mode="eval"), scope), **div_props
+        )
 
 
 def _parse_props(component_props, section):
@@ -369,58 +377,33 @@ def _parse_props(component_props, section):
 def _update_props(
     props_dict, prohibited_props, section, code_block=None, filename=None
 ):
-    """
-    update props that are user-supplied  within a code block
-    todo - refactor after deciding on the format of the props in the code block
-    """
+    """ update props that are user-supplied  within a code block """
     props_dict = copy.deepcopy(props_dict)
 
-    for prop in props_dict:
-        p = prop.replace("_", "-")
+    code_fence = section.splitlines()[0]
+    try:
+        new_props = _parse_codefence(code_fence)
+    except Exception as e:
+        raise Exception(
+            f"\nError in codeblock number: {code_block} in file: {filename} \n {code_fence}\n{e}"
+        )
 
-        # boolean props
-        if p + "-true" in section:
-            props_dict[prop] = True
-        elif p + "-false" in section:
-            props_dict[prop] = False
+    for p in new_props:
+        if p not in props_dict:
+            raise Exception(
+                f"\nProp `{p}` is not a valid prop or may not be updated in a code block.\nError in codeblock number: {code_block} in file: {filename}"
+            )
 
-        # dict props
-        elif p in ["code-markdown-props", "clipboard-props", "app-div-props"]:
-            if p + "-" in section:
-                parsed_props = _parse_props(p, section)
-                _prohibited_props_check(
-                    {prop: parsed_props}, prohibited_props, code_block, filename,
-                )
-                props_dict[prop] = {
-                    **props_dict[prop],
-                    **parsed_props,
-                }
+    _prohibited_props_check(new_props, prohibited_props, code_block, filename)
+
+    try:
+        props_dict.update(new_props)
+    except Exception as e:
+        raise Exception(
+            f"\nError in codeblock number: {code_block} in file: {filename} \n{e}"
+        )
+
     return props_dict
-
-
-def _remove_app_instance(code):
-    """
-    Remove the app instance from a code block otherwise app.callback doesn't work. If `app` is defined locally
-    within the code block, then it overrides the `app` passed in to the scope.
-    todo:  This function is a placeholder. It will fail if there are things like unmatched parens in comments within
-           the app instance or spaces between Dash and (  and probably other things too.
-           Better to use AST module and delete node with app instance.
-    """
-    split_code = code.splitlines()
-    app_instance = False
-    new_code = []
-    matched_paren = 0
-
-    for line in split_code:
-        if "Dash(" in line:
-            app_instance = True
-        if app_instance:
-            matched_paren += line.count("(") - line.count(")")
-            if matched_paren == 0:
-                app_instance = False
-        else:
-            new_code.append(line)
-    return "\n".join(new_code)
 
 
 def _get_first_lines(code, code_block_number, file, lines=8):
@@ -436,3 +419,17 @@ def _get_first_lines(code, code_block_number, file, lines=8):
         """
     )
     return msg + first_lines_of_code + "\n----------"
+
+
+class RemoveAppAssignment(ast.NodeTransformer):
+    """
+       Remove the app instance from a code block otherwise app.callback` doesn't work. If `app` is defined locally
+       within the code block, then it overrides the `app` passed in to the scope.
+   """
+
+    def visit_Assign(self, node):
+        if hasattr(node, "targets") and "app" in [
+            n.id for n in node.targets if hasattr(n, "id")
+        ]:
+            return None
+        return node

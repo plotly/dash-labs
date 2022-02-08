@@ -5,7 +5,7 @@ register_page:
     description: "Dash Labs documentation"
 
 MarkdownAIO:
-    exec: True
+    dangerously_use_exec: True
 ---
 
 
@@ -29,19 +29,16 @@ that define the code block, then the comment won't be visible in the app output.
 For example, if you added the comment # side-by-side-true like shown below the code will be displayed beside the output.
 
 
-```python exec-false side-by-side-false clipboard-props-{"className": "d-none"}
-
-`` `python # side-by-side-true clipboard-props-{"className": "d-none"}
-
+`` `python  side_by_side=True, clipboard=False
 
 `` `
 
-```
 
 ### Display Options
 
-- `exec` (boolean; default False):
-         If `True`, code blocks will be executed.  This may also be set within the code block with the comment # exec-true or # exec-false  
+- `dangerously_use_exec` (boolean; default False):
+         If `True`, code blocks will be executed.  This may also be set within the code block on the same line as
+         code fences. 
 
 
 - `side_by_side` (boolean; default False):
@@ -79,7 +76,7 @@ This may also be set within a code block with the comment # app-div-props-{...}
 Here is a markdown file that will be used in all the examples:
 
 `sample.md`
-```python # exec-false 
+```python  dangerously_use_exec=False 
 ## Sample Markdown File
 
 This is a markdown file with a mix of *text and code*.
@@ -102,12 +99,12 @@ Here's a Dash app with the default display options for `MarkdownAIO`
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
     
-````
+```
 
 
 
@@ -121,7 +118,7 @@ The display options may be changed at the file level.  Now all the code blocks i
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", side_by_side=True, exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", side_by_side=True, dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -139,7 +136,7 @@ In this example, the output is displayed first, followed by the code.
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code_first=False, exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code_first=False, dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -157,7 +154,7 @@ Now the code is displayed to the right of the output
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code_first=False, side_by_side=True, exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code_first=False, side_by_side=True, dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -176,7 +173,7 @@ In this output, the copy to clipboard icon does not show in the code block
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", clipboard_props={"className": "d-none"}, side_by_side=True, exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", clipboard=False, side_by_side=True, dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -187,7 +184,7 @@ if __name__ == "__main__":
 -----
 
 
-### Do not execute the code
+### Do not dangerously_use_execute the code
 
 Here is how to display the code only
 
@@ -196,7 +193,7 @@ Here is how to display the code only
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", exec=False)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", dangerously_use_exec=False)
 
 if __name__ == "__main__":
     app.run_server()
@@ -214,7 +211,7 @@ This is ideal for a report or presentation where you do not want to show the cod
 from dash import Dash
 from dash_labs import MarkdownAIO
 
-app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code_markdown_props={"className": "d-none"}, exec=True)
+app.layout = MarkdownAIO("pages/MarkdownAIO/sample.md", code=False, dangerously_use_exec=True)
 
 if __name__ == "__main__":
     app.run_server()
@@ -231,14 +228,15 @@ files that are displayed using `MarkdownAIO`
 If your Markdown file has multiple code blocks, and you would like to have different options
 for each one, you can include your file like above, or simply like this:
 
-```python exec-false
+```python  dangerously_use_exec=False   
+
 from dash_labs import MarkdownAIO
-MarkdownAIO("pages/MarkdownAIO/sample.md", exec=False)
+MarkdownAIO("pages/MarkdownAIO/sample.md", dangerously_use_exec=False)
 
 
 ```
 
 If the file you are including has all the same defaults, you can also include it like this:
 
-{ % include "MarkdownAIO/sample.md" %}
+{ % include "pages/MarkdownAIO/sample.md" %}
 

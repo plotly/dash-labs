@@ -127,7 +127,7 @@ As you saw in the above example, This `page_registry` is populated from calling 
 `dash.register_page` will accept various arguments to customize aspects about the page.  See the Advanced Features section below.
    
 
-```python # exec-true
+```python dangerously_use_exec=True
 html.Img(src="https://user-images.githubusercontent.com/72614349/140232399-efe7020d-480a-40af-a0b0-40e66dcd9d56.gif", className="img-fluid")
 
 ```
@@ -141,7 +141,7 @@ These features are all optional. If you don't supply values here, the framework 
 **Custom Meta Tags & Titles**
 
 The page's title defines what you see in your browser tab and what would appear as the website's title in search results. By default, it is derived from the filename but it can also be set with `title=`
-```
+```python dangerously_use_exec=False
 dash.register_page(__name__, title='Custom page title')
 ```
 
@@ -271,7 +271,7 @@ def layout(velocity=0, **other_unknown_query_strings):
 
 ```
 
-```python # exec-true
+```python  dangerously_use_exec=True
 html.Img(src="https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png", className="img-fluid")
 
 ```
@@ -299,7 +299,7 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
 
 ```
 
-```python # exec-true
+```python dangerously_use_exec=True
 html.Img(src="https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png", className="img-fluid")
 
 ```
