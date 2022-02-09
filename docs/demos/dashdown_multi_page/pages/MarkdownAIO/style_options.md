@@ -5,12 +5,68 @@ register_page:
     description: "Dash Labs documentation"
 
 MarkdownAIO:
-    dangerously_use_exec: True  
+    dangerously_use_exec: False
 ---
+
+
+
+
 
 ## Style options 
 
-### Code Syntax highlighting
+There is a basic stylesheet you can use with MarkdownAIO. Here is how to include it as an external stylesheet:
+
+```python
+
+app = dash.Dash(__name__, external_stylesheets=[dl.css.markdownaio])
+```
+
+You can also include it in the `assets` folder by copying the content of the link to your own `.css` file in your
+app's `assets` folder.  You can find the link like this:
+
+print(dl.css.markdownaio)
+
+It defines several class names that you can use to customize the style
+
+
+
+
+You can customize each instance of `MarkdownAIO`
+
+```python
+
+
+app.layout = html.Div(
+    [
+    
+        html.Div(MarkdownAIO("page1.md"), className="maio-dark"),
+        html.Div(MarkdownAIO("page2.md"), className="maio")
+    ], 
+)
+
+```
+
+Or change for each element, either the code block, Markdown text, app container.  Here are example of
+the classes defined within the `dl.css.markdownaio` stylesheet
+
+### Code Syntax Highlighting by code block
+
+This example uses `code_markdown_props={"className": "maio"}`
+
+```python  
+{% include "pages/MarkdownAIO/sample.py" %}
+```
+
+This example uses `code_markdown_props={"className": "maio-dark"}, clipboard_props={"className": "maio-dark-clipboard"}'
+
+```python  code_markdown_props={"className": "maio-dark"}, clipboard_props={"className": "maio-dark-clipboard"}
+{% include "pages/MarkdownAIO/sample.py" %}
+```
+
+
+### How to change the code syntax highlighting
+
+The `MarkdownAIO` stylesheet defines a light and a dark theme, however you can change to other themes as well.
 
 The code highlighting is handled by highlight.js. By default, only certain languages are recognized, and there is only
 one color scheme available. However, you can override this by adding custom styles as an external stylesheet or to a
@@ -22,9 +78,9 @@ one color scheme available. However, you can override this by adding custom styl
 
 3) Add url to `external_stylesheets` and/or add it to a .css file in the  `assets/` folder.  
 
-This app you are viewing uses a light theme like this:
+Here is an example of using this link as an external stylesheet:
 
-```python dangerously_use_exec=False
+```python
 # syntax highlighting
 hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
 
@@ -37,16 +93,3 @@ app = Dash(
 
 ```
 
-To change the theme, update the URL. Here is the URL for one of the dark themes:
-
-```python dangerously_use_exec=False
-hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/github-dark-dimmed.min.css"
-
-```
-
-Here is a sample code block with this dark theme:
-
-![image](https://user-images.githubusercontent.com/72614349/150701421-44b1da68-8529-4185-8360-0c9fe895e698.png)
-
-
-### More style examples coming soon

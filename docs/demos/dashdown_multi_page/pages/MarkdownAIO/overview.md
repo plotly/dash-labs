@@ -200,6 +200,12 @@ on the Dash community forum.
 - `MarkdownAIO` contains no pattern-matching callbacks. So it ***does not*** slow down your app if you have 100+ components
 per the limitation described in the [AIO documentation.](https://dash.plotly.com/all-in-one-components#all-in-one-component-limitations).
 
+### Tips
+
+Every `id` in the entire app must be unique.  Even though the example apps can look like stand-alone apps,
+under the covers, `MarkdownAIO` creates a multi-page app.  It's a Dash requirement
+that all id's in a multi-page are unique.
+
 ### Next 
 
 See the reference section and the other examples for more information about all the available options.

@@ -1,9 +1,5 @@
 """
  todo
-    - css:
-       - create a MarkdownAIO stylesheet?
-       - eliminated dbc dependency  (replace Rows and Cols with inline css)
-       - document the default style in subcomponents and that user-supplied style will overwrite. Or better yet - use a stylesheet.
     - see todos in pages.py in _register_page_from_markdown_file()
     - add ability to change defaults "globally" so it doesn't have to be done for every instance.
     - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
@@ -24,7 +20,6 @@ import frontmatter
 from jinja2 import Environment, FileSystemLoader
 import plotly.express as px
 import plotly
-import dash_bootstrap_components as dbc
 import warnings
 from .util import _parse_codefence
 
@@ -165,7 +160,6 @@ class MarkdownAIO(html.Div):
                 dash_table=dash_table,
                 px=px,
                 plotly=plotly,
-                dbc=dbc,
                 **(scope or {}),
             )
         elif not scope:
@@ -175,6 +169,8 @@ class MarkdownAIO(html.Div):
         template = Environment(loader=FileSystemLoader(path)).from_string(md_string)
         md_string = template.render(**(template_variables or {}))
 
+        # splits the .md file into text blocks and code blocks
+        # todo this breaks when ``` are in comments
         split_md_string = re.split(r"(```[\s\S]*?\n```)", md_string,)
 
         # These subcomponent props may not be user-supplied.  Callbacks are not allowed to update the underlying
@@ -186,27 +182,22 @@ class MarkdownAIO(html.Div):
             "text_markdown_props": ["id", "children"],
         }
 
-        # Merge user-supplied properties into default properties
+        # Merge user-supplied properties into default properties -
         code_markdown_props = copy.deepcopy(code_markdown_props)
-        if "style" not in code_markdown_props:
-            code_markdown_props["style"] = {"maxHeight": 700, "overflow": "auto"}
+        if "className" not in code_markdown_props:
+            code_markdown_props["className"] = "maio-code"
 
         clipboard_props = copy.deepcopy(clipboard_props)
-        if "style" not in clipboard_props:
-            clipboard_props["style"] = {
-                "right": 0,
-                "position": "absolute",
-                "top": 0,
-                "backgroundColor": "#f6f6f6",
-                "color": "#2f3337",
-                "padding": "4px",
-            }
+        if "className" not in clipboard_props:
+            clipboard_props["className"] = "maio-clipboard"
+
         app_div_props = copy.deepcopy(app_div_props)
-        if "style" not in app_div_props:
-            app_div_props["style"] = {
-                "padding": 10,
-                "border": "1px solid rgba(100, 100, 100, 0.4)",
-            }
+        if "className" not in app_div_props:
+            app_div_props["className"] = "maio-app"
+
+        text_markdown_props = copy.deepcopy(text_markdown_props)
+        if "className" not in text_markdown_props:
+            text_markdown_props = {"className": "maio-text"}
 
         # These props may be updated in each code block
         props = {
@@ -286,22 +277,25 @@ class MarkdownAIO(html.Div):
                         print(msg1 + msg2)
                         pass
 
-                # side by side on large screens
-                lg = 6 if updated_props["side_by_side"] else 12
                 if updated_props["code_first"]:
                     code_display = [
-                        dbc.Col(code_card, width=12, lg=lg),
-                        dbc.Col(app_card, width=12, lg=lg),
+                        html.Div(code_card),
+                        html.Div(app_card),
                     ]
                 else:
                     code_display = [
-                        dbc.Col(app_card, width=12, lg=lg),
-                        dbc.Col(code_card, width=12, lg=lg),
+                        html.Div(app_card),
+                        html.Div(code_card),
                     ]
-                reconstructed.append(dbc.Row(code_display))
+                # side-by-side on large screens only
+                class_name = (
+                    "maio-grid-container" if updated_props["side_by_side"] else None
+                )
+                reconstructed.append(html.Div(code_display, className=class_name))
             else:
+                print(text_markdown_props)
                 reconstructed.append(
-                    dbc.Row(dbc.Col(dcc.Markdown(section, **text_markdown_props)))
+                    html.Div(dcc.Markdown(section, **text_markdown_props))
                 )
         super().__init__(reconstructed)
 
@@ -349,31 +343,6 @@ def _run_code(code, scope=None, div_props=None):
         )
 
 
-def _parse_props(component_props, section):
-    """
-    returns the component property dict specified within a code block.
-
-    For example if this was on the first line of the code block:
-       `app-div-props-{"style": {"maxHeight": "800px"}}`
-    it would return the dict:
-        `{"style": {"maxHeight": "800px"}}`
-    """
-    p = component_props + "-"
-    section_split = section.split(p, 1)[-1]
-
-    # check for matching { {} } to find nested dicts
-    matched_paren = 0
-    parsed_dict = []
-    for i in section_split:
-        parsed_dict.append(i)
-        if i == "{":
-            matched_paren += 1
-        if i == "}":
-            matched_paren -= 1
-        if matched_paren == 0:
-            return ast.literal_eval("".join(parsed_dict))
-
-
 def _update_props(
     props_dict, prohibited_props, section, code_block=None, filename=None
 ):
@@ -408,7 +377,7 @@ def _update_props(
 
 def _get_first_lines(code, code_block_number, file, lines=8):
     """
-    Returns an error message and the first few lines of the code block with the error
+    Returns an error message and the first few lines of the code block
     """
     split = code.splitlines()[:lines]
     first_lines_of_code = "\n".join(split)

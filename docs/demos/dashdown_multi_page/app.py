@@ -5,13 +5,13 @@ import dash_labs as dl
 
 
 # syntax highlighting
-light_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
-dark_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-dark.min.css"
+# light_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
+# dark_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-dark.min.css"
 
 app = Dash(
     __name__,
     plugins=[dl.plugins.pages],
-    external_stylesheets=[dbc.themes.SPACELAB, light_hljs],
+    external_stylesheets=[dbc.themes.SPACELAB],
     suppress_callback_exceptions=True,
 )
 
@@ -65,6 +65,7 @@ app.layout = dbc.Container(
         ),
     ],
     fluid=True,
+    className="dark",
 )
 
 

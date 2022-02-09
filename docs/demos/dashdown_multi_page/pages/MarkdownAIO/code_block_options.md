@@ -184,7 +184,7 @@ if __name__ == "__main__":
 -----
 
 
-### Do not dangerously_use_execute the code
+### Do not execute the code
 
 Here is how to display the code only
 
