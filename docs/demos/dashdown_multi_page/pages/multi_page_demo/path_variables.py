@@ -3,11 +3,11 @@ from dash import html, dcc
 
 
 def title(asset_id=None, dept_id=None):
-    return f"Asset analysis for {asset_id} in {dept_id}"
+    return f"Asset Analysis: {asset_id} {dept_id}"
 
 
 def description(asset_id=None, dept_id=None):
-    return f"This is the Acme Company Asset analysis for {asset_id} in {dept_id}"
+    return f"This is the Acme Company Asset Analysis: {asset_id} in {dept_id}"
 
 
 dash.register_page(
@@ -28,17 +28,17 @@ Use the  `path_template` parameter in  `dash.register_page` to define which segm
   The layout function then receives the `<variable_name>` as a keyword argument.
 
 
-This page is  `path_variables.py` in the `pages/multi_page_demo` folder.  It's registered like this:
+The page you are viewing is   `path_variables.py` in the `pages/multi_page_demo` folder.  It's registered like this:
 
 ```python
 
 
 def title(asset_id=None, dept_id=None):
-    return f"Asset analysis for {asset_id} in {dept_id}"
+    return f"Asset Analysis: {asset_id}  {dept_id}"
 
 
 def description(asset_id=None, dept_id=None):
-    return f"This is the Acme Company Asset analysis for {asset_id} in {dept_id}"
+    return f"This is the Acme Company Asset Analysis: {asset_id} in {dept_id}"
 
 
 dash.register_page(
@@ -51,16 +51,12 @@ dash.register_page(
 
 ```
 
-In the previous examples, the title and the description were strings.  Here they are functions.  This allows you to customize
-the title and description based on the path. 
+Note that the title and the description are functions.  This allows you to customize the title and description based on the path. 
 
-Note that in this example the path is /assets/inventory/department/branch-1001 and the title is "Asset analysis for inventory in branch-001.
-
-Now change inventory to something else, and change the branch  number.  See how the title is updated.  If you share a link to this
-page it will have a customized title and description for this page.
+In the URL, change inventory or branch to something else and notice the new title.  If you share a link to this
+page it will have a customized title and description for this page.  Give it a try!
 
 To pass the variables to the layout, make the layout a function:
-
 ```
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
