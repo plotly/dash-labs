@@ -141,7 +141,7 @@ For example, let's start with this dataset:
 ```python 
 df = px.data.iris()
 fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
-layout = dcc.Graph(figure=fig)
+dcc.Graph(figure=fig)
 
 ```
 
@@ -149,9 +149,8 @@ Now using the same dataset from the previous codeblock, we can show a different 
 
 ```python
 
-
 fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species", marginal_y="violin",
            marginal_x="box", trendline="ols", template="simple_white")
-app.layout=dcc.Graph(figure=fig)
+dcc.Graph(figure=fig)
 
 ```

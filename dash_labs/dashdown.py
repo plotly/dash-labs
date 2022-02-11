@@ -1,13 +1,3 @@
-"""
- todo
-    - see todos in pages.py in _register_page_from_markdown_file()
-    - add ability to change defaults "globally" so it doesn't have to be done for every instance.
-    - Add markdown files to hot reload in dash.  That way users can have the same hot-reloading dev experience when working in markdown
-    - Need to remove if __name__ == "__main__": ...   from the code blocks?
-    - how to have import statements in front matter? (for adding to scope)
-    - update docstring to describe how front matter works for both MarkdownAIO and pages.py
-
-"""
 
 from dash import dcc, html, dash_table, Input, Output, State, callback
 import re
@@ -170,7 +160,7 @@ class MarkdownAIO(html.Div):
         md_string = template.render(**(template_variables or {}))
 
         # splits the .md file into text blocks and code blocks
-        # todo this breaks when ``` are in comments
+        # todo this splits incorrectly when  ``` are in comments.
         split_md_string = re.split(r"(```[\s\S]*?\n```)", md_string,)
 
         # These subcomponent props may not be user-supplied.  Callbacks are not allowed to update the underlying

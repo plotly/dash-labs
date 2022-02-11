@@ -309,7 +309,7 @@ def _import_layouts_from_pages(app):
 
 def _register_page_from_markdown_file(filename, app):
     """
-    Extracts and runs dash.register_page() from the "front matter" of a markdown file in the pages folder.
+    Extracts  props from the "front matter" of a markdown file in the pages folder.
     Front matter is yaml defined with three dashes:
     ---
     register_page:
@@ -335,7 +335,6 @@ def _register_page_from_markdown_file(filename, app):
     if "layout" not in pages_props:
 
         markdownaio_props = md_page.get("MarkdownAIO", {})
-        # todo- how to accept other functions here - for use by other projects like dmc?
         pages_props["layout"] = MarkdownAIO(filename, **markdownaio_props)
 
     dash.register_page(**pages_props)
