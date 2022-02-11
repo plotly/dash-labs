@@ -134,25 +134,6 @@ html.Img(src="https://user-images.githubusercontent.com/72614349/140232399-efe70
 
 ***
 
-# Advanced Features
-
-These features are all optional. If you don't supply values here, the framework will take a best guess and supply them for you.
-
-**Custom Meta Tags & Titles**
-
-The page's title defines what you see in your browser tab and what would appear as the website's title in search results. By default, it is derived from the filename but it can also be set with `title=`
-```python dangerously_use_exec=False
-dash.register_page(__name__, title='Custom page title')
-```
-
-Similarly, the meta description can be set with `description=` and the meta image can be set with `image=`. Both of these tags are used as the preview when sharing a URL in a social media platforms. They're also used in search engine results.
-
-By default, Dash will look through your `assets/` folder for an image that matches the page's filename or else an image called `app.<image_extension>` (e.g. `app.png` or `app.jpeg`) or `logo.<image_extension>` (all image extensions are supported).
-
-This image URL can also be set directly with `app.register_page(image=...)` e.g. 
-```python
-app.register_page(__name__, image='/assets/page-preview.png')
-```
 
 **`dash.page_registry`**
 
@@ -203,12 +184,28 @@ OrderedDict values can be accessed just like regular dictionaries:
 'Historical analysis'
 ```
 
+# Advanced Features
+
+These features are all optional. If you don't supply values here, the framework will take a best guess and supply them for you.
+
+**Custom Meta Tags & Titles**
+
+The page's title defines what you see in your browser tab and what would appear as the website's title in search results. 
+By default, it is derived from the filename but it can also be set with `title=`
+
+Similarly, the meta description can be set with `description=` and the meta image can be set with `image=`. 
+Both of these tags are used as the preview when sharing a URL in a social media platforms. They're also used in search engine results.
+
+See more information in the Meta tags pages
+
+**Order** 
 The order of the items in `page_registry` is based off of the optional `order=` parameter: 
 ```python
 dash.register_page(__name__, order=10)
 ```
 
-If it's not supplied, then the order is alphanumeric based off of the filename. This order is important when rendering the page menu's dynamically in a loop. The page with the path `/` has `order=0` by default.
+If it's not supplied, then the order is alphanumeric based off of the filename. This order is important when rendering
+the page menu's dynamically in a loop. The page with the path `/` has `order=0` by default.
 
 
 **Redirects**
@@ -257,52 +254,15 @@ However, we recommend splitting out the page layouts into their own files in `pa
 
 **Query Strings**
 
-It's possible to pass query strings from the url to a layout function.
-For example:
-```python
-import dash
+It's possible to pass query strings from the url to a layout function.  See an example in the Query strings demo
+ 
 
-dash.register_page(__name__, path='/dashboard')
-
-def layout(velocity=0, **other_unknown_query_strings):
-    return dash.html.Div([
-        dash.dcc.Input(id='velocity', value=velocity)
-    ])
-
-```
-
-```python  dangerously_use_exec=True
-html.Img(src="https://user-images.githubusercontent.com/72614349/146809878-3592c173-9764-4653-89aa-21094288ca0a.png", className="img-fluid")
-
-```
 **Path Variable**
 
 Another way to pass variables to the layout is to use the `path_template` parameter in  `dash.register_page`.  You can
 define which segments of the path are variables by marking them like this: `<variable_name>`. The layout function then receives the `<variable_name>` as a keyword argument.
 
-
-For example, if `path_template= "/asset/<asset_id>"`, and the url is `"/assets/a100"`, then the layout
-will receive `**{"asset_id":"a100"}`.  Here is an example with two variables in the path:
-
-
-```python
-import dash
-
-dash.register_page(
-    __name__,
-    path_template="/asset/<asset_id>/department/<dept_id>",
-)
-
-
-def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
-    return dash.html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
-
-```
-
-```python dangerously_use_exec=True
-html.Img(src="https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png", className="img-fluid")
-
-```
+See an example in the Path Variable demo
 ***
 
 **Long Callbacks**

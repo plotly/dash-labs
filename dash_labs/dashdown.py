@@ -282,7 +282,6 @@ class MarkdownAIO(html.Div):
                 )
                 reconstructed.append(html.Div(code_display, className=class_name))
             else:
-                print(text_markdown_props)
                 reconstructed.append(
                     html.Div(dcc.Markdown(section, **text_markdown_props))
                 )

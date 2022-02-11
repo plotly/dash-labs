@@ -5,13 +5,13 @@ import dash_labs as dl
 
 
 # syntax highlighting
-# light_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
+light_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-light.min.css"
 # dark_hljs = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/stackoverflow-dark.min.css"
 
 app = Dash(
     __name__,
     plugins=[dl.plugins.pages],
-    external_stylesheets=[dbc.themes.SPACELAB],
+    external_stylesheets=[dbc.themes.SPACELAB, light_hljs],
     suppress_callback_exceptions=True,
 )
 
@@ -33,7 +33,20 @@ sidebar = dbc.Card(
                     active="partial",
                 )
                 for page in dash.page_registry.values()
-                if page["module"].startswith("pages.multi_page")
+                if page["module"].startswith("pages.multi_page_apps")
+            ],
+            vertical=True,
+        ),
+        html.H6("Multi Page App Demo", className="mt-2"),
+        dbc.Nav(
+            [
+                dbc.NavLink(
+                    [html.Div(page["name"], className="ms-2"),],
+                    href=page["path"],
+                    active="partial",
+                )
+                for page in dash.page_registry.values()
+                if page["module"].startswith("pages.multi_page_demo")
             ],
             vertical=True,
         ),
@@ -65,7 +78,7 @@ app.layout = dbc.Container(
         ),
     ],
     fluid=True,
-    className="dark",
+    className="hlj",
 )
 
 
