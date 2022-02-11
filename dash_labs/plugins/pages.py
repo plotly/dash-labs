@@ -84,12 +84,12 @@ def register_page(
        order `0`
 
     - `title`:
-       The name of the page <title>. That is, what appears in the browser title.
+       (string or function) The name of the page <title>. That is, what appears in the browser title.
        If not supplied, will use the supplied `name` or will be inferred by module,
        e.g. `pages.weekly_analytics` to `Weekly analytics`
 
     - `description`:
-       The <meta type="description"></meta>.
+       (string or function) The <meta type="description"></meta>.
        If not supplied, then nothing is supplied.
 
     - `image`:
@@ -381,15 +381,13 @@ def plug(app):
             if page == {}:
                 if "pages.not_found_404" in dash.page_registry:
                     layout = dash.page_registry["pages.not_found_404"]["layout"]
-                    title = {
-                        "title": dash.page_registry["pages.not_found_404"]["title"]
-                    }
+                    title = dash.page_registry["pages.not_found_404"]["title"]
                 else:
                     layout = html.H1("404")
-                    title = {"title": app.title}
+                    title = app.title
             else:
                 layout = page["layout"]
-                title = {"title": page["title"]}
+                title = page["title"]
 
             if callable(layout):
                 layout = (
@@ -397,8 +395,10 @@ def plug(app):
                     if path_variables
                     else layout(**query_parameters)
                 )
+            if callable(title):
+                title = title(**path_variables) if path_variables else title()
 
-            return layout, title
+            return layout, {"title": title}
 
         # check for duplicate pathnames
         path_to_module = {}
@@ -437,10 +437,22 @@ def plug(app):
             # The flask.request.path doesn't include the pathname prefix
             # when inside DE Workspaces or deployed environments,
             # so we don't need to call `app.strip_relative_path` on it.
-            start_page, _ = _path_to_page(app, flask.request.path.strip("/"))
+            start_page, path_variables = _path_to_page(
+                app, flask.request.path.strip("/")
+            )
             image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
+
+            title = start_page.get("title", app.title)
+            if callable(title):
+                title = title(**path_variables) if path_variables else title()
+
+            description = start_page.get("description", "")
+            if callable(description):
+                description = (
+                    description(**path_variables) if path_variables else description()
+                )
 
             return dedent(
                 """
@@ -477,8 +489,8 @@ def plug(app):
                 """
             ).format(
                 metas=kwargs["metas"],
-                description=start_page.get("description", ""),
-                title=start_page.get("title", app.title),
+                description=description,
+                title=title,
                 image=image,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],

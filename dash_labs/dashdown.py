@@ -1,4 +1,3 @@
-
 from dash import dcc, html, dash_table, Input, Output, State, callback
 import re
 import ast
