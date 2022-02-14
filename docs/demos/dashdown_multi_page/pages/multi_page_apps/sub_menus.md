@@ -1,6 +1,6 @@
 ---
 register_page:
-    name: "Sub Menus"
+    name: "App with Sub Menus"
     order: 4
     title: "Pages Sub Menus example"
     description=: Dash Labs documentation"

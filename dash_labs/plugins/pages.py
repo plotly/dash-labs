@@ -167,7 +167,7 @@ def register_page(
         supplied_title=title, title=(title if title is not None else page["name"]),
     )
     page.update(
-        description=description,
+        description=description if description else "" ,
         order=order,
         supplied_order=order,
         supplied_layout=layout,

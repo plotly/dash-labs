@@ -4,7 +4,7 @@ from dash import html, dcc
 dash.register_page(
     __name__,
     title="Forward Outlook",
-    description="This is the forward outlook for the Acme Company",
+    description="This is the forward outlook for the BirdBrands Company",
     path="/forward-outlook",
     image="birds.jpeg",
 )
@@ -22,7 +22,7 @@ dash.register_page(
     __name__,
     path="/forward-outlook",
     title="Forward Outlook",
-    description="This is the forward outlook for the Acme Company",    
+    description="This is the forward outlook for the BirdBrands Company",    
     image="birds.jpeg",
 )
 ```

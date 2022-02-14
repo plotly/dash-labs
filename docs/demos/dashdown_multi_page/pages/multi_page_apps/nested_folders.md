@@ -1,6 +1,6 @@
 ---
 register_page:
-    name: "Nested Folders"
+    name: "App with Nested Folders"
     order: 2
     title: "Pages Nested Folders Example"
     description: "Dash Labs documentation"

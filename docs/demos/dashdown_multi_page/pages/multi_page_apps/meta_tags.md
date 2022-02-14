@@ -1,6 +1,6 @@
 ---
 register_page:
-    name: "Meta Tags"
+    name: "Defining Meta Tags"
     order: 3
     title: "Pages Meta Tags"
     description: "Dash Labs documentation"
@@ -10,14 +10,14 @@ register_page:
 # Multi-Page Dash App Examples
 
 
-### Example: Social Media Meta Tags
+### Example: Social Media Meta Tags, Title, Description and Images
   
 One of the nice features of this API is that it automatically creates the meta 
 tags used by social media sites like Facebook, Twitter, LinkedIn, and Slack.  These sites use the app title, description and image to create
 the card that is displayed when you share a link to your site. They are also used in search engine results.
 
 Find more information on [social media meta tags at Mozilla.org](https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML)
-You may also find [this article](https://css-tricks.com/essential-meta-tags-social-media/) helpful.
+You may also find this [Essential Meta Tags for Social Media article](https://css-tricks.com/essential-meta-tags-social-media/) helpful.
 
 The example below goes into detail about how to add an image to a page in dash.page_registry and what
 the meta tags look like.

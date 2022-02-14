@@ -1,5 +1,6 @@
 import dash
 from dash import html, dcc
+from textwrap import dedent
 
 
 def title(asset_id=None, dept_id=None):
@@ -18,11 +19,11 @@ dash.register_page(
     path="/asset/inventory/department/branch-1001",
 )
 
+
 text = dcc.Markdown(
     """
 
-Give it a try!  Change the branch number or inventory in the path in the browser.
-
+### Defining the variable in the path
 
 Use the  `path_template` parameter in  `dash.register_page` to define which segments of the path are variables by marking them like this: `<variable_name>`. 
   The layout function then receives the `<variable_name>` as a keyword argument.
@@ -51,6 +52,8 @@ dash.register_page(
 
 ```
 
+### Title and Description updated automatically
+
 Note that the title and the description are functions.  This allows you to customize the title and description based on the path. 
 
 In the URL, change inventory or branch to something else and notice the new title.  If you share a link to this
@@ -72,13 +75,21 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
 
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
+    text2 = dedent(
+    """
+    ## Path Variables
+
+    #### These variables are passed to the layout from URL pathname:
+    - `asset_id`:   {asset_id}
+    - `dept_id`:  {dept_id}
+
+    Give it a try!  Change the branch number or inventory in the URL and see them updated here.
+
+    """).format(asset_id=asset_id, dept_id=dept_id )
+
     return html.Div(
         [
-            html.H2("Path Variables"),
-            html.Br(),
-            html.H4("These variables are passed to the layout from pathname:"),
-            html.H4(f" asset_id:   {asset_id}"),
-            html.H4(f" dept_id:  {dept_id}"),
+            dcc.Markdown(text2),
             text,
         ]
     )
