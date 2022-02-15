@@ -24,7 +24,7 @@ If you have `not_found_404.py` in the root of the `pages` folder, then it will a
 Try entering some random path in the URL - you'll see this page.
 
 
-Next: [Path Variables]()  Previous [Meta Tags]()
+Next: [Path Variables](https://dashlabs.pythonanywhere.com/asset/inventory/department/branch-1001)  Previous [Meta Tags](https://dashlabs.pythonanywhere.com/forward-outlook)
 """
 )
 

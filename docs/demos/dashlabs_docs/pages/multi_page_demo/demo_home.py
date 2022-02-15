@@ -54,11 +54,13 @@ Since nothing is specified, everything in `dash.page_registry` is inferred autom
 - `layout`: The layout function or component for this page. If not supplied, then looks for layout from within the supplied module.
 In this example, the layout is defined in the `demo_home.py` file.
 
-Here's how a link to this page shared on social media looks.  
+The meta tags are automatically created from the title, description and image.  This is how it looks if you share a link to this page on social media:  
 
 
+![image](https://user-images.githubusercontent.com/72614349/154105667-7cccba04-d245-4744-a6d4-d64a462d86dc.png)
 
-Next: [meta_tags]() 
+
+Next: [meta_tags](https://dashlabs.pythonanywhere.com/forward-outlook) 
  
 """
 )

@@ -23,7 +23,7 @@ dash.register_page(
 
 Try changing the URL to  /old-home-page  or /v2 and see this page displayed.
 
-Previous [Query Strings]()
+Previous [Query Strings](https://dashlabs.pythonanywhere.com/multi-page-demo/query-string)
 """
 )
 

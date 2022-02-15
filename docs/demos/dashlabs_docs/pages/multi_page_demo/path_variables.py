@@ -59,6 +59,9 @@ Note that the title and the description are functions.  This allows you to custo
 In the URL, change inventory or branch to something else and notice the new title.  If you share a link to this
 page it will have a customized title and description for this page.  Give it a try!
 
+
+![image](https://user-images.githubusercontent.com/72614349/154105507-e0fafa2e-11ab-43ac-a4a3-570bf867361a.png)
+
 Note that the layout is also a function.  This is necessary in order to receive the variables passed to the layout.
 ```
 
@@ -68,7 +71,7 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
            )
     
 ```
-Next: [Query Strings]()  Previous [Not Found 404]()
+Next: [Query Strings](https://dashlabs.pythonanywhere.com/multi-page-demo/query-string)  Previous [Not Found 404](https://dashlabs.pythonanywhere.com/multi-page-demo/not-found-404)
 
 """
 )
