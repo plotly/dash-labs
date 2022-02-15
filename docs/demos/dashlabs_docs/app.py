@@ -78,7 +78,6 @@ app.layout = dbc.Container(
         ),
     ],
     fluid=True,
-    className="hlj",
 )
 
 

@@ -35,6 +35,7 @@ is entered into an input field. Any other variable from the query string will be
 
 Give it a try!  Add ?velocity=20  or ?day=Sun to the path in the browser.
 
+Next: [Redirects]()  Previous [Path Variables]()
 """
 )
 

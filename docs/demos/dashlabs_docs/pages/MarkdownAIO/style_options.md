@@ -49,19 +49,14 @@ app.layout = html.Div(
 Or change for each element, either the code block, Markdown text, app container.  Here are example of
 the classes defined within the `dl.css.markdownaio` stylesheet
 
-### Code Syntax Highlighting by code block
+### Code Syntax Highlighting 
 
+
+
+Here is a sample code block with this dark theme:
+
+![image](https://user-images.githubusercontent.com/72614349/150701421-44b1da68-8529-4185-8360-0c9fe895e698.png)
 This example uses `code_markdown_props={"className": "maio"}`
-
-```python  
-{% include "pages/MarkdownAIO/sample.py" %}
-```
-
-This example uses `code_markdown_props={"className": "maio-dark"}, clipboard_props={"className": "maio-dark-clipboard"}'
-
-```python  code_markdown_props={"className": "maio-dark"}, clipboard_props={"className": "maio-dark-clipboard"}
-{% include "pages/MarkdownAIO/sample.py" %}
-```
 
 
 ### How to change the code syntax highlighting
@@ -92,4 +87,3 @@ app = Dash(
 )
 
 ```
-

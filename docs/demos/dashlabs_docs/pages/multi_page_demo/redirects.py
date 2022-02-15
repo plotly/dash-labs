@@ -21,8 +21,9 @@ dash.register_page(
 
 ```
 
-Give it a try!  Change the path in the browser to  /old-home-page  or /v2 and see this page displayed.
+Try changing the URL to  /old-home-page  or /v2 and see this page displayed.
 
+Previous [Query Strings]()
 """
 )
 

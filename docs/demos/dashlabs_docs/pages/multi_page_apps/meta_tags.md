@@ -1,6 +1,6 @@
 ---
 register_page:
-    name: "Defining Meta Tags"
+    name: "Customizing Meta Tags"
     order: 3
     title: "Pages Meta Tags"
     description: "Dash Labs documentation"

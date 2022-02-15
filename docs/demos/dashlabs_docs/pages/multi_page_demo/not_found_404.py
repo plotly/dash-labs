@@ -18,9 +18,13 @@ dash.register_page(__name__)
 
 ```
 
-If you have `not_found_404.py` in the root of the `pages` folder, then that page will be displayed instead of
- just "404" when a page cannot be found. Try entering some random path in the URL. You will see this page displayed.
+If you have `not_found_404.py` in the root of the `pages` folder, then it will automatically be displayed when
+ a page cannot be found. 
+ 
+Try entering some random path in the URL - you'll see this page.
 
+
+Next: [Path Variables]()  Previous [Meta Tags]()
 """
 )
 

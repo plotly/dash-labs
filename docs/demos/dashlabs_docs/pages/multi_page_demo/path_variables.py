@@ -8,7 +8,7 @@ def title(asset_id=None, dept_id=None):
 
 
 def description(asset_id=None, dept_id=None):
-    return f"This is the Acme Company Asset Analysis: {asset_id} in {dept_id}"
+    return f"This is the AVN Industries Asset Analysis: {asset_id} in {dept_id}"
 
 
 dash.register_page(
@@ -39,7 +39,7 @@ def title(asset_id=None, dept_id=None):
 
 
 def description(asset_id=None, dept_id=None):
-    return f"This is the Acme Company Asset Analysis: {asset_id} in {dept_id}"
+    return f"This is the AVN Industries Asset Analysis: {asset_id} in {dept_id}"
 
 
 dash.register_page(
@@ -59,7 +59,7 @@ Note that the title and the description are functions.  This allows you to custo
 In the URL, change inventory or branch to something else and notice the new title.  If you share a link to this
 page it will have a customized title and description for this page.  Give it a try!
 
-To pass the variables to the layout, make the layout a function:
+Note that the layout is also a function.  This is necessary in order to receive the variables passed to the layout.
 ```
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
@@ -68,7 +68,7 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
            )
     
 ```
-
+Next: [Query Strings]()  Previous [Not Found 404]()
 
 """
 )
@@ -79,7 +79,7 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
     """
     ## Path Variables
 
-    #### These variables are passed to the layout from URL pathname:
+    #### On this page, the following variables are passed from the URL pathname to the layout:
     - `asset_id`:   {asset_id}
     - `dept_id`:  {dept_id}
 
