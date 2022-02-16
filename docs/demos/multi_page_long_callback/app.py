@@ -22,7 +22,9 @@ navbar = html.Div(
     style={"backgroundColor": "whitesmoke", "padding": 10},
 )
 
-app.layout = html.Div([navbar, html.Hr(), dl.plugins.page_container],)
+app.layout = html.Div(
+    [navbar, html.Hr(), dl.plugins.page_container],
+)
 
 
 @app.long_callback(

@@ -3,6 +3,7 @@ register_page:
     order: 4
     title: "MarkdownAIO Scope"
     description: "Dash Labs documentation"
+    image: None
 
 MarkdownAIO:
     app_div_props: {"className": "mb-4 pb-4"}

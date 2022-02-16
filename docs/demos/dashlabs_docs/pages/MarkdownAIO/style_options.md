@@ -3,6 +3,7 @@ register_page:
     order: 2
     title: "MarkdownAIO Style Options"
     description: "Dash Labs documentation"
+    image: None
 
 MarkdownAIO:
     dangerously_use_exec: False

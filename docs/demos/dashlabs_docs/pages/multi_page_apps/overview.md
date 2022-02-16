@@ -25,6 +25,7 @@ This plugin will automatically:
 - Set the order of `dash.page_registry` based off `order`  and the filename
 - Set `<title>` and `<meta description>` and their social media equivalents accordingly in the `index_string` of the HTML that is served on page-load
 - Set the social media meta image accordingly based off of images available in assets
+- Set the [viewport meta tag](https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag) for a mobile-optimized site
 - Set a clientside callback to update the `<title>` as you navigate pages with `dcc.Link`
 - Make it possible to specify a list of URLs that will be redirected to the page.
 - Make it possible to add arbitrary page information to `dash.page_registry`

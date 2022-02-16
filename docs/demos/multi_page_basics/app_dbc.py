@@ -25,7 +25,12 @@ navbar = dbc.NavbarSimple(
 )
 
 app.layout = dbc.Container(
-    [navbar, dl.plugins.page_container,], className="dbc", fluid=True,
+    [
+        navbar,
+        dl.plugins.page_container,
+    ],
+    className="dbc",
+    fluid=True,
 )
 
 if __name__ == "__main__":

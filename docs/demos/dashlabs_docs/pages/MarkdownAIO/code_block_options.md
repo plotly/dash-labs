@@ -3,6 +3,7 @@ register_page:
     order: 2
     title: "MarkdownAIO Code Block Options"
     description: "Dash Labs documentation"
+    image: None
 
 MarkdownAIO:
     dangerously_use_exec: True

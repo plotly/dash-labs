@@ -4,6 +4,7 @@ register_page:
     title: "MarkdownAIO Reference"
     description: "Dash Labs documentation"
     order: 1
+    image: None
 ---
 
 

@@ -27,4 +27,10 @@ Previous [Query Strings](https://dashlabs.pythonanywhere.com/multi-page-demo/que
 """
 )
 
-layout = html.Div([text, html.H1("My New Home Page"), html.Br(),])
+layout = html.Div(
+    [
+        text,
+        html.H1("My New Home Page"),
+        html.Br(),
+    ]
+)

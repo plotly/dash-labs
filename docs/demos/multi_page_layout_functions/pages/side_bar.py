@@ -8,7 +8,9 @@ def sidebar():
         dbc.Nav(
             [
                 dbc.NavLink(
-                    [html.Div(page["name"], className="ms-2"),],
+                    [
+                        html.Div(page["name"], className="ms-2"),
+                    ],
                     href=page["path"],
                     active="exact",
                 )

@@ -4,6 +4,7 @@ register_page:
     title: "MarkdownAIO Overview"
     description: "Dash Labs documentation"
     order: 0
+    image: None
 
 MarkdownAIO:
     side_by_side: True

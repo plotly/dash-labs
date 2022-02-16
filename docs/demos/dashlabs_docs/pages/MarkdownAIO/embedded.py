@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 from dash_labs import MarkdownAIO
 import dash
 
-dash.register_page(__name__, name="Dashdown embeded in layout")
+dash.register_page(__name__, name="Dashdown embeded in layout", image=None)
 
 
 layout = dbc.Container(

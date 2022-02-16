@@ -79,7 +79,7 @@ Next: [Query Strings](https://dashlabs.pythonanywhere.com/multi-page-demo/query-
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
     text2 = dedent(
-    """
+        """
     ## Path Variables
 
     #### On this page, the following variables are passed from the URL pathname to the layout:
@@ -88,7 +88,8 @@ def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
 
     Give it a try!  Change the branch number or inventory in the URL and see them updated here.
 
-    """).format(asset_id=asset_id, dept_id=dept_id )
+    """
+    ).format(asset_id=asset_id, dept_id=dept_id)
 
     return html.Div(
         [

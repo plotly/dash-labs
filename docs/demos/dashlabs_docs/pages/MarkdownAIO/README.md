@@ -5,6 +5,7 @@ register_page:
     title: "MarkdownAIO example-Deploy a README.md"
     description: "Dash Labs documentation"
     order: 99
+    image: None
 
 MarkdownAIO:
     side_by_side: True
