@@ -5,6 +5,7 @@ import copy
 import textwrap
 import uuid
 import random
+import flask
 import frontmatter
 from jinja2 import Environment, FileSystemLoader
 import plotly.express as px
@@ -160,7 +161,10 @@ class MarkdownAIO(html.Div):
 
         # splits the .md file into text blocks and code blocks
         # todo this splits incorrectly when  ``` are in comments.
-        split_md_string = re.split(r"(```[\s\S]*?\n```)", md_string,)
+        split_md_string = re.split(
+            r"(```[\s\S]*?\n```)",
+            md_string,
+        )
 
         # These subcomponent props may not be user-supplied.  Callbacks are not allowed to update the underlying
         # components so the id is unnecessary.  `children` are read-only and are updated by MarkdownAIO
@@ -306,6 +310,18 @@ def _prohibited_props_check(props, prohibited_props, code_block=None, filename=N
                     )
 
 
+def _exec(*args, **kwargs):
+    """prevent exec from running in a callback"""
+
+    # only has context in a callback
+    if flask.has_request_context():
+        raise Exception(
+            "MarkdownAIO is being called with `exec_code=True` within a callback, layout function, or flask request. This isn't supported. MarkdownAIO with exec can only be called when the app is starting"
+        )
+
+    return exec(*args, **kwargs)
+
+
 def _run_code(code, scope=None, div_props=None):
     if scope is None:
         scope = {}
@@ -316,7 +332,7 @@ def _run_code(code, scope=None, div_props=None):
         # Remove the app instance in the code block otherwise app.callbacks don't work
         tree = ast.parse(code)
         new_tree = RemoveAppAssignment().visit(tree)
-        exec(compile(new_tree, filename="<ast>", mode="exec"), scope)
+        _exec(compile(new_tree, filename="<ast>", mode="exec"), scope)
 
         return html.Div(scope["layout"], **div_props)
 
@@ -325,7 +341,7 @@ def _run_code(code, scope=None, div_props=None):
         block = ast.parse(code, mode="exec")
         # assumes last node is an expression
         last = ast.Expression(block.body.pop().value)
-        exec(compile(block, "<string>", mode="exec"), scope)
+        _exec(compile(block, "<string>", mode="exec"), scope)
         return html.Div(
             eval(compile(last, "<string>", mode="eval"), scope), **div_props
         )
@@ -334,7 +350,7 @@ def _run_code(code, scope=None, div_props=None):
 def _update_props(
     props_dict, prohibited_props, section, code_block=None, filename=None
 ):
-    """ update props that are user-supplied  within a code block """
+    """update props that are user-supplied  within a code block"""
     props_dict = copy.deepcopy(props_dict)
 
     code_fence = section.splitlines()[0]
@@ -380,9 +396,9 @@ def _get_first_lines(code, code_block_number, file, lines=8):
 
 class RemoveAppAssignment(ast.NodeTransformer):
     """
-       Remove the app instance from a code block otherwise app.callback` doesn't work. If `app` is defined locally
-       within the code block, then it overrides the `app` passed in to the scope.
-   """
+    Remove the app instance from a code block otherwise app.callback` doesn't work. If `app` is defined locally
+    within the code block, then it overrides the `app` passed in to the scope.
+    """
 
     def visit_Assign(self, node):
         if hasattr(node, "targets") and "app" in [

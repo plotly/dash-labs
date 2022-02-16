@@ -6,7 +6,7 @@ dash.register_page(
     title="Forward Outlook",
     description="This is the forward outlook for ANV Industries",
     path="/forward-outlook",
-    image="birds.png",
+    image="/assets/birds.png",
 )
 
 
@@ -25,7 +25,7 @@ dash.register_page(
     path="/forward-outlook",
     title="Forward Outlook",
     description="This is the forward outlook for AVN Industries",    
-    image="birds.png",
+    image="/assets/birds.png",
 )
 ```
 Note that the title in the browser is now "Forward Outlook", and the URL  is /forward-outlook rather than just 

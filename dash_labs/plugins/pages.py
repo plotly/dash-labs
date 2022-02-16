@@ -164,10 +164,11 @@ def register_page(
         name=(name if name is not None else _filename_to_name(module)),
     )
     page.update(
-        supplied_title=title, title=(title if title is not None else page["name"]),
+        supplied_title=title,
+        title=(title if title is not None else page["name"]),
     )
     page.update(
-        description=description if description else "" ,
+        description=description if description else "",
         order=order,
         supplied_order=order,
         supplied_layout=layout,
@@ -217,6 +218,7 @@ def _infer_image(module):
     valid_extensions = ["apng", "avif", "gif", "jpeg", "png", "webp"]
     page_id = module.split(".")[-1]
     files_in_assets = []
+    # todo need to check for app.get_assets_url instead?
     if os.path.exists("assets"):
         files_in_assets = [f for f in listdir("assets") if isfile(join("assets", f))]
     app_file = None

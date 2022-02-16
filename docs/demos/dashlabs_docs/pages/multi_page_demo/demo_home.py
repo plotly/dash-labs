@@ -5,11 +5,6 @@ import dash
 dash.register_page(__name__)
 
 
-import pprint
-registry = {a:{c:d for c, d in b.items() if c != 'layout'} for a, b in dash.page_registry.items()}
-pprint.pprint(registry, compact=True)
-
-
 text = dcc.Markdown(
     """
 ## Welcome to a live demo of the `/pages` multi-page app API.  
@@ -34,14 +29,14 @@ Since nothing is specified, everything in `dash.page_registry` is inferred autom
 
 - `"module": "pages.multi_page_demo.home"`  The module path where this page's layout is defined. Often `__name__`.  `
 
-- `"path": "/multi-page-demo/home"`   See it in the URL
+- `"path": "/multi-page-demo/demo-home"`   See it in the URL
 
 - `"name": "Demo Home"` The name of the link. If not supplied, will be inferred from module. See it in the sidebar.
 
 - `"order": None` No order was supplied.  The links in the sidebar were created by looping through the `dash.page_registry`.
  This page is the first link because it's sorted alpha-numeric by filename.
 
-- `"title": "Demo Home"` The name of the page `<title>`.  See the title in the browser for this page. 
+- `"title": "Demo Home"` The name of the page `<title>`.  See the title in the browser tab for this page. 
 
 - `description: ""` The <meta type="description"></meta>. If not supplied, then nothing is supplied.
 
@@ -60,7 +55,10 @@ The meta tags are automatically created from the title, description and image.  
 ![image](https://user-images.githubusercontent.com/72614349/154105667-7cccba04-d245-4744-a6d4-d64a462d86dc.png)
 
 
-Next: [meta_tags](https://dashlabs.pythonanywhere.com/forward-outlook) 
+Next: [meta_tags](httpsMarkdownAIO(
+                                    "pages/MarkdownAIO/sample.md",
+                                    dangerously_use_exec=True,
+                                )://dashlabs.pythonanywhere.com/forward-outlook) 
  
 """
 )

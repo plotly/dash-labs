@@ -15,53 +15,67 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
-topbar = html.H2("Dash Labs Docs & Demo", className="p-4 bg-primary text-white ",)
+topbar = html.H2(
+    "Dash Labs Docs & Demo",
+    className="p-4 bg-primary text-white ",
+)
 
 sidebar = dbc.Card(
     [
         dbc.NavLink(
-            [html.Div("home", className="ms-2"),],
+            [
+                html.Div("home", className="ms-2"),
+            ],
             href=dash.page_registry["pages.home"]["path"],
-            active="partial",
+            active="exact",
         ),
         html.H6("Multi-Page Apps", className="mt-2"),
         dbc.Nav(
             [
                 dbc.NavLink(
-                    [html.Div(page["name"], className="ms-2"),],
+                    [
+                        html.Div(page["name"], className="ms-2"),
+                    ],
                     href=page["path"],
-                    active="partial",
+                    active="exact",
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.multi_page_apps")
             ],
             vertical=True,
+            pills=True,
         ),
         html.H6("Multi Page App Demo", className="mt-2"),
         dbc.Nav(
             [
                 dbc.NavLink(
-                    [html.Div(page["name"], className="ms-2"),],
+                    [
+                        html.Div(page["name"], className="ms-2"),
+                    ],
                     href=page["path"],
-                    active="partial",
+                    active="exact",
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.multi_page_demo")
             ],
             vertical=True,
+            pills=True,
         ),
         html.H6("MarkdownAIO - Feature Preview", className="mt-2"),
         dbc.Nav(
             [
                 dbc.NavLink(
-                    [html.Div(page["name"], className="ms-2"),],
+                    [
+                        html.Div(page["name"], className="ms-2"),
+                    ],
                     href=page["path"],
-                    active="partial",
+                    active="exact",
                 )
                 for page in dash.page_registry.values()
                 if page["module"].startswith("pages.MarkdownAIO")
             ],
             vertical=True,
+            pills=True,
         ),
     ],
     className="overflow-auto sticky-top",
