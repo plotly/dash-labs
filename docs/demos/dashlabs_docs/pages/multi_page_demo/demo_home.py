@@ -55,10 +55,7 @@ The meta tags are automatically created from the title, description and image.  
 ![image](https://user-images.githubusercontent.com/72614349/154105667-7cccba04-d245-4744-a6d4-d64a462d86dc.png)
 
 
-Next: [meta_tags](httpsMarkdownAIO(
-                                    "pages/MarkdownAIO/sample.md",
-                                    dangerously_use_exec=True,
-                                )://dashlabs.pythonanywhere.com/forward-outlook) 
+Next: [meta_tags](https://dashlabs.pythonanywhere.com/forward-outlook) 
  
 """
 )

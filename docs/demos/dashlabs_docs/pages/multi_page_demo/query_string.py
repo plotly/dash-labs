@@ -35,7 +35,7 @@ is entered into an input field. Any other variable from the query string will be
 
 Give it a try!  Add ?velocity=20  or ?day=Sun to the path in the browser.
 
-Next: [Redirects]()  Previous [Path Variables](https://dashlabs.pythonanywhere.com/asset/inventory/department/branch-1001)
+
 """
 )
 
@@ -49,5 +49,7 @@ def layout(velocity=None, **other_unknown_query_strings):
             dcc.Input(id="velocity", value=velocity),
             html.Br(),
             f"Other unknown query string {other_unknown_query_strings}",
+            html.Hr(),
+            dcc.Markdown("Next: [Redirects]()  Previous [Path Variables](https://dashlabs.pythonanywhere.com/asset/inventory/department/branch-1001)")
         ]
     )
