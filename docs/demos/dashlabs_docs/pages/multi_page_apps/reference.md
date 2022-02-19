@@ -134,7 +134,7 @@ OrderedDict([
 
 
 ### `@callback` vs `@app.callback`
-####`clientside_callback` vs `app.clientside_callback`
+#### `clientside_callback` vs `app.clientside_callback`
 
 With `/pages` it's necessary to use `@callback` instead of `@app.callback` for callbacks located in the `pages/` folder.
 
