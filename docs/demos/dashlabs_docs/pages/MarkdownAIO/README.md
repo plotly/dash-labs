@@ -27,7 +27,7 @@ Here is how it's added to this multi-page app:
 ```python  dangerously_use_exec=False
 dash.register_page(
     __name__,
-    name="Deploy a README.md",
+    name="Deploy a README.md with MarkdownAIO",
     order=99,
     layout=MarkdownAIO(
         "pages/MarkdownAIO/README.md",        
@@ -44,6 +44,7 @@ Or you could run it as regular single page app like this:
 from dash import Dash
 from dash_labs import MarkdownAIO
 
+app = Dash(__name__)
 app.layout = MarkdownAIO("README.md", dangerously_use_exec=True)
 
 if __name__ == "__main__":

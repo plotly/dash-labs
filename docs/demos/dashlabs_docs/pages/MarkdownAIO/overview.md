@@ -108,6 +108,7 @@ Here's a single page app made from a Markdown file using `MarkdownAIO`.
 from dash import Dash
 from dash_labs import MarkdownAIO
 
+app = Dash(__name__)
 app.layout = MarkdownAIO("path_to_my_markdown_file.md", dangerously_use_exec=True)
 
 if __name__ == "__main__":
