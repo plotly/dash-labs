@@ -279,12 +279,10 @@ def _infer_path(filename, template):
         return "/".join(default_template_path)
 
 
-def _import_layouts_from_pages():
-    for (root, dirs, files) in os.walk("pages"):
+def _import_layouts_from_pages(pages_folder):
+    for (root, dirs, files) in os.walk(pages_folder):
         for file in files:
-            if file.endswith(".py") and not file.startswith(
-                "_"
-            ):
+            if file.endswith(".py") and not file.startswith("_"):
                 with open(os.path.join(root, file)) as f:
                     content = f.read()
                     if "register_page" not in content:
@@ -318,8 +316,9 @@ def _path_to_page(app, path_id):
 def plug(app):
     dash.page_registry = OrderedDict()
 
-    if os.path.exists("pages"):
-        _import_layouts_from_pages()
+    pages_folder = os.path.join(flask.helpers.get_root_path(app.config.name), "pages")
+    if os.path.exists(pages_folder):
+        _import_layouts_from_pages(pages_folder)
     else:
         warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
