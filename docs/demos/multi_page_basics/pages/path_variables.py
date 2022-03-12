@@ -1,12 +1,20 @@
 import dash
 
 
+def title(asset_id=None, dept_id=None):
+    return f"Asset Analysis: {asset_id} {dept_id}"
+
+
+def description(asset_id=None, dept_id=None):
+    return f"This is the AVN Industries Asset Analysis: {asset_id} in {dept_id}"
+
+
 dash.register_page(
     __name__,
     path_template="/asset/<asset_id>/department/<dept_id>",
-    title="Asset by location analysis",
-    description="This is a longer description",
-    # path="/asset/inventory/department/branch-1001"
+    title=title,
+    description=description,
+    path="/asset/inventory/department/branch-1001",
 )
 
 
