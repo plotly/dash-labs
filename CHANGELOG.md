@@ -1,6 +1,15 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## Unreleased
+
+### Added
+- [#86](https://github.com/plotly/dash-labs/pull/86)  Allow title and description to be a function so that meta data and title can be updated dynamically when using path variables. [issue #74](https://github.com/plotly/dash-labs/issues/74)
+ 
+### Fixed 
+- [#86](https://github.com/plotly/dash-labs/pull/86) Made the pages folder relative to the root directory of the app, rather than the cwd. [issue #84](https://github.com/plotly/dash-labs/issues/84)
+
+
 ## 1.0.2 - January 26, 2022
 
 ### Added
