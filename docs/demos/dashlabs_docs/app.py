@@ -79,7 +79,7 @@ sidebar = dbc.Card(
         ),
     ],
     className="overflow-auto sticky-top",
-    style={'maxHeight':600}
+    style={"maxHeight": 600},
 )
 
 app.layout = dbc.Container(

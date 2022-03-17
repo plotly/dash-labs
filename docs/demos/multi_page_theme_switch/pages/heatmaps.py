@@ -1,6 +1,7 @@
 import dash
 from dash_bootstrap_templates import ThemeSwitchAIO
 import dash_bootstrap_components as dbc
+
 template_theme1 = "flatly"
 template_theme2 = "darkly"
 url_theme1 = dbc.themes.FLATLY
@@ -26,7 +27,11 @@ layout = html.Div(
 )
 
 
-@callback(Output("heatmaps-graph", "figure"), Input("heatmaps-medals", "value"),Input(ThemeSwitchAIO.ids.switch("theme"), "value"))
+@callback(
+    Output("heatmaps-graph", "figure"),
+    Input("heatmaps-medals", "value"),
+    Input(ThemeSwitchAIO.ids.switch("theme"), "value"),
+)
 def filter_heatmap(cols, toggle):
     template = template_theme1 if toggle else template_theme2
     fig = px.imshow(df[cols], template=template)

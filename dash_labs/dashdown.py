@@ -309,7 +309,6 @@ def _prohibited_props_check(props, prohibited_props, code_block=None, filename=N
                     )
 
 
-
 def _run_code(code, scope=None, div_props=None):
     if scope is None:
         scope = {}

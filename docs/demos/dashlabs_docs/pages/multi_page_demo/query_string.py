@@ -50,6 +50,8 @@ def layout(velocity=None, **other_unknown_query_strings):
             html.Br(),
             f"Other unknown query string {other_unknown_query_strings}",
             html.Hr(),
-            dcc.Markdown("Next: [Redirects]()  Previous [Path Variables](https://dashlabs.pythonanywhere.com/asset/inventory/department/branch-1001)")
+            dcc.Markdown(
+                "Next: [Redirects]()  Previous [Path Variables](https://dashlabs.pythonanywhere.com/asset/inventory/department/branch-1001)"
+            ),
         ]
     )
