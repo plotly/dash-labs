@@ -1,11 +1,10 @@
-from dash import dcc, html, dash_table, Input, Output, State, callback, callback_context
+from dash import dcc, html, dash_table, Input, Output, State, callback
 import re
 import ast
 import copy
 import textwrap
 import uuid
 import random
-import flask
 import frontmatter
 from jinja2 import Environment, FileSystemLoader
 import plotly.express as px
@@ -310,26 +309,6 @@ def _prohibited_props_check(props, prohibited_props, code_block=None, filename=N
                     )
 
 
-# todo combine these next two functions?
-# todo - this only works if it's called from a .py file.  If the MarkdownAIO is inside a callback in a md file, then
-#         the flask.has_request_context() is false
-eval_error_msg = """
-MarkdownAIO is being called with `exec_code=True` within a callback, layout function, or flask request. 
-This isn't supported. MarkdownAIO with exec can only be called when the app is starting"""
-
-def _exec(*args, **kwargs):
-    """prevent exec from running in a callback"""
-    if flask.has_request_context():
-        raise Exception(eval_error_msg)
-    return exec(*args, **kwargs)
-
-
-def _eval(*args, **kwargs):
-    """prevent eval from running in a callback"""
-    if flask.has_request_context():
-        raise Exception(eval_error_msg)
-    return eval(*args, **kwargs)
-
 
 def _run_code(code, scope=None, div_props=None):
     if scope is None:
@@ -341,7 +320,7 @@ def _run_code(code, scope=None, div_props=None):
         # Remove the app instance in the code block otherwise app.callbacks don't work
         tree = ast.parse(code)
         new_tree = RemoveAppAssignment().visit(tree)
-        _exec(compile(new_tree, filename="<ast>", mode="exec"), scope)
+        exec(compile(new_tree, filename="<ast>", mode="exec"), scope)
 
         return html.Div(scope["layout"], **div_props)
 
@@ -350,9 +329,9 @@ def _run_code(code, scope=None, div_props=None):
         block = ast.parse(code, mode="exec")
         # assumes last node is an expression
         last = ast.Expression(block.body.pop().value)
-        _exec(compile(block, "<string>", mode="exec"), scope)
+        exec(compile(block, "<string>", mode="exec"), scope)
         return html.Div(
-            _eval(compile(last, "<string>", mode="eval"), scope), **div_props
+            eval(compile(last, "<string>", mode="eval"), scope), **div_props
         )
 
 

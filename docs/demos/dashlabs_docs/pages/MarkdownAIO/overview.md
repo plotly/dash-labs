@@ -74,19 +74,6 @@ def update_bar_chart(slider_range):
     )
 
 
-@callback(Output(graph, "figure"), Input(slider, "value"))
-def update_bar_chart(slider_range):
-    low, high = slider_range
-    mask = (df["petal_width"] > low) & (df["petal_width"] < high)
-    return px.scatter(
-        df[mask],
-        x="sepal_width",
-        y="sepal_length",
-        color="species",
-        size="petal_length",
-    )
-
-
 
 if __name__ == "__main__":
     app.run_server(debug=True)
