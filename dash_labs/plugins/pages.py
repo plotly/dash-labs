@@ -84,12 +84,12 @@ def register_page(
        order `0`
 
     - `title`:
-       The name of the page <title>. That is, what appears in the browser title.
+       (string or function) The name of the page <title>. That is, what appears in the browser title.
        If not supplied, will use the supplied `name` or will be inferred by module,
        e.g. `pages.weekly_analytics` to `Weekly analytics`
 
     - `description`:
-       The <meta type="description"></meta>.
+       (string or function) The <meta type="description"></meta>.
        If not supplied, then nothing is supplied.
 
     - `image`:
@@ -168,7 +168,7 @@ def register_page(
         title=(title if title is not None else page["name"]),
     )
     page.update(
-        description=description,
+        description=description if description else "",
         order=order,
         supplied_order=order,
         supplied_layout=layout,
@@ -218,6 +218,7 @@ def _infer_image(module):
     valid_extensions = ["apng", "avif", "gif", "jpeg", "png", "webp"]
     page_id = module.split(".")[-1]
     files_in_assets = []
+    # todo need to check for app.get_assets_url instead?
     if os.path.exists("assets"):
         files_in_assets = [f for f in listdir("assets") if isfile(join("assets", f))]
     app_file = None
@@ -278,9 +279,14 @@ def _infer_path(filename, template):
         return "/".join(default_template_path)
 
 
-def _import_layouts_from_pages():
-    for (root, dirs, files) in os.walk("pages"):
+def _import_layouts_from_pages(pages_folder):
+    for (root, dirs, files) in os.walk(pages_folder):
         for file in files:
+            if file.endswith(".py") and not file.startswith("_"):
+                with open(os.path.join(root, file)) as f:
+                    content = f.read()
+                    if "register_page" not in content:
+                        continue
             if file.startswith("_") or not file.endswith(".py"):
                 continue
             page_filename = os.path.join(root, file).replace("\\", "/")
@@ -310,8 +316,9 @@ def _path_to_page(app, path_id):
 def plug(app):
     dash.page_registry = OrderedDict()
 
-    if os.path.exists("pages"):
-        _import_layouts_from_pages()
+    pages_folder = os.path.join(flask.helpers.get_root_path(app.config.name), "pages")
+    if os.path.exists(pages_folder):
+        _import_layouts_from_pages(pages_folder)
     else:
         warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
@@ -335,15 +342,13 @@ def plug(app):
             if page == {}:
                 if "pages.not_found_404" in dash.page_registry:
                     layout = dash.page_registry["pages.not_found_404"]["layout"]
-                    title = {
-                        "title": dash.page_registry["pages.not_found_404"]["title"]
-                    }
+                    title = dash.page_registry["pages.not_found_404"]["title"]
                 else:
                     layout = html.H1("404")
-                    title = {"title": app.title}
+                    title = app.title
             else:
                 layout = page["layout"]
-                title = {"title": page["title"]}
+                title = page["title"]
 
             if callable(layout):
                 layout = (
@@ -351,8 +356,10 @@ def plug(app):
                     if path_variables
                     else layout(**query_parameters)
                 )
+            if callable(title):
+                title = title(**path_variables) if path_variables else title()
 
-            return layout, title
+            return layout, {"title": title}
 
         # check for duplicate pathnames
         path_to_module = {}
@@ -391,16 +398,29 @@ def plug(app):
             # The flask.request.path doesn't include the pathname prefix
             # when inside DE Workspaces or deployed environments,
             # so we don't need to call `app.strip_relative_path` on it.
-            start_page, _ = _path_to_page(app, flask.request.path.strip("/"))
+            start_page, path_variables = _path_to_page(
+                app, flask.request.path.strip("/")
+            )
             image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
+
+            title = start_page.get("title", app.title)
+            if callable(title):
+                title = title(**path_variables) if path_variables else title()
+
+            description = start_page.get("description", "")
+            if callable(description):
+                description = (
+                    description(**path_variables) if path_variables else description()
+                )
 
             return dedent(
                 """
                 <!DOCTYPE html>
                 <html>
                     <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
                         <title>{title}</title>
                         <meta name="description" content="{description}" />
                         <!-- Twitter Card data -->
@@ -430,8 +450,8 @@ def plug(app):
                 """
             ).format(
                 metas=kwargs["metas"],
-                description=start_page.get("description", ""),
-                title=start_page.get("title", app.title),
+                description=description,
+                title=title,
                 image=image,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
