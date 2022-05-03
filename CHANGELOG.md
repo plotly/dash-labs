@@ -1,6 +1,10 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 1.0.4 - May 4, 2022
+### Fixed 
+- added encoding='utf-8' to open function
+
 ## 1.0.3 - March 21, 2022
 
 ### Added
