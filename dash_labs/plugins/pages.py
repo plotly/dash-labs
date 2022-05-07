@@ -402,8 +402,12 @@ def plug(app):
                 app, flask.request.path.strip("/")
             )
 
-            image_url = start_page.get("image_url", "")
-            url = start_page.get("url", "")
+            image = start_page.get("image", "")
+            if image:
+                image = app.get_asset_url(image)
+
+            # get the specified url or create it based on the passed in image
+            image_url = start_page.get("image_url", "".join([flask.request.url_root, image.lstrip("/")]))
 
             title = start_page.get("title", app.title)
             if callable(title):
@@ -428,7 +432,7 @@ def plug(app):
                         <meta property="twitter:url" content="{url}">
                         <meta property="twitter:title" content="{title}">
                         <meta property="twitter:description" content="{description}">
-                        <meta property="twitter:image" content="{image}">
+                        <meta property="twitter:image" content="{image_full}">
                         <!-- Open Graph data -->
                         <meta property="og:title" content="{title}" />
                         <meta property="og:type" content="website" />
@@ -451,9 +455,10 @@ def plug(app):
             ).format(
                 metas=kwargs["metas"],
                 description=description,
-                url=url,
+                url=flask.request.url,
                 title=title,
-                image=image_url,
+                image=image,
+                image_full=image_url,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
                 app_entry=kwargs["app_entry"],
