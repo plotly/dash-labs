@@ -401,9 +401,9 @@ def plug(app):
             start_page, path_variables = _path_to_page(
                 app, flask.request.path.strip("/")
             )
-            image = start_page.get("image", "")
-            if image:
-                image = app.get_asset_url(image)
+
+            image_url = start_page.get("image_url", "")
+            url = start_page.get("url", "")
 
             title = start_page.get("title", app.title)
             if callable(title):
@@ -424,8 +424,8 @@ def plug(app):
                         <title>{title}</title>
                         <meta name="description" content="{description}" />
                         <!-- Twitter Card data -->
-                        <meta property="twitter:card" content="{description}">
-                        <meta property="twitter:url" content="https://metatags.io/">
+                        <meta property="twitter:card" content="summary_large_image">
+                        <meta property="twitter:url" content="{url}">
                         <meta property="twitter:title" content="{title}">
                         <meta property="twitter:description" content="{description}">
                         <meta property="twitter:image" content="{image}">
@@ -451,8 +451,9 @@ def plug(app):
             ).format(
                 metas=kwargs["metas"],
                 description=description,
+                url=url,
                 title=title,
-                image=image,
+                image=image_url,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
                 app_entry=kwargs["app_entry"],
