@@ -42,6 +42,7 @@ def register_page(
     title=None,
     description=None,
     image=None,
+    image_url=None,
     redirect_from=None,
     layout=None,
     **kwargs,
@@ -99,6 +100,11 @@ def register_page(
         - A generic app image at `assets/app.<extension>`
         - A logo at `assets/logo.<extension>`
         When inferring the image file, it will look for the following extensions: APNG, AVIF, GIF, JPEG, PNG, SVG, WebP.
+
+    - `image_url`:
+       This will use the exact image url provided when sharing on social media. 
+       This is appealing when the image you want to share is hosted on a CDN.
+       Using this attribute overrides the image attribute.
 
     - `redirect_from`:
        A list of paths that should redirect to this page.
@@ -432,7 +438,7 @@ def plug(app):
                         <meta property="twitter:url" content="{url}">
                         <meta property="twitter:title" content="{title}">
                         <meta property="twitter:description" content="{description}">
-                        <meta property="twitter:image" content="{image_full}">
+                        <meta property="twitter:image" content="{image}">
                         <!-- Open Graph data -->
                         <meta property="og:title" content="{title}" />
                         <meta property="og:type" content="website" />
@@ -457,8 +463,7 @@ def plug(app):
                 description=description,
                 url=flask.request.url,
                 title=title,
-                image=image,
-                image_full=image_url,
+                image=image_url,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
                 app_entry=kwargs["app_entry"],
