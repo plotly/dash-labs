@@ -31,6 +31,12 @@ See the code in `/demos/multi_page_meta_tags`
     - A logo at `assets/logo.<extension>`
    When inferring the image file, it will look for the following extensions: APNG, AVIF, GIF, JPEG, PNG, SVG, WebP.
    These are the [most commonly used image file types](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types) used on the web.
+- `image_url`:
+   The image url is used to point to a hosted image online through its full path.
+   The head matter does not handle relative paths (as far as I know), so we need to supply the full path.
+
+Example of the difference between `image` and `image_url`:
+`image=birdhouse.jpeg` and `image_url=http://www.yourdomain.com/assets/birdhouse.jpeg`
 
 In the `assets` folder we have 4 jpeg images with the following file names:  
 - app.jpeg
@@ -39,6 +45,8 @@ In the `assets` folder we have 4 jpeg images with the following file names:
 - logo.jpeg
 
 The `title` and `description` will be derrived from the module name if none is supplied.
+
+The `url` will be the full url when deployed. Twitter needs the full url to properly supply a card.
 
 In the `pages` folder we have 3 simple pages to demonstrate this feature. 
 
@@ -86,6 +94,8 @@ dash.register_page(
     __name__,
     path="/",
     image="birdhouse.jpeg",
+    image_url="http://yourdomain.com/assets/birdhouse.jpeg",
+    url="http://yourdomain.com/",   # matches the path parameter with the full domain
     title="(home) The title, headline or name of the page",
     description="(home) A short description or summary 2-3 sentences",
 )
