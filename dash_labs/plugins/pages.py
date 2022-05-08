@@ -183,6 +183,7 @@ def register_page(
     page.update(
         image=(image if image is not None else _infer_image(module)),
         supplied_image=image,
+        image_url=image_url
     )
     page.update(redirect_from=redirect_from)
 
