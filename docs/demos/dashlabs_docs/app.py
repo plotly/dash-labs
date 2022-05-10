@@ -19,7 +19,7 @@ topbar = html.H2(
     "Dash Labs Docs & Demo",
     className="p-4 bg-primary text-white ",
 )
-
+dl.print_registry(exclude="ALL")
 sidebar = dbc.Card(
     [
         dbc.NavLink(

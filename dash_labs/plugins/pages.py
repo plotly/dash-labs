@@ -366,7 +366,7 @@ def plug(app):
 
     pages_folder = os.path.join(flask.helpers.get_root_path(app.config.name), "pages")
     if os.path.exists(pages_folder):
-        _import_layouts_from_pages(pages_folder)
+        _import_layouts_from_pages(app)
     else:
         warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
