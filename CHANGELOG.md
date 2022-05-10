@@ -1,6 +1,14 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 1.0.6 - May 10, 2022
+### Fixed
+- [#99](https://github.com/plotly/dash-labs/pull/99) Fixes a bug in the twitter card meta tags.
+### Added
+- [#99](https://github.com/plotly/dash-labs/pull/99) Adds image_url property to dash.page_registry This gives the option of using a link for the image in the meta tags rather than an image file in the app's assets folder.
+
+
+
 ## 1.0.5 - May 6, 2022
 ### Added
 - `print_registry()` - Debugging tool and pretty printer for dash.page_registry. 
