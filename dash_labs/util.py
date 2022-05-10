@@ -1,11 +1,14 @@
 import uuid
 import random
 from collections import OrderedDict
+import pprint
 
 from dash.development.base_component import Component
 
 import json
 import re
+import dash
+from dash.development.base_component import Component
 
 
 # Create dedicated random number generator for build UUIDs
@@ -33,7 +36,7 @@ def build_id(name=None, **kwargs):
     deterministic across multiple executions of an app, and multiple processes running
     the same app.
     """
-    uid = str(uuid.UUID(int=_uid_random.randint(0, 2 ** 128)))
+    uid = str(uuid.UUID(int=_uid_random.randint(0, 2**128)))
     return dict(
         uid=uid,
         **filter_kwargs(name=name, **kwargs),
@@ -116,7 +119,7 @@ def insert_into_ordered_dict(odict, value, key=None, before=None, after=None):
 def add_css_class(component, className):
     """
     Update the className property of a Dash component to include a CSS class name.
-    If one or more classes already exist, the provided className will be be appended
+    If one or more classes already exist, the provided className will  be appended
     to the list. If the provided className is already present, no change will be made
     to the component.
 
@@ -207,3 +210,53 @@ def _parse_codefence(codefence):
     s = "{" + s + "}"
     # Now it's python!
     return json.loads(s)
+
+
+def print_registry(modules="ALL", exclude=None, include="ALL"):
+    """
+    Debugging tool and pretty printer for dash.page_registry. Prints to the console.
+    Note that if `print_registry()` is called from a file in the `pages` folder, the `dash.page_registry`
+    may not be complete.
+
+    :param modules: (string or list) Default "ALL".  Specifies which modules to print.
+    :param exclude: (string or list) Default None.   Specifies which of the page's  parameter(s) to exclude.
+    :param include: (string or list) Default "ALL".  Prints only the parameters that are specified.
+
+    Examples:
+
+    - `print_registry()`  Will print the entire content of dash.page_registry
+    - `print_registry("pages.home")` will print only one module
+    - `print_registry(__name__)`  will print the current module.  If it's run from app.py it will print all modules
+    - `print_registry(["pages.home", "pages.archive"])` Will print 2 modules
+    - `print_registry(exclude="layout")`  will print info for all the modules, but will exclude the page["layout"]
+    - `print_registry(include=["path", "name"]` will print only the page["path"] and page["name"] for all modules
+    - `print_registry(exclude="ALL") prints the keys (module names) only
+    - `print_registry(include=None) prints the keys (module names) only
+
+    """
+    print(
+        '**Note** When printing from a file in the pages folder, `dash_page_registry` may not be complete.  See the "Print page_registry" docs for more info.'
+    )
+
+    modules = "ALL" if modules == "__main__" else modules
+    if include is None or exclude == "ALL":
+        pprint.pprint(dash.page_registry.keys())
+        return
+
+    if isinstance(modules, str):
+        modules = [modules]
+    if isinstance(exclude, str):
+        exclude = [exclude]
+    if isinstance(include, str):
+        include = [include]
+
+    registry = {}
+    for page in dash.page_registry.values():
+        if modules == ["ALL"] or page["module"] in modules:
+            page_items = {}
+            for k, v in page.items():
+                if include == ["ALL"] or k in include:
+                    if exclude is None or k not in exclude:
+                        page_items[k] = v
+            registry[page["module"]] = page_items
+    pprint.pprint(registry, sort_dicts=False)

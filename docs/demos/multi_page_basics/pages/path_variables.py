@@ -2,11 +2,11 @@ import dash
 
 
 def title(asset_id=None, dept_id=None):
-    return f"Asset analysis for {asset_id} in {dept_id}"
+    return f"Asset Analysis: {asset_id} {dept_id}"
 
 
 def description(asset_id=None, dept_id=None):
-    return f"This is the Acme Company Asset analysis for {asset_id} in {dept_id}"
+    return f"This is the AVN Industries Asset Analysis: {asset_id} in {dept_id}"
 
 
 dash.register_page(

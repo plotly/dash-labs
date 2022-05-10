@@ -42,6 +42,7 @@ def register_page(
     title=None,
     description=None,
     image=None,
+    image_url=None,
     redirect_from=None,
     layout=None,
     **kwargs,
@@ -99,6 +100,11 @@ def register_page(
         - A generic app image at `assets/app.<extension>`
         - A logo at `assets/logo.<extension>`
         When inferring the image file, it will look for the following extensions: APNG, AVIF, GIF, JPEG, PNG, SVG, WebP.
+
+    - `image_url`:
+       This will use the exact image url provided when sharing on social media.
+       This is appealing when the image you want to share is hosted on a CDN.
+       Using this attribute overrides the image attribute.
 
     - `redirect_from`:
        A list of paths that should redirect to this page.
@@ -177,6 +183,7 @@ def register_page(
     page.update(
         image=(image if image is not None else _infer_image(module)),
         supplied_image=image,
+        image_url=image_url
     )
     page.update(redirect_from=redirect_from)
 
@@ -290,7 +297,6 @@ def _import_layouts_from_pages(app):
                     content = f.read()
                     if "register_page" not in content:
                         continue
-
             page_filename = os.path.join(root, file).replace("\\", "/")
             if file.endswith(".md") and not file.startswith("_"):
                 _register_page_from_markdown_file(page_filename, app)
@@ -358,8 +364,9 @@ def _path_to_page(app, path_id):
 def plug(app):
     dash.page_registry = OrderedDict()
 
-    if os.path.exists("pages"):
-        _import_layouts_from_pages(app)
+    pages_folder = os.path.join(flask.helpers.get_root_path(app.config.name), "pages")
+    if os.path.exists(pages_folder):
+        _import_layouts_from_pages(pages_folder)
     else:
         warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
@@ -446,6 +453,13 @@ def plug(app):
             if image:
                 image = app.get_asset_url(image)
 
+            assets_image_url = (
+                "".join([flask.request.url_root, image.lstrip("/")]) if image else None
+            )
+
+            # get the specified url or create it based on the passed in image
+            image_url = start_page.get("image_url", assets_image_url)
+
             title = start_page.get("title", app.title)
             if callable(title):
                 title = title(**path_variables) if path_variables else title()
@@ -465,8 +479,8 @@ def plug(app):
                         <title>{title}</title>
                         <meta name="description" content="{description}" />
                         <!-- Twitter Card data -->
-                        <meta property="twitter:card" content="{description}">
-                        <meta property="twitter:url" content="https://metatags.io/">
+                        <meta property="twitter:card" content="summary_large_image">
+                        <meta property="twitter:url" content="{url}">
                         <meta property="twitter:title" content="{title}">
                         <meta property="twitter:description" content="{description}">
                         <meta property="twitter:image" content="{image}">
@@ -492,8 +506,9 @@ def plug(app):
             ).format(
                 metas=kwargs["metas"],
                 description=description,
+                url=flask.request.url,
                 title=title,
-                image=image,
+                image=image_url,
                 favicon=kwargs["favicon"],
                 css=kwargs["css"],
                 app_entry=kwargs["app_entry"],
