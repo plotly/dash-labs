@@ -412,13 +412,12 @@ def plug(app):
             image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
-
             assets_image_url = (
                 "".join([flask.request.url_root, image.lstrip("/")]) if image else None
             )
-
             # get the specified url or create it based on the passed in image
-            image_url = start_page.get("image_url", assets_image_url)
+            supplied_image_url = start_page.get("image_url")
+            image_url = supplied_image_url if supplied_image_url else assets_image_url
 
             title = start_page.get("title", app.title)
             if callable(title):
