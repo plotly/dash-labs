@@ -1,6 +1,12 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+
+## 1.0.8 - May 12, 2022
+### Fixed
+- [#104](https://github.com/plotly/dash-labs/pull/104) Fixes a bug in the twitter card meta tags image url.
+
+
 ## 1.0.6 - May 10, 2022
 ### Fixed
 - [#99](https://github.com/plotly/dash-labs/pull/99) Fixes a bug in the twitter card meta tags.
