@@ -11,6 +11,7 @@ from itsdangerous import Signer, BadSignature
 
 import flask
 import appdirs
+from _plotly_utils.utils import PlotlyJSONEncoder
 
 _activation_error_message = """
 No backend defined for storing session data, choose from DiskSessionBackend, RedisSessionBackend, 
@@ -84,10 +85,16 @@ class Session(collections.abc.MutableMapping):
         flask.g.session_backend.delete(flask.g.session_id, key)
 
     def __len__(self) -> int:
-        return 0
+        return len(flask.g.session_backend.get_keys(flask.g.session_id))
 
     def __iter__(self):
-        return []
+        return flask.g.session_backend.get_keys(flask.g.session_id)
+
+    def __repr__(self):
+        if flask.has_request_context():
+            data = dict(self)
+            return f'<Session\n id="{flask.g.session_id}"\n values={json.dumps(data, indent=2, cls=PlotlyJSONEncoder)}>'
+        return "<Session>"
 
 
 class SessionValue:
@@ -100,6 +107,9 @@ class SessionValue:
 
     def to_plotly_json(self):
         return session.get(self.key)
+
+    def __repr__(self):
+        return f"<SessionValue {self.key}>"
 
 
 class SessionBackend:
@@ -147,6 +157,9 @@ class SessionBackend:
             if callable(value):
                 val = value(session_id)
             self.set(session_id, key, val)
+
+    def get_keys(self, session_id: str):
+        raise NotImplementedError
 
 
 def setup_sessions(

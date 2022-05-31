@@ -1,5 +1,6 @@
 import json
 import os
+
 import pytest
 
 from dash import (
@@ -72,6 +73,8 @@ def session_trio(request):
             html.Div(id="dummy"),
             html.Button("set component", id="set-component"),
             html.Button("output component", id="output-component"),
+            html.Div(id="session-keys"),
+            html.Button("set session keys", id="set-session-keys"),
         ]
     )
 
@@ -126,6 +129,13 @@ def session_trio(request):
     )
     def output_component(*_):
         return session.callback_component
+
+    @app.callback(
+        Output("session-keys", "children"),
+        Input("set-session-keys", "n_clicks"),
+    )
+    def output_keys(_):
+        return json.dumps(list(session))
 
     runner = ThreadedRunner()
     with DashComposite(
@@ -193,3 +203,12 @@ def test_sess006_session_component_type_callback(session_trio):
     session_trio.find_element("#set-component").click()
     session_trio.find_element("#output-component").click()
     session_trio.wait_for_text_to_equal("#callback-component", "callback component")
+
+
+def test_sess007_session_get_keys(session_trio):
+    session_keys = session_trio.find_element("#session-keys")
+    session_keys = json.loads(session_keys.text)
+
+    assert "with_default" in session_keys
+    assert "custom_default" in session_keys
+    assert "component_default" in session_keys

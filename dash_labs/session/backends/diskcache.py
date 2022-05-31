@@ -44,7 +44,9 @@ class DiskcacheSessionBackend(SessionBackend):
 
             def get(self, key, raw):
                 data = super().get(key, raw)
-                return json.loads(zlib.decompress(data).decode("utf-8"))
+                if not isinstance(data, str):
+                    return json.loads(zlib.decompress(data).decode("utf-8"))
+                return data  # Get keys
 
             def store(self, value, read, key=diskcache.UNKNOWN):
                 if not read:
@@ -77,3 +79,6 @@ class DiskcacheSessionBackend(SessionBackend):
     def delete(self, session_id: str, key: str):
         with self.lock:
             self.cache.delete(f"{session_id}/{key}")
+
+    def get_keys(self, session_id: str):
+        return (k.split("/")[-1] for k in self.cache.iterkeys() if session_id in k)

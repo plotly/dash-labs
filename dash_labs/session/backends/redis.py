@@ -49,6 +49,10 @@ class RedisSessionBackend(SessionBackend):
     def delete(self, session_id: str, key: str):
         self.r.hdel(self._session_key(session_id), key)
 
+    def get_keys(self, session_id: str):
+        keys = self.r.hkeys(self._session_key(session_id))
+        return (k.decode() for k in keys)
+
     @staticmethod
     def split_url(url):
         host, rest = url.split("://")[-1].split(":")

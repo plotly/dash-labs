@@ -72,6 +72,12 @@ SET data = data - %s
 WHERE session_id = %s;
 """
 
+_get_keys_statement = """
+SELECT jsonb_object_keys(data)
+FROM ${schema}.${table}
+WHERE session_id = %s;
+"""
+
 
 def _table_exists(cursor, schema, table):
     cursor.execute(_table_exists_statement, [schema, table])
@@ -141,6 +147,11 @@ class PostgresSessionBackend(SessionBackend):
         )
         self._delete_statement = _sql_formatter(
             _delete_session_value_statement,
+            schema=schema,
+            table=table,
+        )
+        self._get_keys_statement = _sql_formatter(
+            _get_keys_statement,
             schema=schema,
             table=table,
         )
@@ -220,6 +231,16 @@ class PostgresSessionBackend(SessionBackend):
                     ],
                 )
             conn.commit()
+        finally:
+            self.pool.putconn(conn)
+
+    def get_keys(self, session_id: str):
+        conn = self.pool.getconn()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(self._get_keys_statement, [session_id])
+                for row in cursor:
+                    yield row[0]
         finally:
             self.pool.putconn(conn)
 
