@@ -36,8 +36,9 @@ class RedisSessionBackend(SessionBackend):
         # redis don't keep types so values are serialized to json.
         value = self.r.hget(self._session_key(session_id), key)
         if value:
-            value = json.loads(value)
-        return value
+            return json.loads(value)
+        else:
+            return self.undefined
 
     def set(self, session_id: str, key: str, value: Any):
         self.r.hset(

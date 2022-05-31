@@ -69,7 +69,16 @@ class Session(collections.abc.MutableMapping):
     def __getitem__(self, key):
         if flask.has_request_context():
             _check_backend()
-            return flask.g.session_backend.get(flask.g.session_id, key)
+            value = flask.g.session_backend.get(flask.g.session_id, key)
+            if value is SessionBackend.undefined:
+                if key in SessionBackend.defaults:
+                    # Set missing defaults values for session created before the default
+                    # value is added.
+                    value = SessionBackend.defaults[key]
+                    flask.g.session_backend.set(flask.g.session_id, key, value)
+                else:
+                    value = None
+            return value
         return SessionValue(key)
 
     def __setitem__(self, key, value) -> None:
@@ -118,6 +127,7 @@ class SessionBackend:
     """
 
     defaults = {}
+    undefined = object()
 
     def set(self, session_id: str, key: str, value: Any):
         """

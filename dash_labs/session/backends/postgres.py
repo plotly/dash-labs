@@ -202,6 +202,7 @@ class PostgresSessionBackend(SessionBackend):
                 value = cursor.fetchone()
                 if value:
                     return value[0]
+                return self.undefined
         finally:
             self.pool.putconn(conn)
 
