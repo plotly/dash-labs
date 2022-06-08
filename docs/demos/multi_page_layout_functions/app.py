@@ -9,7 +9,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 
-
+dl.print_registry()
 navbar = dbc.NavbarSimple(
     dbc.Nav(
         [

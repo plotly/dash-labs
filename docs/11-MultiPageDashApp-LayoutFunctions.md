@@ -1,6 +1,6 @@
 
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
+> #### The `pages` functionality is now part of dash 2.5!  These docs remain here for legacy purposes. `pages` is a plugin to simplify creating multi-page Dash apps. 
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -79,9 +79,9 @@ This is the `home.py` file. (The `about.py` and `topic_1.py` files are similar).
 
 ```python
 from dash import html
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__, top_nav=True)
+register_page(__name__, top_nav=True)
 
 
 layout = html.Div("About page content")
@@ -125,18 +125,19 @@ def sidebar():
 ```
  Here is `topic_2.py`  (`topic_1.py` and `topic_3.py` are similar).  Note that the layout is also a function. 
  
-As you see below, `topic_2.py` and `topic_3.py` will NOT have `top_nav=True` included in `dash.register_page`,
+As you see below, `topic_2.py` and `topic_3.py` will NOT have `top_nav=True` included in `register_page`,
 but `topic_1.py` will include `top_nav=True` because we want that page in the navbar.
 
 ```python
 from dash import html
 
-import dash
+
 import dash_bootstrap_components as dbc
 
 from .side_bar import sidebar
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__)
+register_page(__name__)
 
 
 def layout():
@@ -147,7 +148,7 @@ def layout():
 ```
 The main purpose of this example is to show how to use `dash.page_registry` from within the `pages` folder.  
 The reason `sidebar` and the layouts for the three topic pages need to be functions is that pages are added to
-`dash.register_page`as each module is imported from the `pages` folder and `dash.register_page` is called.
+`register_page`as each module is imported from the `pages` folder and `register_page` is called.
 If you don't use a function then all the pages may not yet be in `dash.page_registry` when it's used to create thing 
 like the sidebar. When you use a function, it will create the layout when it's used rather than when it's imported.
 

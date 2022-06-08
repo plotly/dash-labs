@@ -1,9 +1,8 @@
-import dash
-
-dash.register_page(__name__, path="/")
-
-from dash import Dash, dcc, html, Input, Output, callback
+from dash_labs.plugins import register_page
+from dash import dcc, html, Input, Output, callback
 import plotly.express as px
+
+register_page(__name__, path="/")
 
 df = px.data.medals_wide(indexed=True)
 

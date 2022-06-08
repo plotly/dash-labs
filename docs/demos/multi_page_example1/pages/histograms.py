@@ -1,10 +1,9 @@
-import dash
-
-dash.register_page(__name__)
-
 from dash import Dash, dcc, html, Input, Output, callback
+from dash_labs.plugins import register_page
 import plotly.express as px
 import numpy as np
+
+register_page(__name__)
 
 np.random.seed(2020)
 

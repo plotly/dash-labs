@@ -1,6 +1,6 @@
 
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
+> #### The `pages` functionality is now part of dash 2.5!  These docs remain here for legacy purposes. `pages` is a plugin to simplify creating multi-page Dash apps. 
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -80,18 +80,19 @@ if __name__ == "__main__":
 
 4. Create a folder called `pages/` and place your app layouts in files within that folder. Each file needs to:
 - Define `layout`. This can be a variable or function that returns a component
-- Call `dash.register_page(__name__)` to tell `dl.plugins.pages` that this page should be part of the multi-page framework
+- Call `dl.plugins.register_page(__name__)` to tell `dl.plugins.pages` that this page should be part of the multi-page framework
 
 For example, here is the first page of our app:
 
 [`demos/multi-page-example1/pages/heatmaps.py`](docs/demos/multi-page-example1/pages/heatmaps.py)
 
 ```python
-import dash
-dash.register_page(__name__, path="/")
+from dash_labs.plugins import register_page
+
 from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
 
+register_page(__name__, path="/")
 df = px.data.medals_wide(indexed=True)
 
 layout = html.Div(
@@ -115,8 +116,8 @@ def filter_heatmap(cols):
 ```
 
 The `dash.page_registry` is an `OrderedDict` with keys being the page's module name (e.g. `pages.bar-charts`) and values being a dictionary containing keys `path`, `name`, `order`, `title`, `description`, `image`, and `layout`. 
-As you saw in the above example, This `page_registry` is populated from calling `dash.register_page` within `pages/`.
-`dash.register_page` will accept various arguments to customize aspects about the page.  See the Advanced Features section below.
+As you saw in the above example, This `page_registry` is populated from calling `register_page` within `pages/`.
+`register_page` will accept various arguments to customize aspects about the page.  See the Advanced Features section below.
    
 
 ![multi_page](https://user-images.githubusercontent.com/72614349/140232399-efe7020d-480a-40af-a0b0-40e66dcd9d56.gif)
@@ -133,16 +134,16 @@ These features are all optional. If you don't supply values here, the framework 
 
 The page's title defines what you see in your browser tab and what would appear as the website's title in search results. By default, it is derived from the filename but it can also be set with `title=`
 ```
-dash.register_page(__name__, title='Custom page title')
+dl.plugins.register_page(__name__, title='Custom page title')
 ```
 
 Similarly, the meta description can be set with `description=` and the meta image can be set with `image=`. Both of these tags are used as the preview when sharing a URL in a social media platforms. They're also used in search engine results.
 
 By default, Dash will look through your `assets/` folder for an image that matches the page's filename or else an image called `app.<image_extension>` (e.g. `app.png` or `app.jpeg`) or `logo.<image_extension>` (all image extensions are supported).
 
-This image URL can also be set directly with `app.register_page(image=...)` e.g. 
+This image URL can also be set directly with `dl.plugins.register_page(image=...)` e.g. 
 ```python
-app.register_page(__name__, image='/assets/page-preview.png')
+dl.plugins.register_page(__name__, image='/assets/page-preview.png')
 ```
 
 **`dash.page_registry`**
@@ -152,7 +153,7 @@ app.register_page(__name__, image='/assets/page-preview.png')
 For example:
 `pages/historical_analysis.py`
 ```
-dash.register_page(__name__)
+dl.plugins.register_page(__name__)
 
 print(dash.page_registry)
 ```
@@ -171,7 +172,7 @@ OrderedDict([
 Whereas:
 `pages/outlook.py`
 ```
-dash.register_page(__name__, path='/future', name='Future outlook', order=4)
+dl.plugins.register_page(__name__, path='/future', name='Future outlook', order=4)
 
 print(dash.page_registry)
 ```
@@ -196,7 +197,7 @@ OrderedDict values can be accessed just like regular dictionaries:
 
 The order of the items in `page_registry` is based off of the optional `order=` parameter: 
 ```python
-dash.register_page(__name__, order=10)
+dl.plugins.register_page(__name__, order=10)
 ```
 
 If it's not supplied, then the order is alphanumeric based off of the filename. This order is important when rendering the page menu's dynamically in a loop. The page with the path `/` has `order=0` by default.
@@ -208,7 +209,7 @@ Redirects can be set with the `redirect_from=[...]` parameter in `register_page`
 
 `pages/historical_analysis.py`
 ```
-dash.register_page(
+dl.plugins.register_page(
     __name__,
     path='/historical',
     redirect_from=['/historical-analysis', '/historical-outlook']
@@ -232,8 +233,8 @@ However, this can be customized by creating a file called `not_found_404.py`
 
 You can also pass `layout=` directly into `register_page`. Here's a quick multi-page app written in a single file:
 ```
-app.register_page('historical_analysis', path='/historical-analysis', layout=html.Div(['Historical Analysis Page'])
-app.register_page('forecast', path='/forecast', layout=html.Div(['Forecast Page'])
+dl.plugins.register_page('historical_analysis', path='/historical-analysis', layout=html.Div(['Historical Analysis Page'])
+dl.plugins.register_page('forecast', path='/forecast', layout=html.Div(['Forecast Page'])
 
 app.layout = dbc.Container([
     dbc.NavbarSimple([
@@ -251,13 +252,14 @@ However, we recommend splitting out the page layouts into their own files in `pa
 It's possible to pass query strings from the url to a layout function.
 For example:
 ```python
-import dash
+from dash import dcc, html
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__, path='/dashboard')
+register_page(__name__, path='/dashboard')
 
 def layout(velocity=0, **other_unknown_query_strings):
-    return dash.html.Div([
-        dash.dcc.Input(id='velocity', value=velocity)
+    return html.Div([
+        dcc.Input(id='velocity', value=velocity)
     ])
 
 ```
@@ -266,7 +268,7 @@ def layout(velocity=0, **other_unknown_query_strings):
 
 **Path Variable**
 
-Another way to pass variables to the layout is to use the `path_template` parameter in  `dash.register_page`.  You can
+Another way to pass variables to the layout is to use the `path_template` parameter in  `register_page`.  You can
 define which segments of the path are variables by marking them like this: `<variable_name>`. The layout function then receives the `<variable_name>` as a keyword argument.
 
 
@@ -275,16 +277,17 @@ will receive `**{"asset_id": "a100"}`.  Here is an example with two variables in
 
 
 ```python
-import dash
+from dash import html
+from dash_labs.plugins import register_page
 
-dash.register_page(
+register_page(
     __name__,
     path_template="/asset/<asset_id>/department/<dept_id>",
 )
 
 
 def layout(asset_id=None, dept_id=None, **other_unknown_query_strings):
-    return dash.html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
+    return html.Div(f"variables from pathname:  asset_id: {asset_id} dept_id: {dept_id}")
 
 ```
 ![image](https://user-images.githubusercontent.com/72614349/146810311-73ab7f24-bb6d-4f4e-b3c5-257917d0180d.png)
@@ -301,7 +304,7 @@ in `/demos/multi_page_long_callback`.
 
 ## Reference
 
-**`dash.register_page`**
+**`dl.plugins.register_page`**
 
 ```python
 def register_page(
@@ -414,7 +417,7 @@ OrderedDict([
             order=1,
             
             supplied_layout=None,
-            layout=<function pages.historical_outlook.layout>,
+            layout=`<function pages.historical_outlook.layout>`,
             
             custom_key='custom value'
         )

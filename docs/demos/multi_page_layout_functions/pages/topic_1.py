@@ -1,11 +1,11 @@
 from dash import html
+from dash_labs.plugins import register_page
 
-import dash
 import dash_bootstrap_components as dbc
 
 from .side_bar import sidebar
 
-dash.register_page(
+register_page(
     __name__,
     name="Topics",
     top_nav=True,

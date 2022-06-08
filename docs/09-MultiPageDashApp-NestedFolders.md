@@ -1,6 +1,6 @@
 
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
+> #### The `pages` functionality is now part of dash 2.5!  These docs remain here for legacy purposes. `pages` is a plugin to simplify creating multi-page Dash apps. 
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -12,7 +12,7 @@
 If you would like to add an example, feel free to create a pull request! 
 
 ### Example: Nested Folders
-This example shows how `dash.register_page` handles
+This example shows how `dl.plugins.register_page` handles
   - Using Nested folders in `pages/` 
   - Storing icons as arbitrary keyword arguments
 
@@ -126,14 +126,14 @@ if __name__ == "__main__":
 
 ```
 
-Recall from the previous chapter that  `dash.register_page` also accepts arbitrary keyword arguments. We use this
+Recall from the previous chapter that  `dl.plugins.register_page` also accepts arbitrary keyword arguments. We use this
 feature to store the icon used in the nav for each page. 
 
 Here is how we store the FontAwesome icon for `pages/chapter/pie-chart.py`
 
 ```python
 
-dash.register_page(__name__, icon="fas fa-chart-pie")
+dl.plugins.register_page(__name__, icon="fas fa-chart-pie")
 ```
 
 You can see how the icon is included in the sidebar navigation:
