@@ -1,10 +1,8 @@
-import dash
-
-dash.register_page(__name__, icon="fas fa-chart-bar")
-
-
+from dash_labs.plugins import register_page
 from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
+
+register_page(__name__, icon="fas fa-chart-bar")
 
 df = px.data.tips()
 days = df.day.unique()

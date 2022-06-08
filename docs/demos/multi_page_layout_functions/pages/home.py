@@ -1,7 +1,7 @@
 from dash import html
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__, path="/", top_nav=True)
+register_page(__name__, path="/", top_nav=True)
 
 
 layout = html.Div("Home page content")

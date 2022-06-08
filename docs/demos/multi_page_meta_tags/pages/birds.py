@@ -1,6 +1,6 @@
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(
+register_page(
     __name__,
     title="(birds) The title, headline or name of the page",
     description="(birds) A short description or summary 2-3 sentences",

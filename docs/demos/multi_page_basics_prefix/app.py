@@ -2,7 +2,7 @@ from dash import Dash, html, dcc
 import dash
 import dash_labs as dl
 
-app = Dash(__name__, plugins=[dl.plugins.pages])
+app = Dash(__name__, plugins=[dl.plugins.pages], url_base_pathname="/app1/")
 
 dl.plugins.register_page("another_home", layout=html.Div("We're home!"), path="/")
 dl.plugins.register_page(
@@ -15,7 +15,10 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Div(
-                    dcc.Link(f"{page['name']} - {page['path']}", href=page["path"])
+                    dcc.Link(
+                        f"{page['name']} - {page['path']}",
+                        href=app.get_relative_path(page["path"]),
+                    )
                 )
                 for page in dash.page_registry.values()
                 if page["module"] != "pages.not_found_404"
