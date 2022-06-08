@@ -1,6 +1,12 @@
 # Overview
 Unlike other Plotly projects, `dash-labs` does **not** adhere to semantic versioning. This project is intended to make it easier to discuss and iterate on new ideas before they are incorporated into Dash itself. As such, maintaining backward compatibility within the `dash-labs` package is explicitly a non-goal.
 
+## 1.1.0 - June 8, 2022
+### Fixed
+
+:warning: This is a breaking change for the `pages` plugin
+- [#109](https://github.com/plotly/dash-labs/pull/109) Makes dash-labs compatible with dash 2.5
+  - `dash.register_page` is renamed to `dash_labs_plugins.register_page`
 
 ## 1.0.8 - May 12, 2022
 ### Fixed
