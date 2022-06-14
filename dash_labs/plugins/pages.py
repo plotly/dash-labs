@@ -285,18 +285,26 @@ def _infer_path(filename, template):
         return "/".join(default_template_path)
 
 
-def _import_layouts_from_pages(pages_folder):
-    for (root, dirs, files) in os.walk(pages_folder):
+def _import_layouts_from_pages(app):
+    for (root, dirs, files) in os.walk("pages"):
         for file in files:
-            if file.endswith(".py") and not file.startswith("_"):
-                with open(os.path.join(root, file), encoding='utf-8') as f:
+
+            if (file.endswith(".md") or file.endswith(".py")) and not file.startswith(
+                "_"
+            ):
+                with open(os.path.join(root, file)) as f:
                     content = f.read()
                     if "register_page" not in content:
                         continue
+            page_filename = os.path.join(root, file).replace("\\", "/")
+            if file.endswith(".md") and not file.startswith("_"):
+                _register_page_from_markdown_file(page_filename, app)
+                continue
             if file.startswith("_") or not file.endswith(".py"):
                 continue
-            page_filename = os.path.join(root, file).replace("\\", "/")
+
             _, _, page_filename = page_filename.partition("pages/")
+
             page_filename = page_filename.replace(".py", "").replace("/", ".")
             page_module = importlib.import_module(f"pages.{page_filename}")
 
@@ -304,6 +312,39 @@ def _import_layouts_from_pages(pages_folder):
                 dash.page_registry[f"pages.{page_filename}"]["layout"] = getattr(
                     page_module, "layout"
                 )
+
+
+def _register_page_from_markdown_file(filename, app):
+    """
+    Extracts  props from the "front matter" of a markdown file in the pages folder.
+    Front matter is yaml defined with three dashes:
+    ---
+    register_page:
+      path: "/home"
+      order: 2
+    MarkdownAIO:
+      dangerously_use_exec: True
+      side_by_side: True
+    ---
+    """
+    import frontmatter
+    from dash_labs import MarkdownAIO
+
+    try:
+        md_page = frontmatter.load(filename)
+    except Exception as e:
+        raise Exception(f"Error parsing the YAML front matter of {filename}:\n{e}")
+
+    pages_props = md_page.get("register_page", {})
+    if "module" not in pages_props:
+        module_name = f'{filename.replace(".md", "").replace("/", ".")}'
+        pages_props["module"] = module_name
+    if "layout" not in pages_props:
+
+        markdownaio_props = md_page.get("MarkdownAIO", {})
+        pages_props["layout"] = MarkdownAIO(filename, **markdownaio_props)
+
+    dash.register_page(**pages_props)
 
 
 def _path_to_page(app, path_id):
@@ -324,7 +365,7 @@ def plug(app):
 
     pages_folder = os.path.join(flask.helpers.get_root_path(app.config.name), "pages")
     if os.path.exists(pages_folder):
-        _import_layouts_from_pages(pages_folder)
+        _import_layouts_from_pages(app)
     else:
         warnings.warn("A folder called `pages` does not exist.", stacklevel=2)
 
@@ -407,7 +448,6 @@ def plug(app):
             start_page, path_variables = _path_to_page(
                 app, flask.request.path.strip("/")
             )
-
             image = start_page.get("image", "")
             if image:
                 image = app.get_asset_url(image)
