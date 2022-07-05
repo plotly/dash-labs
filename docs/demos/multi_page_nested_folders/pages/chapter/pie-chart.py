@@ -1,11 +1,10 @@
-import dash
-
-dash.register_page(__name__, icon="fas fa-chart-pie")
+from dash_labs.plugins import register_page
 
 from dash import dcc, html, Input, Output, callback
 import plotly.express as px
 
-# This dataframe has 244 lines, but 4 distinct values for `day`
+register_page(__name__, icon="fas fa-chart-pie")
+
 df = px.data.tips()
 
 

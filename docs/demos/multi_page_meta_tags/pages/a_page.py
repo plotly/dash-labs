@@ -1,6 +1,6 @@
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__)
+register_page(__name__)
 
 
 def layout():

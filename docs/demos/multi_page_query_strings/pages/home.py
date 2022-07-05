@@ -1,7 +1,7 @@
 from dash import dcc, html
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__, path="/")
+register_page(__name__, path="/")
 
 
 layout = html.Div(

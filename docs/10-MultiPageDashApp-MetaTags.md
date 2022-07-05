@@ -1,6 +1,7 @@
 
+
 > ## Status: Multi-Page Dash App Plugin
-> #### Under active development:  A plugin to simplify creating multi-page Dash apps. This is a preview of functionality that will be added to Dash 2.x.
+> #### The `pages` functionality is now part of dash 2.5!  These docs remain here for legacy purposes. `pages` is a plugin to simplify creating multi-page Dash apps. 
 > **[See the community announcement for details and discussion](https://community.plotly.com/t/introducing-dash-pages-dash-2-1-feature-preview/57775)**
 
 
@@ -52,9 +53,9 @@ In the `pages` folder we have 3 simple pages to demonstrate this feature.
 
 #### `a_page.py`
 ```python
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(__name__)
+register_page(__name__)
 
 
 def layout():
@@ -69,9 +70,9 @@ def layout():
 
 #### `birds.py`
 ```python
-import dash
+from dash_labs.plugins import register_page
 
-dash.register_page(
+register_page(
     __name__,
     title="(birds) The title, headline or name of the page",
     description="(birds) A short description or summary 2-3 sentences",
@@ -87,10 +88,11 @@ def layout():
 
 #### `home.py`
 ```python
-import dash
-from dash import html
 
-dash.register_page(
+from dash import html
+from dash_labs.plugins import register_page
+
+register_page(
     __name__,
     path="/",
     image="birdhouse.jpeg",
