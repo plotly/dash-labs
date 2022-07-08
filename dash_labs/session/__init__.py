@@ -1,8 +1,12 @@
+import functools
+import itertools
 import json
 import os
 import time
 import base64
 import secrets
+import typing
+import inspect
 import warnings
 import collections.abc
 from typing import Any
@@ -13,6 +17,8 @@ import flask
 import appdirs
 from _plotly_utils.utils import PlotlyJSONEncoder
 
+from dash import dcc, Output, Input
+
 _activation_error_message = """
 No backend defined for storing session data, choose from DiskSessionBackend, RedisSessionBackend, 
 or a custom subclass of `SessionBackend`.
@@ -21,6 +27,14 @@ or a custom subclass of `SessionBackend`.
 
 class SessionError(Exception):
     """Error with the session system."""
+
+
+class SessionInput:
+    _deps = set()
+
+    def __init__(self, key):
+        self.key = key
+        self._deps.add(key)
 
 
 def _session_keys(directory):
@@ -60,6 +74,8 @@ class Session(collections.abc.MutableMapping):
     Session store data scoped to the current user, use it directly in layout or callbacks.
     """
 
+    _callbacks = {}
+
     def __setattr__(self, key, value):
         self.__setitem__(key, value)
 
@@ -84,6 +100,7 @@ class Session(collections.abc.MutableMapping):
     def __setitem__(self, key, value) -> None:
         if flask.has_request_context():
             _check_backend()
+            flask.g.session_changes[key] = value
             flask.g.session_backend.set(flask.g.session_id, key, value)
         else:
             # When set in global scope, set as default.
@@ -105,20 +122,74 @@ class Session(collections.abc.MutableMapping):
             return f'<Session\n id="{flask.g.session_id}"\n values={json.dumps(data, indent=2, cls=PlotlyJSONEncoder)}>'
         return "<Session>"
 
+    def callback(
+        self, output: typing.Union[Output, typing.List[Output]], *keys: SessionInput
+    ):
+        """Callbacks to run when session values changes"""
+
+        def wrap(func):
+            for key in keys:
+                Session._callbacks[key.key] = {
+                    "func": func,
+                    "output": [output]
+                    if not isinstance(output, (list, tuple))
+                    else output,
+                }
+
+        return wrap
+
 
 class SessionValue:
     """
     Insert a session value into a layout.
     """
 
+    _watched = collections.defaultdict(list)
+
     def __init__(self, key: str):
         self.key = key
+        self.component_id = None
+        self.component_property = None
+        SessionValue._watched[key].append(self)
 
     def to_plotly_json(self):
+        if not self.component_id:
+            stack = inspect.stack()
+            for s in stack:
+                if s.function == "iterencode":
+                    # The dictionary of props where the session value come from is last - 1
+                    # Python >= 3.7 required.
+                    props = list(s.frame.f_locals["markers"].values())[-2]
+                    component_id = props.get("id")
+                    if not component_id:
+                        component_id = secrets.token_hex()
+                        props["id"] = component_id
+
+                    self.component_id = component_id
+                    # Now find the property name
+                    for key, value in props.items():
+                        if value is self:
+                            self.component_property = key
+                            break
+
+                if self.component_id:
+                    break
+
         return session.get(self.key)
 
     def __repr__(self):
         return f"<SessionValue {self.key}>"
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, SessionValue)
+            and other.key == self.key
+            and self.component_id == other.component_id
+            and self.component_property == other.component_property
+        )
+
+    def __hash__(self):
+        return hash((self.key, self.component_id, self.component_property))
 
 
 class SessionBackend:
@@ -172,12 +243,18 @@ class SessionBackend:
         raise NotImplementedError
 
 
+def _create_sync_key(session_value):
+    return f"_dash-session-sync-{session_value.key}-{session_value.component_id}-{session_value.component_property}"
+
+
 def setup_sessions(
     app,
     backend,
     session_cookie="_dash_sessionid",
     max_age=84600 * 31,
     refresh_after=84600 * 7,
+    sync_session_values=True,
+    sync_initial_session_values=False,
 ):
     """
     Setup the session system to add a session cookie to Dash responses.
@@ -192,10 +269,17 @@ def setup_sessions(
     :param max_age: Remove the session cookie from the browser after this amount of seconds.
     :type refresh_after: int
     :param refresh_after: Refresh the session when a request is made after this delay in seconds.
+    :param sync_session_values: Session values used in the global layout will be automatically
+        synced with the associated component property.
+    :type sync_session_values: bool
+    :param sync_initial_session_values: Prevent initial callbacks for setting the initial session values
+        on the components, can be used if
     """
     key, salt = _session_keys(appdirs.user_config_dir("dash"))
 
     signer = Signer(key, salt=salt)
+
+    callbacks_setup = {}
 
     if not isinstance(backend, SessionBackend):
         raise SessionError(f"Invalid session backend: {repr(backend)}")
@@ -203,6 +287,7 @@ def setup_sessions(
     @app.server.before_request
     def session_middleware():
         flask.g.session_backend = backend
+        flask.g.session_changes = {}
 
         token = flask.request.cookies.get(session_cookie)
 
@@ -240,6 +325,67 @@ def setup_sessions(
                 session_id = new_session()
 
         flask.g.session_id = session_id
+
+    @app.server.before_first_request
+    def setup_session_changes():
+        app._extra_components.extend(
+            [
+                dcc.Store(id=_create_sync_key(v))
+                for v in itertools.chain(
+                    *[set(w) for w in SessionValue._watched.values()]
+                )
+            ]
+        )
+
+    @app.server.after_request
+    def session_changes(response: flask.Response):
+        if "_dash-update-component" in flask.request.path:
+            to_change = {}
+            for k, value in flask.g.session_changes.items():
+                if k in SessionInput._deps:
+                    spec = Session._callbacks[k]
+                    result = spec["func"](value)
+                    for output in spec["output"]:
+                        to_change.setdefault(output.component_id, {})
+                        to_change[output.component_id][
+                            output.component_property
+                        ] = result
+            if to_change:
+                data = json.loads(response.data)
+                if "response" in data:
+                    data["response"].update(to_change)
+                response.set_data(json.dumps(data, cls=PlotlyJSONEncoder))
+
+        if "_dash-layout" in flask.request.path:
+            if sync_session_values and flask.request.path not in callbacks_setup:
+
+                def set_value(val, session_key=None):
+                    session[session_key] = val
+                    return val
+
+                for session_value in itertools.chain(
+                    *[set(v) for v in SessionValue._watched.values()]
+                ):
+                    if (
+                        not session_value.component_id
+                        or not session_value.component_property
+                    ):
+                        # Not used in the layout
+                        continue
+                    inp = Input(
+                        session_value.component_id, session_value.component_property
+                    )
+                    result = Output(_create_sync_key(session_value), "data")
+
+                    app.callback(
+                        result,
+                        inp,
+                        prevent_initial_call=not sync_initial_session_values,
+                    )(functools.partial(set_value, session_key=session_value.key))
+
+                callbacks_setup[flask.request.path] = True
+
+        return response
 
 
 session = Session()
