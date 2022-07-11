@@ -64,7 +64,9 @@ jobs:
           name: Test with pytest
           command: |
             . venv/bin/activate
-            pytest tests
+            pytest tests --junitxml=test-reports/dash-labs.xml
+      - store_test_results:
+          path: test-reports
 
 workflows:
   version: 2
