@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import pytest
 
@@ -16,7 +17,7 @@ from dash import (
 from dash.testing.application_runners import ThreadedRunner
 from dash.testing.composite import DashComposite
 
-from dash_labs.session import session, setup_sessions
+from dash_labs.session import session, setup_sessions, SessionInput
 from dash_labs.session.backends.diskcache import DiskcacheSessionBackend
 from dash_labs.session.backends.redis import RedisSessionBackend
 from dash_labs.session.backends.postgres import PostgresSessionBackend
@@ -65,6 +66,7 @@ def session_trio(request):
             html.Div(session.custom_default, id="custom-default"),
             html.Div(session.component_default),
             dcc.Input(id="later-input"),
+            dcc.Input(session.synced, id="synced"),
             html.Button("Set later", id="set-later"),
             html.Button("Clear later", id="clear-later"),
             html.Button("set-types", id="set-types"),
@@ -75,6 +77,9 @@ def session_trio(request):
             html.Button("output component", id="output-component"),
             html.Div(id="session-keys"),
             html.Button("set session keys", id="set-session-keys"),
+            html.Button("sync-check", id="sync-check"),
+            html.Div(id="sync-output"),
+            html.Div(id="session-callback"),
         ]
     )
 
@@ -136,6 +141,17 @@ def session_trio(request):
     )
     def output_keys(_):
         return json.dumps(list(session))
+
+    @session.callback(
+        Output("session-callback", "children"),
+        SessionInput("synced"),
+    )
+    def on_session_value(value):
+        return f"From session: {value}"
+
+    @app.callback(Output("sync-output", "children"), Input("sync-check", "n_clicks"))
+    def sync_check(_):
+        return f"Synced: {session.synced}"
 
     runner = ThreadedRunner()
     with DashComposite(
@@ -212,3 +228,13 @@ def test_sess007_session_get_keys(session_trio):
     assert "with_default" in session_keys
     assert "custom_default" in session_keys
     assert "component_default" in session_keys
+
+
+def test_sess008_session_sync(session_trio):
+    sync_input = session_trio.find_element("#synced")
+
+    sync_input.send_keys("synced")
+    session_trio.wait_for_text_to_equal("#session-callback", "From session: synced")
+
+    session_trio.find_element("#sync-check").click()
+    session_trio.wait_for_text_to_equal("#sync-output", "Synced: synced")
