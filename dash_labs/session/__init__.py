@@ -17,7 +17,7 @@ import flask
 import appdirs
 from _plotly_utils.utils import PlotlyJSONEncoder
 
-from dash import dcc, Output, Input
+from dash import dcc, Output, Input, html, exceptions as dash_errors
 
 _activation_error_message = """
 No backend defined for storing session data, choose from DiskSessionBackend, RedisSessionBackend, 
@@ -158,10 +158,11 @@ class SessionValue:
             for s in stack:
                 if s.function == "iterencode":
                     # The dictionary of props where the session value come from is last - 1
-                    # Python >= 3.7 required.
+                    # Python >= 3.7 required to guarantee order.
                     props = list(s.frame.f_locals["markers"].values())[-2]
                     component_id = props.get("id")
                     if not component_id:
+                        # Generate a random id for the component to be synced.
                         component_id = secrets.token_hex()
                         props["id"] = component_id
 
@@ -326,17 +327,6 @@ def setup_sessions(
 
         flask.g.session_id = session_id
 
-    @app.server.before_first_request
-    def setup_session_changes():
-        app._extra_components.extend(
-            [
-                dcc.Store(id=_create_sync_key(v))
-                for v in itertools.chain(
-                    *[set(w) for w in SessionValue._watched.values()]
-                )
-            ]
-        )
-
     @app.server.after_request
     def session_changes(response: flask.Response):
         if "_dash-update-component" in flask.request.path:
@@ -351,17 +341,31 @@ def setup_sessions(
                             output.component_property
                         ] = result
             if to_change:
-                data = json.loads(response.data)
-                if "response" in data:
-                    data["response"].update(to_change)
-                response.set_data(json.dumps(data, cls=PlotlyJSONEncoder))
+                try:
+                    data = json.loads(response.data)
+                    if "response" in data:
+                        data["response"].update(to_change)
+                    response.set_data(json.dumps(data, cls=PlotlyJSONEncoder))
+                except Exception as err:
+                    raise SessionError(
+                        "Session callbacks can only works from callbacks that returns something, "
+                        "Make sure you are not returning `no_update` after setting a session value "
+                        "that is linked to a `SessionInput`"
+                    ) from err
 
-        if "_dash-layout" in flask.request.path:
-            if sync_session_values and flask.request.path not in callbacks_setup:
+        if sync_session_values and "_dash-layout" in flask.request.path:
+
+            if flask.request.path not in callbacks_setup:
+                if app.validation_layout:
+                    # Dump the layout so all SessionValue's will get their id & prop.
+                    # We already went through before_first_request, all pages should be enabled.
+                    json.dumps(app.validation_layout, cls=PlotlyJSONEncoder)
 
                 def set_value(val, session_key=None):
                     session[session_key] = val
-                    return val
+                    # No use in returning the value,
+                    # but don't return no_update as SessionInput's need a response
+                    return ""
 
                 for session_value in itertools.chain(
                     *[set(v) for v in SessionValue._watched.values()]
@@ -377,13 +381,29 @@ def setup_sessions(
                     )
                     result = Output(_create_sync_key(session_value), "data")
 
-                    app.callback(
-                        result,
-                        inp,
-                        prevent_initial_call=not sync_initial_session_values,
-                    )(functools.partial(set_value, session_key=session_value.key))
+                    try:
+                        app.callback(
+                            result,
+                            inp,
+                            prevent_initial_call=not sync_initial_session_values,
+                        )(functools.partial(set_value, session_key=session_value.key))
+                    except dash_errors.DuplicateCallback:
+                        pass
 
                 callbacks_setup[flask.request.path] = True
+
+            if SessionValue._watched:
+                layout = json.loads(response.data)
+                layout = html.Div(
+                    [layout]
+                    + [
+                        dcc.Store(id=_create_sync_key(v))
+                        for v in itertools.chain(
+                            *[set(w) for w in SessionValue._watched.values()]
+                        )
+                    ]
+                )
+                response.set_data(json.dumps(layout, cls=PlotlyJSONEncoder))
 
         return response
 
