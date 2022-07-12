@@ -1,6 +1,5 @@
 import json
 import os
-import time
 
 import pytest
 
@@ -17,7 +16,7 @@ from dash import (
 from dash.testing.application_runners import ThreadedRunner
 from dash.testing.composite import DashComposite
 
-from dash_labs.session import session, setup_sessions, SessionInput
+from dash_labs.session import session, setup_sessions, SessionInput, SessionState
 from dash_labs.session.backends.diskcache import DiskcacheSessionBackend
 from dash_labs.session.backends.redis import RedisSessionBackend
 from dash_labs.session.backends.postgres import PostgresSessionBackend
@@ -57,6 +56,8 @@ def session_trio(request):
         "a": "a",
         "b": 1,
     }
+    session.n_clicks = 0
+    session.intermediate = 0
 
     app.layout = html.Div(
         [
@@ -80,6 +81,10 @@ def session_trio(request):
             html.Button("sync-check", id="sync-check"),
             html.Div(id="sync-output"),
             html.Div(id="session-callback"),
+            html.Button("clicks", n_clicks=session.n_clicks, id="n_clicks"),
+            html.Div(id="session-multi-sync-state"),
+            html.Div(id="session-clicks"),
+            html.Div(id="intermediate"),
         ]
     )
 
@@ -148,6 +153,25 @@ def session_trio(request):
     )
     def on_session_value(value):
         return f"From session: {value}"
+
+    @session.callback(
+        [
+            Output("session-multi-sync-state", "children"),
+            Output("session-clicks", "children"),
+        ],
+        SessionInput("n_clicks"),
+        SessionState("synced"),
+    )
+    def session_multi_callback(clicks, sync):
+        session.intermediate = clicks
+        return f"State: {sync}", f"Clicks: {clicks}"
+
+    @session.callback(
+        Output("intermediate", "children"),
+        SessionInput("intermediate"),
+    )
+    def intermedium(intermediate):
+        return f"Intermediate: {intermediate}"
 
     @app.callback(Output("sync-output", "children"), Input("sync-check", "n_clicks"))
     def sync_check(_):
@@ -238,3 +262,16 @@ def test_sess008_session_sync(session_trio):
 
     session_trio.find_element("#sync-check").click()
     session_trio.wait_for_text_to_equal("#sync-output", "Synced: synced")
+
+
+def test_sess009_session_callback(session_trio):
+    sync_input = session_trio.find_element("#synced")
+
+    session_trio.clear_input(sync_input)
+
+    sync_input.send_keys("callback")
+
+    session_trio.find_element("#n_clicks").click()
+    session_trio.wait_for_text_to_equal("#session-multi-sync-state", "State: callback")
+    session_trio.wait_for_text_to_equal("#session-clicks", "Clicks: 1")
+    session_trio.wait_for_text_to_equal("#intermediate", "Intermediate: 1")

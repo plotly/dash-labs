@@ -212,8 +212,6 @@ def register_page(
     dash.page_registry = OrderedDict([(p["module"], p) for p in page_registry_list])
 
 
-
-
 def _infer_image(module):
     """
     Return:
