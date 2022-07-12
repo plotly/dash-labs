@@ -59,6 +59,7 @@ def session_trio(request):
     session.n_clicks = 0
     session.intermediate = 0
     session.in_arr = "arr"
+    session.in_dict = "dict"
 
     app.layout = html.Div(
         [
@@ -87,6 +88,8 @@ def session_trio(request):
             html.Div(id="session-clicks"),
             html.Div(id="intermediate"),
             html.Div(["arr ", session.in_arr], id="in-arr"),
+            dcc.Store(id="store", data={"inside": session.in_dict}),
+            html.Div(id="store-output"),
         ]
     )
 
@@ -178,6 +181,10 @@ def session_trio(request):
     @app.callback(Output("sync-output", "children"), Input("sync-check", "n_clicks"))
     def sync_check(_):
         return f"Synced: {session.synced}"
+
+    @app.callback(Output("store-output", "children"), Input("store", "data"))
+    def store_output(data):
+        return data["inside"]
 
     runner = ThreadedRunner()
     with DashComposite(
@@ -281,3 +288,7 @@ def test_sess009_session_callback(session_trio):
 
 def test_sess010_session_value_in_array(session_trio):
     session_trio.wait_for_text_to_equal("#in-arr", "arr arr")
+
+
+def test_sess011_session_value_in_dict(session_trio):
+    session_trio.wait_for_text_to_equal("#store-output", "dict")
