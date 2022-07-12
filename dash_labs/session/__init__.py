@@ -30,11 +30,23 @@ class SessionError(Exception):
 
 
 class SessionInput:
-    _deps = set()
+    """
+    Used alongside ``session.callback``, trigger a callback when the linked ``key``
+    is updated.
 
-    def __init__(self, key):
+    When used with ``sync_session_values``, will be automatically triggered when
+    the component value change on the frontend.
+    """
+
+    def __init__(self, key: str):
+        """
+        :param key: Linked session value.
+        """
         self.key = key
-        self._deps.add(key)
+
+
+class SessionState(SessionInput):
+    pass
 
 
 def _session_keys(directory):
@@ -123,22 +135,32 @@ class Session(collections.abc.MutableMapping):
         return "<Session>"
 
     def callback(
-        self, output: typing.Union[Output, typing.List[Output]], *keys: SessionInput
+        self,
+        output: typing.Union[Output, typing.List[Output]],
+        inputs: typing.Union[SessionInput, typing.List[SessionInput]],
+        states: typing.Union[SessionState, typing.List[SessionState]] = None,
     ):
         """
         Add a callback to run when a session value changes.
 
         :param output: Component properties to update
+        :param inputs: Session input keys.
+        :param states: Session state to include in the
         """
 
         def wrap(func):
-            for key in keys:
+            inpts = inputs if isinstance(inputs, (list, tuple)) else [inputs]
+
+            for key in inpts:
                 Session._callbacks[key.key] = {
                     "func": func,
-                    "output": [output]
-                    if not isinstance(output, (list, tuple))
-                    else output,
+                    "output": output,
+                    "inputs": inpts,
+                    "states": [states] if isinstance(states, SessionState) else states,
+                    "multi": isinstance(output, (list, tuple)),
                 }
+
+            return func
 
         return wrap
 
@@ -409,15 +431,39 @@ def setup_sessions(
     def session_changes(response: flask.Response):
         if "_dash-update-component" in flask.request.path:
             to_change = {}
-            for k, value in flask.g.session_changes.items():
-                if k in SessionInput._deps:
-                    spec = Session._callbacks[k]
-                    result = spec["func"](value)
-                    for output in spec["output"]:
-                        to_change.setdefault(output.component_id, {})
-                        to_change[output.component_id][
-                            output.component_property
-                        ] = result
+            changes = list(flask.g.session_changes.items())
+
+            while len(changes):
+
+                # Reset changes for chaining callbacks.
+                flask.g.session_changes = {}
+
+                # FIXME prevent circular session callbacks.
+
+                for k, value in changes:
+                    if k in Session._callbacks:
+                        spec = Session._callbacks[k]
+                        result = spec["func"](
+                            *[
+                                session.get(k.key)
+                                for k in (spec["inputs"] + (spec["states"] or []))
+                            ]
+                        )
+
+                        if spec["multi"]:
+                            for out, res in zip(spec["output"], result):
+                                to_change.setdefault(out.component_id, {})
+                                to_change[out.component_id][
+                                    out.component_property
+                                ] = res
+                        else:
+                            output = spec["output"]
+                            to_change.setdefault(output.component_id, {})
+                            to_change[output.component_id][
+                                output.component_property
+                            ] = result
+
+                changes = list(flask.g.session_changes.items())
 
             if to_change:
                 try:
