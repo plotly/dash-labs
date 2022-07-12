@@ -58,6 +58,7 @@ def session_trio(request):
     }
     session.n_clicks = 0
     session.intermediate = 0
+    session.in_arr = "arr"
 
     app.layout = html.Div(
         [
@@ -85,6 +86,7 @@ def session_trio(request):
             html.Div(id="session-multi-sync-state"),
             html.Div(id="session-clicks"),
             html.Div(id="intermediate"),
+            html.Div(["arr ", session.in_arr], id="in-arr"),
         ]
     )
 
@@ -275,3 +277,7 @@ def test_sess009_session_callback(session_trio):
     session_trio.wait_for_text_to_equal("#session-multi-sync-state", "State: callback")
     session_trio.wait_for_text_to_equal("#session-clicks", "Clicks: 1")
     session_trio.wait_for_text_to_equal("#intermediate", "Intermediate: 1")
+
+
+def test_sess010_session_value_in_array(session_trio):
+    session_trio.wait_for_text_to_equal("#in-arr", "arr arr")
