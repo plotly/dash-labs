@@ -19,6 +19,8 @@ from _plotly_utils.utils import PlotlyJSONEncoder
 
 from dash import dcc, Output, Input, html, exceptions as dash_errors, page_registry
 
+from dash.development.base_component import Component
+
 _activation_error_message = """
 No backend defined for storing session data, choose from DiskSessionBackend, RedisSessionBackend, 
 or a custom subclass of `SessionBackend`.
@@ -194,10 +196,16 @@ class SessionValue:
                     markers = list(s.frame.f_locals["markers"].values())
                     props = markers[-2]
 
+                    if not isinstance(props, dict):
+                        # Used in array, no sync
+                        break
                     component_id = props.get("id")
                     if not component_id:
                         # two up you get the actual component, need to set the id!!!
                         component = markers[-4]
+                        if not isinstance(component, Component):
+                            # Used in a dictionary, no sync
+                            break
                         index = SessionValue._session_values_indexes[self.key]
                         component_id = f"_session-value-bind-{self.key}-{index}"
                         props["id"] = component_id
