@@ -125,7 +125,11 @@ class Session(collections.abc.MutableMapping):
     def callback(
         self, output: typing.Union[Output, typing.List[Output]], *keys: SessionInput
     ):
-        """Callbacks to run when session values changes"""
+        """
+        Add a callback to run when a session value changes.
+
+        :param output: Component properties to update
+        """
 
         def wrap(func):
             for key in keys:
@@ -141,10 +145,16 @@ class Session(collections.abc.MutableMapping):
 
 class SessionValue:
     """
-    Insert a session value into a layout.
+    Insert a session value into a layout. Returned by ``session.<key>`` when
+    not in a callback.
+
+    When ``sync_session_values`` is True, session values used in a layout
+    will automatically create a callback to update the value on the backend
+    when the linked component property change.
     """
 
     _watched = collections.defaultdict(list)
+    _session_values_indexes = collections.defaultdict(int)
 
     def __init__(self, key: str):
         self.key = key
@@ -166,10 +176,10 @@ class SessionValue:
                     if not component_id:
                         # two up you get the actual component, need to set the id!!!
                         component = markers[-4]
-                        # Generate a random id for the component to be synced.
-                        component_id = secrets.token_hex()
+                        index = SessionValue._session_values_indexes[self.key]
+                        component_id = f"_session-value-bind-{self.key}-{index}"
                         props["id"] = component_id
-                        # FIXME Doesn't play well with hot reload & multi page
+                        SessionValue._session_values_indexes[self.key] += 1
                         setattr(component, "id", component_id)
 
                     self.component_id = component_id
@@ -333,9 +343,6 @@ def setup_sessions(
 
         flask.g.session_id = session_id
 
-    @app.server.before_request
-    def setup_sync():
-        # This is a before_first_request, need the backend setup ^^^
         if not sync_session_values or "setup" in callbacks_setup:
             return
 
@@ -411,6 +418,7 @@ def setup_sessions(
                         to_change[output.component_id][
                             output.component_property
                         ] = result
+
             if to_change:
                 try:
                     data = json.loads(response.data)
