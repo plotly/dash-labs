@@ -19,7 +19,7 @@ class RedisSessionBackend(SessionBackend):
         except ImportError as err:
             raise ImportError(
                 "Diskcache is not installed, install it with "
-                "`pip install dash[redis]`"
+                "`pip install dash-labs[redis]`"
             ) from err
 
         self.pool = redis.ConnectionPool(

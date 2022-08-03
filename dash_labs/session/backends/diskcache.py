@@ -28,7 +28,7 @@ class DiskcacheSessionBackend(SessionBackend):
         except ImportError as err:
             raise ImportError(
                 "Diskcache is not installed, install it with "
-                "`pip install dash[diskcache]`"
+                "`pip install dash-labs[diskcache]`"
             ) from err
 
         # Pickle not safe, users most probably going to store user input.

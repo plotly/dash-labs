@@ -112,7 +112,7 @@ class PostgresSessionBackend(SessionBackend):
             from psycopg2.extras import Json
         except ImportError as err:
             raise ImportError(
-                "Install dash[postgresql] to use this session backend."
+                "Install dash-labs[postgresql] to use this session backend."
             ) from err
 
         self.pool = psycopg2.pool.ThreadedConnectionPool(
