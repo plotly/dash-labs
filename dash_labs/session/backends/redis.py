@@ -9,6 +9,21 @@ from dash_labs.session import SessionBackend
 class RedisSessionBackend(SessionBackend):
     """
     Session backend using redis.
+
+    **Setup example:**
+
+    .. code-block::
+
+        from dash import Dash
+
+        from dash_labs.session.backends.redis import RedisSessionBackend
+        from dash_labs.session import setup_sessions
+
+        app = Dash(__name__)
+        setup_sessions(
+            app,
+            RedisSessionBackend(host='localhost', port=6379, db=0)
+        )
     """
 
     def __init__(

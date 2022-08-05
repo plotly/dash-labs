@@ -88,7 +88,22 @@ def _table_exists(cursor, schema, table):
 
 class PostgresSessionBackend(SessionBackend):
     """
-    PostgresSQL session backend stores the data in `session` table.
+    PostgreSQL session backend stores the data in `session` table.
+
+    **Example**
+
+    .. code-block::
+
+        from dash import Dash
+
+        from dash_labs.session.backends.postgres import PostgresSessionBackend
+        from dash_labs.session import setup_sessions
+
+        app = Dash(__name__)
+        setup_sessions(
+            app,
+            PostgresSessionBackend(host='localhost', port="5432", database="postgres")
+        )
     """
 
     def __init__(

@@ -175,6 +175,9 @@ class SessionValue:
     When ``sync_session_values`` is True, session values used in a layout
     will automatically create a callback to update the value on the backend
     when the linked component property change.
+
+    Not meant to be used directly, returned by accessing session values when not in
+    a request context.
     """
 
     _watched = collections.defaultdict(list)
@@ -253,7 +256,7 @@ class SessionBackend:
 
         :param session_id: Session to set data with a key.
         :param key: Key to set
-        :param value: Value to keep.
+        :param value: Value to store for the session.
         :return:
         """
         raise NotImplementedError
@@ -304,7 +307,7 @@ def setup_sessions(
     sync_initial_session_values=False,
 ):
     """
-    Setup the session system to add a session cookie to Dash responses.
+    Set up the session system to add a session cookie to Dash responses.
 
     :type app: dash.Dash
     :param app: Dash app to add session handlers.
@@ -377,7 +380,7 @@ def setup_sessions(
             return
 
         if app.use_pages:
-            # Do not assume we went thru pages setup
+            # Do not assume we went through pages setup
             layout = html.Div(
                 [
                     page["layout"]() if callable(page["layout"]) else page["layout"]

@@ -14,6 +14,21 @@ _cachedir = appdirs.user_cache_dir("dash-sessions")
 class DiskcacheSessionBackend(SessionBackend):
     """
     Diskcache based session backend, store session data using the local filesystem.
+
+    **Example**
+
+    .. code-block::
+
+        from dash import Dash
+
+        from dash_labs.session.backends.diskcache import DiskcacheSessionBackend
+        from dash_labs.session import setup_sessions
+
+        app = Dash(__name__)
+        setup_sessions(
+            app,
+            DiskcacheSessionBackend(directory='./session-cache')
+        )
     """
 
     def __init__(self, directory=_cachedir, expire=None, disk=None, **settings):
