@@ -86,6 +86,66 @@ def _check_backend():
 class Session(collections.abc.MutableMapping):
     """
     Session store data scoped to the current user, use it directly in layout or callbacks.
+
+    **Example**
+
+    .. code-block::
+
+        import datetime
+
+        from dash import Dash, html, dcc, Output
+
+        from dash_labs.session.backends.diskcache import DiskcacheSessionBackend
+        from dash_labs.session import session, setup_sessions, SessionInput, SessionState
+
+        app = Dash(__name__)
+
+        setup_sessions(app, DiskcacheSessionBackend())
+
+        # Set default values in the global scope.
+        session.guest_name = 'guest'
+        session.posts = []
+        session.num_posts = 0
+
+        app.layout = html.Div([
+            html.H2('Enter a guest name'),
+            # eg: session.guess_name will be synced with the input value.
+            dcc.Input(value=session.guest_name),
+
+            html.Div([
+                dcc.Input(value=session.current_post, id='new-post'),
+                html.Button('New post', n_clicks=session.num_posts),
+            ]),
+
+            html.Div(id='session-stats'),
+            # Put all the posts in reverse order for last posted first.
+            html.Div(session.posts, style={'display': 'flex', 'flexDirection': 'column-reverse'}),
+        ])
+
+
+        @session.callback(
+            Output('session-stats', 'children'),
+            SessionInput('num_posts'),
+            SessionState('posts')
+        )
+        def on_new_post(_, posts):
+            # Can save components as session values
+            session.posts = posts + [
+                html.Div([
+                    html.Div(session.current_post),
+                    html.Div(
+                        f'Posted at: {datetime.datetime.now().isoformat()}',
+                        style={'fontWeight': 'bold', 'fontStyle': 'italic'}
+                    )
+                ])
+            ]
+            # Reset the current post input
+            session.current_post = ''
+            return f'Thank you for submitting your {session.num_posts} post'
+
+
+        if __name__ == '__main__':
+            app.run(debug=True)
     """
 
     _callbacks = {}
@@ -477,11 +537,16 @@ def setup_sessions(
                     # Sync session values that were updated.
                     if k in SessionValue._watched:
                         for session_value in SessionValue._watched[k]:
-                            if not session_value.component_id or not session_value.component_property:
+                            if (
+                                not session_value.component_id
+                                or not session_value.component_property
+                            ):
                                 # Not used in the layout
                                 continue
                             to_change.setdefault(session_value.component_id, {})
-                            to_change[session_value.component_id][session_value.component_property] = value
+                            to_change[session_value.component_id][
+                                session_value.component_property
+                            ] = value
 
                 changes = list(flask.g.session_changes.items())
 
