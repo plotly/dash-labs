@@ -474,6 +474,15 @@ def setup_sessions(
                                 output.component_property
                             ] = result
 
+                    # Sync session values that were updated.
+                    if k in SessionValue._watched:
+                        for session_value in SessionValue._watched[k]:
+                            if not session_value.component_id or not session_value.component_property:
+                                # Not used in the layout
+                                continue
+                            to_change.setdefault(session_value.component_id, {})
+                            to_change[session_value.component_id][session_value.component_property] = value
+
                 changes = list(flask.g.session_changes.items())
 
             if to_change:
