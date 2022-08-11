@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  browser-tools: circleci/browser-tools@1.2.4
 
 jobs:
   check-code-formatting:
@@ -14,31 +17,56 @@ jobs:
           name: Check formatting with black
           command: "black --check ."
 
-  python-3.6:
+  python-36:
     docker:
-      - image: circleci/python:3.6.9
+      - image: cimg/python:3.6-browsers
 
     steps:
       - checkout
       - run:
           name: Install testing dependencies
-          command: "sudo pip install -r requirements-dev.txt -r requirements.txt"
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements-dev.txt -r requirements.txt
+      - browser-tools/install-browser-tools:
+          install-firefox: false
+          install-geckodriver: false
       - run:
           name: Test with pytest
-          command: "pytest tests"
+          command: |
+            . venv/bin/activate
+            pytest tests
 
-  python-3.9:
+  python-39:
     docker:
-      - image: circleci/python:3.9
-
+      - image: cimg/python:3.9-browsers
+      - image: cimg/redis:6.2.6
+      - image: cimg/postgres:14.2
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: test
+    environment:
+      POSTGRESQL_DSN: database=circle_test user=root password=test
+      REDIS_URL: redis://localhost:6379/1
     steps:
       - checkout
       - run:
           name: Install testing dependencies
-          command: "sudo pip install -r requirements-dev.txt -r requirements.txt"
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements-dev.txt -r requirements.txt
+      - browser-tools/install-browser-tools:
+          install-firefox: false
+          install-geckodriver: false
       - run:
           name: Test with pytest
-          command: "pytest tests"
+          command: |
+            . venv/bin/activate
+            pytest tests --junitxml=test-reports/dash-labs.xml
+      - store_test_results:
+          path: test-reports
 
 workflows:
   version: 2
@@ -47,5 +75,5 @@ workflows:
       - check-code-formatting
   build:
     jobs:
-      - python-3.6
-      - python-3.9
+      - python-36
+      - python-39

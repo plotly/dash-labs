@@ -1,4 +1,7 @@
 pytest==6.2
-black==20.8b1
+black>=22.3.0
 pandas>=1.0
-diskcache>=5.2
+diskcache>=5.2.1
+redis>=3.5.3
+psycopg2-binary>=2.9.3
+dash[testing]>=2.4.1

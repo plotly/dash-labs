@@ -183,7 +183,7 @@ def register_page(
     page.update(
         image=(image if image is not None else _infer_image(module)),
         supplied_image=image,
-        image_url=image_url
+        image_url=image_url,
     )
     page.update(redirect_from=redirect_from)
 
@@ -210,8 +210,6 @@ def register_page(
     )
 
     dash.page_registry = OrderedDict([(p["module"], p) for p in page_registry_list])
-
-
 
 
 def _infer_image(module):
@@ -289,7 +287,7 @@ def _import_layouts_from_pages(pages_folder):
     for (root, dirs, files) in os.walk(pages_folder):
         for file in files:
             if file.endswith(".py") and not file.startswith("_"):
-                with open(os.path.join(root, file), encoding='utf-8') as f:
+                with open(os.path.join(root, file), encoding="utf-8") as f:
                     content = f.read()
                     if "register_page" not in content:
                         continue

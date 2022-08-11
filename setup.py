@@ -44,4 +44,10 @@ setup(
     license_files=["LICENSE.txt"],
     python_requires=">=3.6.*",
     packages=find_packages(exclude=["tests", "tests.*"]),
+    install_requires=["appdirs>=1.4.4", "itsdangerous>=2.0.1"],
+    extra_requires={
+        "diskcache": ["diskcache>=5.2.1"],
+        "redis": ["redis>=3.5.3"],
+        "postgres": ["psycopg2-binary>=2.9.3"],
+    },
 )
