@@ -119,10 +119,10 @@ def session_trio(request):
     def add_types(*_):
         return json.dumps(
             {
-                "number": session.number,
-                "number_0": session.number_0,
-                "array": session.array,
-                "obj": session.obj,
+                "number": session.number(),
+                "number_0": session.number_0(),
+                "array": session.array(),
+                "obj": session.obj(),
             }
         )
 
@@ -180,7 +180,7 @@ def session_trio(request):
 
     @app.callback(Output("sync-output", "children"), Input("sync-check", "n_clicks"))
     def sync_check(_):
-        return f"Synced: {session.synced}"
+        return f"Synced: {session.synced()}"
 
     @app.callback(Output("store-output", "children"), Input("store", "data"))
     def store_output(data):

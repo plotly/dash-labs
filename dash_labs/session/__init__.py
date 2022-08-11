@@ -87,6 +87,10 @@ class Session(collections.abc.MutableMapping):
     """
     Session store data scoped to the current user, use it directly in layout or callbacks.
 
+    Accessing session items always return a `SessionValue` proxy object, to get the
+    actual value for use in format or math operations, you need to call the value
+    eg: ``value = session.num_one() + session.num_two()``
+
     **Example**
 
     .. code-block::
@@ -109,7 +113,7 @@ class Session(collections.abc.MutableMapping):
 
         app.layout = html.Div([
             html.H2('Enter a guest name'),
-            # eg: session.guess_name will be synced with the input value.
+            # session.guess_name will be synced with the input value.
             dcc.Input(value=session.guest_name),
 
             html.Div([
@@ -132,7 +136,8 @@ class Session(collections.abc.MutableMapping):
             # Can save components as session values
             session.posts = posts + [
                 html.Div([
-                    html.Div(session.current_post),
+                    # Use the session.current_post current value, reset later
+                    html.Div(session.current_post()),
                     html.Div(
                         f'Posted at: {datetime.datetime.now().isoformat()}',
                         style={'fontWeight': 'bold', 'fontStyle': 'italic'}
@@ -141,11 +146,14 @@ class Session(collections.abc.MutableMapping):
             ]
             # Reset the current post input
             session.current_post = ''
-            return f'Thank you for submitting your {session.num_posts} post'
+            # To use session values inside f-string or format you
+            # need to call to get the actual value.
+            return f'Thank you for submitting your {session.num_posts()} post'
 
 
         if __name__ == '__main__':
             app.run(debug=True)
+
     """
 
     _callbacks = {}
@@ -157,18 +165,6 @@ class Session(collections.abc.MutableMapping):
         return self.__getitem__(key)
 
     def __getitem__(self, key):
-        if flask.has_request_context():
-            _check_backend()
-            value = flask.g.session_backend.get(flask.g.session_id, key)
-            if value is SessionBackend.undefined:
-                if key in SessionBackend.defaults:
-                    # Set missing defaults values for session created before the default
-                    # value is added.
-                    value = SessionBackend.defaults[key]
-                    flask.g.session_backend.set(flask.g.session_id, key, value)
-                else:
-                    value = None
-            return value
         return SessionValue(key)
 
     def __setitem__(self, key, value) -> None:
@@ -242,6 +238,7 @@ class SessionValue:
 
     _watched = collections.defaultdict(list)
     _session_values_indexes = collections.defaultdict(int)
+    _started = False
 
     def __init__(self, key: str):
         self.key = key
@@ -249,8 +246,24 @@ class SessionValue:
         self.component_property = None
         SessionValue._watched[key].append(self)
 
+    def __call__(self):
+        if flask.has_request_context():
+            _check_backend()
+            value = flask.g.session_backend.get(flask.g.session_id, self.key)
+            if value is SessionBackend.undefined:
+                if self.key in SessionBackend.defaults:
+                    # Set missing defaults values for session created before the default
+                    # value is added.
+                    value = SessionBackend.defaults[self.key]
+                    flask.g.session_backend.set(flask.g.session_id, self.key, value)
+                else:
+                    value = None
+            return value
+        else:
+            raise SessionError("Using session object outside of a request context!")
+
     def to_plotly_json(self):
-        if not self.component_id:
+        if not self.component_id and not self._started:
             stack = inspect.stack()
             for s in stack:
                 if s.function == "iterencode":
@@ -285,7 +298,7 @@ class SessionValue:
                 if self.component_id:
                     break
 
-        return session.get(self.key)
+        return self()
 
     def __repr__(self):
         return f"<SessionValue {self.key}>"
@@ -497,6 +510,7 @@ def setup_sessions(
                 pass
 
         callbacks_setup["setup"] = True
+        SessionValue._started = True
 
     @app.server.after_request
     def session_changes(response: flask.Response):
@@ -516,7 +530,7 @@ def setup_sessions(
                         spec = Session._callbacks[k]
                         result = spec["func"](
                             *[
-                                session.get(k.key)
+                                session.get(k.key)()
                                 for k in (spec["inputs"] + (spec["states"] or []))
                             ]
                         )
