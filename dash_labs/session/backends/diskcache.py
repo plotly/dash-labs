@@ -84,8 +84,7 @@ class DiskcacheSessionBackend(SessionBackend):
         self.expire = expire
 
     def get(self, session_id: str, key: str):
-        with self.lock:
-            return self.cache.get(f"{session_id}/{key}", default=self.undefined)
+        return self.cache.get(f"{session_id}/{key}", default=self.undefined)
 
     def set(self, session_id: str, key: str, value: Any):
         with self.lock:
