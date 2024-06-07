@@ -1,5 +1,12 @@
 # Dash Labs tech preview
 
+<div align="center">
+  <a href="https://dash.plotly.com/project-maintenance">
+    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png" width="400px" alt="Maintained by Plotly">
+  </a>
+</div>
+
+
 This repository contains a work-in-progress technical preview of potential future Dash features. 
 
 > 🚧 Dash Labs features are not guaranteed to land in the official `dash` package. These features are also not officially supported by Plotly's Support Team or by Dash Enterprise. We recommend waiting for these features to land in `dash` before using them in a Production Environment. 🚧
